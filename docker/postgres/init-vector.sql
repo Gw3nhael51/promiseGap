@@ -1,2 +1,2 @@
--- Activer : Initialiser extension vector
+-- Enable pgvector extension
 CREATE EXTENSION IF NOT EXISTS vector;
