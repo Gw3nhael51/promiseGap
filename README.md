@@ -2,11 +2,11 @@
 
 > **Catching commercial commitment gaps before contracts are signed.**
 
-An evidence-backed AI audit assistant built with Symfony & Meta Model API (Muse) for the **Meta Global AI Developer Hackathon 2026** (Cerebral Valley).
+An autonomous commercial commitment audit and discrepancy detection engine built with Symfony & Meta Model API (Muse Spark) for the **Meta Global AI Developer Hackathon 2026** (Cerebral Valley).
 
 ## 🚀 Overview
 
-In B2B contract negotiations, commercial proposals, sales quotes, and technical specifications frequently contain unnoticed discrepancies before signing. PromiseGap automatically analyzes these documents using a proof-oriented RAG pipeline to detect unsupported, ambiguous, or contradictory commitments.
+In B2B contract negotiations, commercial proposals, sales quotes, and technical specifications frequently contain unnoticed discrepancies before signing. PromiseGap automatically audits and cross-examines multi-party business documents through a multi-stage verification pipeline to detect unsupported, ambiguous, or contradictory commitments with verifiable, evidence-backed source attribution.
 
 ## 🛠️ Stack
 
