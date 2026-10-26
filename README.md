@@ -18,4 +18,4 @@ In B2B contract negotiations, commercial proposals, sales quotes, and technical 
 
 ## 📄 License
 
-Proprietary / Hackathon Project — 2026
+This project is licensed under the MIT License - see the [LICENSE](file:///home/orion-pc/dev/projets/hackathonMeta/LICENSE) file for details.
