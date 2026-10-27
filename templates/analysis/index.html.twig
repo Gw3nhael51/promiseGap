@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{#
+    Displays list of existing analysis workspaces and call-to-action to create a new audit
+    
+    @param array analyses List of Analysis entities ordered by date
+#}
+
+{% block title %}PromiseGap | Commitment Audits{% endblock %}
+
+{% block body %}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-3xl font-bold">Commercial Commitment Audits</h1>
+        <p class="text-base-content/70">Audit commercial proposals against technical architecture and specs.</p>
+    </div>
+    <a href="{{ path('app_analysis_new') }}" class="btn btn-primary">
+        + New Audit
+    </a>
+</div>
+
+{% if analyses is empty %}
+    <div class="card bg-base-200 shadow-md p-8 text-center">
+        <h2 class="text-xl font-semibold mb-2">No audit workspace yet</h2>
+        <p class="text-base-content/70 mb-4">Start by creating your first audit workspace to cross-examine documents.</p>
+        <div>
+            <a href="{{ path('app_analysis_new') }}" class="btn btn-primary">Create First Audit</a>
+        </div>
+    </div>
+{% else %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for analysis in analyses %}
+            <div class="card bg-base-200 shadow-md hover:shadow-lg transition-shadow">
+                <div class="card-body">
+                    <h2 class="card-title">{{ analysis.title }}</h2>
+                    <p class="text-sm text-base-content/70">Created on {{ analysis.createdAt|date('M d, Y \\a\\t H:i') }}</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="badge badge-info">{{ analysis.status.value }}</span>
+                        <span class="badge badge-ghost">{{ analysis.documents|length }} document(s)</span>
+                    </div>
+                    <div class="card-actions justify-end mt-4">
+                        <a href="{{ path('app_analysis_show', {'id': analysis.id}) }}" class="btn btn-sm btn-outline">Open</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}
