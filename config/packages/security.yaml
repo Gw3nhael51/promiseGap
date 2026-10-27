@@ -4,8 +4,19 @@ security:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_USER]
+
     providers:
-        users_in_memory: { memory: null }
+        users_in_memory:
+            memory:
+                users:
+                    admin@promisegap.ai:
+                        password: '$2y$13$t75iOzpZ5h5jpU1tZRfXf.6mZJZyPZFvfyHCUY6TpehNWSQqWE0TO'
+                        roles: ['ROLE_ADMIN']
+                    auditor@promisegap.ai:
+                        password: '$2y$13$PdviR7.LByVWWXJL1n3hW.DwRFYO.H/P3ujtUIGZ3C.LVT7KrsOS6'
+                        roles: ['ROLE_USER']
 
     firewalls:
         dev:
@@ -15,17 +26,20 @@ security:
         main:
             lazy: true
             provider: users_in_memory
-
-            # Activate different ways to authenticate:
-            # https://symfony.com/doc/current/security.html#the-firewall
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                default_target_path: app_cockpit
+                enable_csrf: false
+            logout:
+                path: app_logout
+                target: app_landing
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/cockpit, roles: ROLE_USER }
+        - { path: ^/analyses, roles: ROLE_ADMIN }
+        - { path: ^/, roles: PUBLIC_ACCESS }
 
 when@test:
     security:

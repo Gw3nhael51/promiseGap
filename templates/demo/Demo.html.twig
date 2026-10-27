@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{#
+    Displays the preloaded contract catalog enabling one-click audit demonstration
+    
+    @param array deals List of available demonstration deals
+#}
+
+{% block title %}PromiseGap | Try a Demo{% endblock %}
+
+{% block body %}
+<div style="min-height: 900px; box-sizing: border-box; background: #0E1116; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column;">
+
+    <!-- Topbar -->
+    <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 24px 32px; border-bottom: 1px solid #2A323D;">
+        <a href="{{ path('app_landing') }}" style="display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: #E8ECF1;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="2" y="5" width="14" height="14" rx="3" stroke="#7FA3FF" stroke-width="2"/>
+                <rect x="12" y="9" width="14" height="14" rx="3" stroke="#B7C0CC" stroke-width="2"/>
+            </svg>
+            <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">PromiseGap</span>
+        </a>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px; font-size: 14px;">
+            <a href="{{ path('app_cockpit') }}" style="color: #9BA5B3; text-decoration: none;">Cockpit</a>
+            <a href="{{ path('app_login') }}" style="color: #E8ECF1; text-decoration: none;">Sign in</a>
+            <a href="{{ path('app_register') }}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1px solid #4A5565; border-radius: 10px; color: #E8ECF1; text-decoration: none;">Create an account</a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div style="flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; box-sizing: border-box; padding: 64px 32px 72px; display: flex; flex-direction: column; gap: 40px;">
+
+        <!-- Header -->
+        <div style="display: flex; flex-direction: column; gap: 16px; max-width: 700px;">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.08em; color: #7FA3FF;">DEMO · NO ACCOUNT NEEDED</span>
+            <h1 style="margin: 0; font-size: 48px; line-height: 1.08; letter-spacing: -0.02em; font-weight: 700;">Pick a deal and see the audit.</h1>
+            <p style="margin: 0; font-size: 18px; line-height: 1.55; color: #9BA5B3;">Each deal is a real-world scenario pairing a sales proposal with its technical specs. Open one to watch the commitments get checked and read the evidence.</p>
+            {% if not is_granted('ROLE_USER') %}
+                <div style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 6px 14px; border-radius: 999px; background: rgba(127,163,255,0.12); border: 1px solid #7FA3FF; font-size: 13px; color: #7FA3FF;">
+                    <span>🛡️ Guest Access: {% if demoTrialsCount >= 1 %}1 of 1 trial used{% else %}1 free demo trial available{% endif %} · <a href="{{ path('app_register') }}" style="color: #E8ECF1; text-decoration: underline;">Sign up for unlimited</a></span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Deal Cards Grid -->
+        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+            {% for dealKey, deal in deals %}
+                <div style="flex: 1 1 320px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; gap: 28px; padding: 26px; background: #151A21; border: 1px solid #2A323D; border-radius: 16px; {% if loop.first %}border-top: 3px solid #7FA3FF;{% endif %}">
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;">
+                            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #9BA5B3;">{{ deal.tag }}</span>
+                            <span style="padding: 4px 12px; border-radius: 999px; background: {{ deal.riskBg }}; color: {{ deal.riskColor }}; font-size: 13px; font-weight: 600;">
+                                {{ deal.risk }} ({{ deal.riskScore }}/100)
+                            </span>
+                        </div>
+                        <span style="font-size: 24px; font-weight: 600; line-height: 1.2;">{{ deal.title }}</span>
+                        <span style="font-size: 15px; line-height: 1.55; color: #9BA5B3;">{{ deal.description }}</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; color: #9BA5B3; border-top: 1px solid #2A323D; padding-top: 12px;">
+                            <span>Proposal: {{ deal.proposalName }}</span>
+                            <span>Specs: {{ deal.specsName }}</span>
+                        </div>
+                        <a href="{{ path('app_demo_open', {'dealKey': dealKey}) }}" style="display: flex; align-items: center; justify-content: center; min-height: 48px; background: #7FA3FF; color: #0B1020; border-radius: 12px; font-size: 16px; font-weight: 600; text-decoration: none; transition: background 0.15s;">
+                            Open this audit
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends 'base.html.twig' %}
+
+{#
+    Displays live execution progress of contract claim extraction and proof confrontation
+    
+    @param Analysis analysis Current Analysis entity
+    @param array demoData Preloaded demo deal information and claims
+#}
+
+{% block title %}PromiseGap | Auditing {{ analysis.title }}{% endblock %}
+
+{% block body %}
+<div style="min-height: 900px; box-sizing: border-box; background: #0E1116; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column;">
+
+    <!-- Topbar -->
+    <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 32px; border-bottom: 1px solid #2A323D;">
+        <a href="{{ path('app_landing') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #E8ECF1;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="2" y="5" width="14" height="14" rx="3" stroke="#7FA3FF" stroke-width="2"/>
+                <rect x="12" y="9" width="14" height="14" rx="3" stroke="#B7C0CC" stroke-width="2"/>
+            </svg>
+            <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">PromiseGap</span>
+        </a>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="padding: 6px 12px; border: 1px solid #2A323D; border-radius: 999px; color: #B7C0CC; font-size: 13px;">
+                {{ analysis.title }} · Workspace #{{ analysis.id }}
+            </span>
+            <a href="{{ path('app_audit_results', {'id': analysis.id}) }}" style="display: inline-flex; align-items: center; padding: 6px 16px; background: #7FA3FF; color: #0B1020; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none;">
+                Skip to Results →
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div style="flex: 1; width: 100%; max-width: 1100px; margin: 0 auto; box-sizing: border-box; padding: 48px 32px; display: flex; flex-direction: column; gap: 32px;">
+
+        <!-- Title -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <h1 style="margin: 0; font-size: 36px; letter-spacing: -0.02em; font-weight: 700;">Auditing the contract</h1>
+            <p style="margin: 0; font-size: 16px; color: #9BA5B3;">
+                Proposal against technical specifications. Verdicts appear as soon as each commitment is cross-examined.
+            </p>
+        </div>
+
+        <!-- 3 Progress Cards -->
+        <div style="display: flex; flex-wrap: wrap; gap: 16px;">
+            <!-- Step 1: Extract promises -->
+            <div style="flex: 1 1 280px; box-sizing: border-box; display: flex; gap: 14px; align-items: flex-start; padding: 18px; background: #151A21; border: 1px solid #2A323D; border-radius: 14px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ADE9A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>
+                </svg>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <span style="font-weight: 600;">Extract promises</span>
+                    <span style="font-size: 14px; color: #9BA5B3;">8 commitments found in proposal</span>
+                </div>
+            </div>
+
+            <!-- Step 2: Index specs -->
+            <div style="flex: 1 1 280px; box-sizing: border-box; display: flex; gap: 14px; align-items: flex-start; padding: 18px; background: #151A21; border: 1px solid #2A323D; border-radius: 14px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ADE9A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>
+                </svg>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <span style="font-weight: 600;">Index the specs</span>
+                    <span style="font-size: 14px; color: #9BA5B3;">142 passages embedded in pgvector</span>
+                </div>
+            </div>
+
+            <!-- Step 3: Confront with proof -->
+            <div style="flex: 1 1 280px; box-sizing: border-box; display: flex; gap: 14px; align-items: flex-start; padding: 18px; background: #1B222B; border: 1px solid #7FA3FF; border-radius: 14px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7FA3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="animation: spin 3s linear infinite;">
+                    <path d="M21 12a9 9 0 1 1-6.2-8.55"/><path d="M21 4v5h-5"/>
+                </svg>
+                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+                    <span style="font-weight: 600;">Confront with proof</span>
+                    <span style="font-size: 14px; color: #9BA5B3;">Finalizing cross-examination</span>
+                    <div style="height: 6px; margin-top: 8px; border-radius: 999px; background: #2A323D;">
+                        <div id="progress-bar" style="width: 85%; height: 6px; border-radius: 999px; background: #7FA3FF; transition: width 0.8s ease;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Progress Table -->
+        <div style="background: #151A21; border: 1px solid #2A323D; border-radius: 14px; overflow-x: auto;">
+            <div style="min-width: 640px;">
+                <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; padding: 12px 20px; border-bottom: 1px solid #2A323D; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #9BA5B3;">
+                    <span>ID</span>
+                    <span>PROMISE</span>
+                    <span>VERDICT</span>
+                </div>
+
+                {% for claim in demoData.claims|slice(0, 6) %}
+                    {% set badgeColor = '#4ADE9A' %}
+                    {% set badgeBg = 'rgba(74,222,154,0.14)' %}
+                    {% if claim.st == 'con' %}
+                        {% set badgeColor = '#F5B04A' %}
+                        {% set badgeBg = 'rgba(245,176,74,0.14)' %}
+                    {% elseif claim.st == 'uns' %}
+                        {% set badgeColor = '#FF7B7B' %}
+                        {% set badgeBg = 'rgba(255,123,123,0.14)' %}
+                    {% elseif claim.st == 'amb' %}
+                        {% set badgeColor = '#A99BFF' %}
+                        {% set badgeBg = 'rgba(169,155,255,0.14)' %}
+                    {% endif %}
+
+                    <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; padding: 16px 20px; border-bottom: 1px solid #2A323D; align-items: center;">
+                        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #9BA5B3;">{{ claim.id }}</span>
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span style="font-size: 15px; font-weight: 500;">{{ claim.promise }}</span>
+                            <span style="font-size: 13px; color: #9BA5B3;">{{ claim.psrc }}</span>
+                        </div>
+                        <span style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 10px; border-radius: 999px; background: {{ badgeBg }}; color: {{ badgeColor }}; font-size: 13px; font-weight: 600;">
+                            {{ claim.label }}
+                        </span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Automatic Redirect Notice -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; background: #1B222B; border: 1px solid #3A4553; border-radius: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 20px;">⚡</span>
+                <span style="font-size: 15px; color: #E8ECF1;">Audit completed. Generating discrepancy report with proof quotes...</span>
+            </div>
+            <a href="{{ path('app_audit_results', {'id': analysis.id}) }}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; background: #7FA3FF; color: #0B1020; border-radius: 10px; font-size: 15px; font-weight: 600; text-decoration: none;">
+                Open Results Dashboard →
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+// Auto-forward to results after 3.5 seconds to simulate live audit completion
+setTimeout(() => {
+    window.location.href = "{{ path('app_audit_results', {'id': analysis.id}) }}";
+}, 3500);
+</script>
+{% endblock %}

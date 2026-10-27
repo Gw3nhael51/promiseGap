@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{#
+    Displays audit creation form with proposal and technical specification uploads
+    
+    @param FormView form Symfony form view for AnalysisType
+    @param Analysis analysis Analysis entity currently being created
+#}
+
+{% block title %}PromiseGap | New Audit Workspace{% endblock %}
+
+{% block body %}
+<div class="max-w-3xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ path('app_analysis_index') }}" class="btn btn-ghost btn-sm mb-2">← Back to Audits</a>
+        <h1 class="text-3xl font-bold">New Audit Workspace</h1>
+        <p class="text-base-content/70">Set an audit title and upload documents to cross-examine.</p>
+    </div>
+
+    <div class="card bg-base-200 shadow-md">
+        <div class="card-body">
+            {{ form_start(form) }}
+                <div class="space-y-6">
+                    <div class="form-control">
+                        {{ form_label(form.title, null, {'label_attr': {'class': 'label font-medium'}}) }}
+                        {{ form_widget(form.title) }}
+                        {{ form_errors(form.title) }}
+                    </div>
+
+                    <div class="divider">Documents to Cross-Examine</div>
+
+                    <div class="form-control">
+                        {{ form_label(form.proposalFile, null, {'label_attr': {'class': 'label font-medium'}}) }}
+                        {{ form_widget(form.proposalFile) }}
+                        <label class="label">
+                            <span class="label-text-alt text-base-content/60">Document containing vendor promises (PDF or Markdown, max 10 MB)</span>
+                        </label>
+                        {{ form_errors(form.proposalFile) }}
+                    </div>
+
+                    <div class="form-control">
+                        {{ form_label(form.technicalSpecFiles, null, {'label_attr': {'class': 'label font-medium'}}) }}
+                        {{ form_widget(form.technicalSpecFiles) }}
+                        <label class="label">
+                            <span class="label-text-alt text-base-content/60">Technical reference specifications (PDF or Markdown, max 10 MB each)</span>
+                        </label>
+                        {{ form_errors(form.technicalSpecFiles) }}
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3">
+                        <a href="{{ path('app_analysis_index') }}" class="btn btn-ghost">Cancel</a>
+                        {{ form_widget(form.submit) }}
+                    </div>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

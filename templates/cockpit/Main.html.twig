@@ -1,0 +1,205 @@
+{% extends 'base.html.twig' %}
+
+{#
+    Displays the dual dropzone cockpit for cross-examining commercial proposals and technical specs
+    
+    @param FormView form Symfony form view for AnalysisType
+    @param array pastAudits List of recent Analysis entities
+#}
+
+{% block title %}PromiseGap | Audit Cockpit{% endblock %}
+
+{% block body %}
+<div style="min-height: 900px; box-sizing: border-box; background: #0E1116; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column;">
+
+    <!-- Topbar -->
+    <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 32px; border-bottom: 1px solid #2A323D;">
+        <a href="{{ path('app_landing') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #E8ECF1;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="2" y="5" width="14" height="14" rx="3" stroke="#7FA3FF" stroke-width="2"/>
+                <rect x="12" y="9" width="14" height="14" rx="3" stroke="#B7C0CC" stroke-width="2"/>
+            </svg>
+            <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">PromiseGap</span>
+        </a>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px; font-size: 14px;">
+            <a href="#past-audits" style="text-decoration: none; color: #9BA5B3;">Past audits</a>
+            <a href="{{ path('app_demo') }}" style="text-decoration: none; color: #9BA5B3;">Deals</a>
+
+            {% if app.user %}
+                <div style="display: flex; align-items: center; gap: 10px; padding: 4px 12px; background: #151A21; border: 1px solid #3A4553; border-radius: 999px;">
+                    <span style="font-size: 13px; color: #E8ECF1;">{{ app.user.userIdentifier }}</span>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <span style="padding: 2px 8px; border-radius: 999px; background: rgba(245,176,74,0.2); color: #F5B04A; font-size: 11px; font-weight: 700;">ADMIN</span>
+                    {% else %}
+                        <span style="padding: 2px 8px; border-radius: 999px; background: rgba(127,163,255,0.2); color: #7FA3FF; font-size: 11px; font-weight: 600;">USER</span>
+                    {% endif %}
+                </div>
+                <a href="{{ path('app_logout') }}" style="color: #FF7B7B; text-decoration: none; font-size: 13px;">Sign out</a>
+            {% else %}
+                <a href="{{ path('app_login') }}" style="color: #E8ECF1; text-decoration: none;">Sign in</a>
+            {% endif %}
+
+            <span style="padding: 6px 12px; border: 1px solid #2A323D; border-radius: 999px; color: #B7C0CC; font-size: 13px;">Meta AI Hackathon</span>
+        </div>
+    </header>
+
+    <!-- Cockpit Workspace Container -->
+    <div style="flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; box-sizing: border-box; padding: 56px 32px 48px; display: flex; flex-direction: column; gap: 40px;">
+
+        <!-- Title Header -->
+        <div style="display: flex; flex-direction: column; gap: 16px; max-width: 760px;">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.08em; color: #7FA3FF;">EVIDENCE-BACKED CONTRACT AUDIT</span>
+            <h1 style="margin: 0; font-size: 52px; line-height: 1.08; letter-spacing: -0.02em; font-weight: 700;">What was sold versus what is written.</h1>
+            <p style="margin: 0; font-size: 18px; line-height: 1.55; color: #9BA5B3;">Drop a commercial proposal and its technical specs. PromiseGap extracts every commitment and shows, with the exact quote, which ones the documentation actually supports.</p>
+        </div>
+
+        {{ form_start(form, {'attr': {'id': 'cockpit-form'}}) }}
+            <!-- Hidden or styled Title input -->
+            <div style="margin-bottom: 24px; max-width: 500px;">
+                <label for="{{ form.title.vars.id }}" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #B7C0CC;">Audit Title</label>
+                {{ form_widget(form.title, {'attr': {'value': 'Cloud hosting contract audit', 'style': 'box-sizing: border-box; width: 100%; min-height: 44px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 15px;'}}) }}
+                {{ form_errors(form.title) }}
+            </div>
+
+            <!-- Dual Dropzone -->
+            <div style="display: flex; flex-wrap: wrap; align-items: stretch; gap: 20px;">
+
+                <!-- Proposal Dropzone -->
+                <div id="proposal-card" style="flex: 1 1 380px; box-sizing: border-box; min-height: 300px; display: flex; flex-direction: column; gap: 20px; padding: 28px; background: #151A21; border: 1px solid #2A323D; border-radius: 16px; border-top: 3px solid #7FA3FF;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7FA3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>
+                            </svg>
+                            <span style="font-size: 20px; font-weight: 600;">Commercial Proposal</span>
+                        </div>
+                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #7FA3FF; letter-spacing: 0.06em;">WHAT WAS SOLD</span>
+                    </div>
+
+                    <label for="{{ form.proposalFile.vars.id }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; border: 2px dashed #3A4553; border-radius: 12px; text-align: center; cursor: pointer; transition: border-color 0.2s;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9BA5B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+                        <span id="proposal-text" style="font-size: 16px;">Drag and drop the proposal here</span>
+                        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 10px; font: inherit; font-size: 15px;">Browse files</span>
+                        <span style="font-size: 13px; color: #9BA5B3;">PDF or Markdown, up to 20 MB</span>
+                        {{ form_widget(form.proposalFile, {'attr': {'style': 'display: none;', 'onchange': 'handleProposalSelected(this)'}}) }}
+                    </label>
+                    {{ form_errors(form.proposalFile) }}
+                </div>
+
+                <!-- VS Badge -->
+                <div style="flex: 0 0 56px; align-self: center; width: 56px; height: 56px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: #1B222B; border: 1px solid #3A4553; font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 500; color: #E8ECF1;">VS</div>
+
+                <!-- Technical Specs Dropzone -->
+                <div id="specs-card" style="flex: 1 1 380px; box-sizing: border-box; min-height: 300px; display: flex; flex-direction: column; gap: 20px; padding: 28px; background: #151A21; border: 1px solid #2A323D; border-radius: 16px; border-top: 3px solid #B7C0CC;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B7C0CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M9 8h7M9 12h5"/>
+                            </svg>
+                            <span style="font-size: 20px; font-weight: 600;">Technical Specs</span>
+                        </div>
+                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #B7C0CC; letter-spacing: 0.06em;">WHAT IS WRITTEN</span>
+                    </div>
+
+                    <label for="{{ form.technicalSpecFiles.vars.id }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; border: 2px dashed #3A4553; border-radius: 12px; text-align: center; cursor: pointer; transition: border-color 0.2s;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9BA5B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+                        <span id="specs-text" style="font-size: 16px;">Drag and drop the architecture docs here</span>
+                        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 10px; font: inherit; font-size: 15px;">Browse files</span>
+                        <span style="font-size: 13px; color: #9BA5B3;">PDF or Markdown, up to 20 MB</span>
+                        {{ form_widget(form.technicalSpecFiles, {'attr': {'style': 'display: none;', 'onchange': 'handleSpecsSelected(this)'}}) }}
+                    </label>
+                    {{ form_errors(form.technicalSpecFiles) }}
+                </div>
+
+            </div>
+
+            <!-- Actions Bar -->
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 32px;">
+                <a href="{{ path('app_cockpit_demo') }}" style="display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 28px; background: #7FA3FF; color: #0B1020; border-radius: 12px; font-size: 17px; font-weight: 600; text-decoration: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>
+                    Load Demo Deal
+                </a>
+
+                {{ form_widget(form.submit, {
+                    'id': 'run-audit-btn',
+                    'label': 'Run Audit',
+                    'attr': {
+                        'style': 'min-height: 52px; padding: 0 28px; background: transparent; color: #E8ECF1; border: 1px solid #7FA3FF; border-radius: 12px; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer; transition: all 0.2s;'
+                    }
+                }) }}
+
+                <span style="font-size: 14px; color: #9BA5B3;">You can audit uploaded files or instantly load the ready-made demo deal.</span>
+            </div>
+        {{ form_end(form) }}
+
+        <!-- 3 Step Explanations -->
+        <div style="display: flex; flex-wrap: wrap; gap: 16px; padding-top: 24px; border-top: 1px solid #2A323D;">
+            <div style="flex: 1 1 260px; display: flex; gap: 14px; align-items: flex-start;">
+                <span style="flex: 0 0 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 999px; border: 1px solid #3A4553; font-family: 'IBM Plex Mono', monospace; font-size: 13px;">1</span>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <span style="font-weight: 600;">Extract promises</span>
+                    <span style="font-size: 14px; line-height: 1.5; color: #9BA5B3;">Every concrete commitment in the proposal becomes a structured claim.</span>
+                </div>
+            </div>
+            <div style="flex: 1 1 260px; display: flex; gap: 14px; align-items: flex-start;">
+                <span style="flex: 0 0 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 999px; border: 1px solid #3A4553; font-family: 'IBM Plex Mono', monospace; font-size: 13px;">2</span>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <span style="font-weight: 600;">Index the specs</span>
+                    <span style="font-size: 14px; line-height: 1.5; color: #9BA5B3;">Technical documents are chunked and embedded for semantic search.</span>
+                </div>
+            </div>
+            <div style="flex: 1 1 260px; display: flex; gap: 14px; align-items: flex-start;">
+                <span style="flex: 0 0 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 999px; border: 1px solid #3A4553; font-family: 'IBM Plex Mono', monospace; font-size: 13px;">3</span>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <span style="font-weight: 600;">Confront with proof</span>
+                    <span style="font-size: 14px; line-height: 1.5; color: #9BA5B3;">Each claim gets a verdict and the exact quote that justifies it.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Past Audits Section -->
+        <div id="past-audits" style="display: flex; flex-direction: column; gap: 16px; padding-top: 32px; border-top: 1px solid #2A323D;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 18px; font-weight: 600;">Recent Audits</span>
+                <span style="font-size: 13px; color: #9BA5B3;">{{ pastAudits|length }} audit workspace(s) recorded</span>
+            </div>
+            {% if pastAudits is empty %}
+                <p style="color: #9BA5B3; font-size: 14px; margin: 0;">No past audit yet. Run your first audit or load the demo deal above.</p>
+            {% else %}
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    {% for audit in pastAudits %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #151A21; border: 1px solid #2A323D; border-radius: 12px;">
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-weight: 600;">{{ audit.title }}</span>
+                                <span style="font-size: 13px; color: #9BA5B3;">Created on {{ audit.createdAt|date('M d, Y \\a\\t H:i') }} • {{ audit.documents|length }} document(s)</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="padding: 4px 10px; border-radius: 999px; background: rgba(127,163,255,0.15); color: #7FA3FF; font-size: 12px; font-weight: 600;">{{ audit.status.value }}</span>
+                                <a href="{{ path('app_audit_results', {'id': audit.id}) }}" style="display: inline-flex; align-items: center; padding: 6px 14px; border: 1px solid #4A5565; border-radius: 8px; font-size: 13px; color: #E8ECF1; text-decoration: none;">View Results</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function handleProposalSelected(input) {
+    if (input.files && input.files[0]) {
+        document.getElementById('proposal-text').textContent = '📄 ' + input.files[0].name;
+        document.getElementById('proposal-card').style.borderColor = '#7FA3FF';
+    }
+}
+
+function handleSpecsSelected(input) {
+    if (input.files && input.files.length > 0) {
+        document.getElementById('specs-text').textContent = '📘 ' + input.files.length + ' file(s) selected';
+        document.getElementById('specs-card').style.borderColor = '#B7C0CC';
+    }
+}
+</script>
+{% endblock %}

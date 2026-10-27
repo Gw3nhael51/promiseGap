@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{#
+    Displays initial onboarding wizard with workspace setup and role customization
+    
+    @param string name User display name
+#}
+
+{% block title %}PromiseGap | Welcome{% endblock %}
+
+{% block body %}
+<div style="min-height: 900px; box-sizing: border-box; background: #0E1116; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column;">
+
+    <!-- Topbar -->
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 32px 48px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="2" y="5" width="14" height="14" rx="3" stroke="#7FA3FF" stroke-width="2"/>
+                <rect x="12" y="9" width="14" height="14" rx="3" stroke="#B7C0CC" stroke-width="2"/>
+            </svg>
+            <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">PromiseGap</span>
+        </div>
+        <a href="{{ path('app_cockpit') }}" style="font-size: 14px; color: #9BA5B3; text-decoration: none;">Skip for now</a>
+    </div>
+
+    <!-- Onboarding Container -->
+    <div style="flex: 1; width: 100%; max-width: 760px; margin: 0 auto; box-sizing: border-box; padding: 24px 32px 72px; display: flex; flex-direction: column; gap: 36px;">
+
+        <!-- 3 Steps Bar -->
+        <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+            <div style="flex: 1 1 160px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="height: 4px; border-radius: 999px; background: #7FA3FF;"></div>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #7FA3FF;">01 · WORKSPACE & ROLE</span>
+            </div>
+            <div style="flex: 1 1 160px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="height: 4px; border-radius: 999px; background: #2A323D;"></div>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #9BA5B3;">02 · PREFERENCES</span>
+            </div>
+            <div style="flex: 1 1 160px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="height: 4px; border-radius: 999px; background: #2A323D;"></div>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #9BA5B3;">03 · READY</span>
+            </div>
+        </div>
+
+        <!-- Step Content -->
+        <div style="display: flex; flex-direction: column; gap: 28px;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <h1 style="margin: 0; font-size: 36px; letter-spacing: -0.02em; font-weight: 700;">Welcome to PromiseGap</h1>
+                <p style="margin: 0; font-size: 17px; line-height: 1.55; color: #9BA5B3;">Two quick questions so the cockpit fits the way you work.</p>
+            </div>
+
+            <form method="post" action="{{ path('app_welcome') }}" style="display: flex; flex-direction: column; gap: 24px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label for="workspace" style="font-size: 14px; font-weight: 500;">Workspace name</label>
+                    <input id="workspace" name="workspace" type="text" value="Enterprise Deal Audit Lab" placeholder="Your company or team" style="box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 16px;">
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <span style="font-size: 14px; font-weight: 500;">What best describes your role?</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+
+                        <label style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #1B222B; border: 2px solid #7FA3FF; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
+                            <input type="radio" name="role" value="legal" checked style="display: none;">
+                            <span style="font-size: 16px; font-weight: 600;">Legal Counsel / Compliance</span>
+                            <span style="font-size: 13px; color: #9BA5B3;">Focus on SLAs, liability, and unsupported clauses.</span>
+                        </label>
+
+                        <label style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
+                            <input type="radio" name="role" value="cto" style="display: none;">
+                            <span style="font-size: 16px; font-weight: 600;">CTO / VP Engineering</span>
+                            <span style="font-size: 13px; color: #9BA5B3;">Check architectural promises vs technical realities.</span>
+                        </label>
+
+                        <label style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
+                            <input type="radio" name="role" value="procurement" style="display: none;">
+                            <span style="font-size: 16px; font-weight: 600;">Procurement / Buyer</span>
+                            <span style="font-size: 13px; color: #9BA5B3;">Identify negotiation leverage and contradictory timelines.</span>
+                        </label>
+
+                        <label style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
+                            <input type="radio" name="role" value="sales" style="display: none;">
+                            <span style="font-size: 16px; font-weight: 600;">Sales Engineering / Pre-sales</span>
+                            <span style="font-size: 13px; color: #9BA5B3;">Prevent overselling before quotes reach customers.</span>
+                        </label>
+
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                    <button type="submit" style="display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 32px; background: #7FA3FF; color: #0B1020; border: 0; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer;">
+                        Continue to Cockpit →
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
