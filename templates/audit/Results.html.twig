@@ -1,0 +1,293 @@
+{% extends 'base.html.twig' %}
+
+{#
+    Displays the interactive audit results dashboard with risk gauge, counters, and proof drawer
+    
+    @param Analysis analysis Current Analysis entity
+    @param array deal Deal metadata
+    @param array stats Discrepancy counts
+    @param array claims List of audited claims with evidence quotes
+#}
+
+{% block title %}PromiseGap | Results · {{ analysis.title }}{% endblock %}
+
+{% block body %}
+<div style="min-height: 1000px; box-sizing: border-box; background: #0E1116; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column;">
+
+    <!-- Topbar -->
+    <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 32px; border-bottom: 1px solid #2A323D;">
+        <a href="{{ path('app_landing') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #E8ECF1;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="2" y="5" width="14" height="14" rx="3" stroke="#7FA3FF" stroke-width="2"/>
+                <rect x="12" y="9" width="14" height="14" rx="3" stroke="#B7C0CC" stroke-width="2"/>
+            </svg>
+            <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">PromiseGap</span>
+        </a>
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <a href="{{ path('app_cockpit') }}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1px solid #4A5565; border-radius: 10px; color: #E8ECF1; font-size: 14px; text-decoration: none;">
+                + New audit
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Results Layout (Table on left, Drawer on right) -->
+    <div style="flex: 1; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+        <!-- Left Column: Summary & Table -->
+        <div style="flex: 999 1 640px; min-width: 0; box-sizing: border-box; padding: 32px; display: flex; flex-direction: column; gap: 24px;">
+
+            <!-- Header info -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+                    <h1 style="margin: 0; font-size: 30px; letter-spacing: -0.02em; font-weight: 700;">{{ analysis.title }}</h1>
+                    <span style="padding: 4px 10px; border-radius: 999px; background: #1B222B; border: 1px solid #3A4553; font-size: 12px; color: #B7C0CC;">
+                        Audited Deal
+                    </span>
+                </div>
+                <span style="font-size: 14px; color: #9BA5B3;">Proposal against Technical Specifications · {{ claims|length }} commitments audited</span>
+            </div>
+
+            <!-- Top Row: Risk Gauge & 4 Filter Cards -->
+            <div style="display: flex; flex-wrap: wrap; gap: 16px;">
+
+                <!-- Risk Gauge Card -->
+                <div style="flex: 1 1 280px; box-sizing: border-box; display: flex; align-items: center; gap: 20px; padding: 20px; background: #151A21; border: 1px solid #2A323D; border-radius: 14px;">
+                    <svg width="150" height="95" viewBox="0 0 200 120" role="img" aria-label="Risk score 78 out of 100, high risk">
+                        <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#2A323D" stroke-width="16" stroke-linecap="round"/>
+                        <path d="M20 100 A80 80 0 0 1 161.7 49.1" fill="none" stroke="#FF7B7B" stroke-width="16" stroke-linecap="round"/>
+                        <text x="100" y="98" text-anchor="middle" font-family="'IBM Plex Sans', sans-serif" font-size="40" font-weight="700" fill="#E8ECF1">78</text>
+                        <text x="100" y="116" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#9BA5B3">OUT OF 100</text>
+                    </svg>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.06em; color: #9BA5B3;">GLOBAL RISK</span>
+                        <span style="font-size: 22px; font-weight: 700; color: #FF7B7B;">High risk</span>
+                        <span style="font-size: 13px; line-height: 1.45; color: #9BA5B3;">Do not sign before the contradictions are resolved.</span>
+                    </div>
+                </div>
+
+                <!-- 4 Counter Filter Cards -->
+                <div style="flex: 2 1 400px; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px;">
+
+                    <!-- Contradictory Filter -->
+                    <button id="btn-filter-con" type="button" onclick="setFilter('con')" style="box-sizing: border-box; min-height: 110px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 14px; text-align: left; background: rgba(245,176,74,0.14); border: 2px solid #F5B04A; border-radius: 14px; color: #F5B04A; font: inherit; cursor: pointer;">
+                        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l9 16H3z"/><path d="M12 10v4"/><path d="M12 17.5v.01"/></svg>
+                            Contradictory
+                        </span>
+                        <span style="font-size: 36px; font-weight: 700; line-height: 1;">{{ stats.con }}</span>
+                    </button>
+
+                    <!-- Unsupported Filter -->
+                    <button id="btn-filter-uns" type="button" onclick="setFilter('uns')" style="box-sizing: border-box; min-height: 110px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 14px; text-align: left; background: #151A21; border: 2px solid #2A323D; border-radius: 14px; color: #FF7B7B; font: inherit; cursor: pointer;">
+                        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+                            Unsupported
+                        </span>
+                        <span style="font-size: 36px; font-weight: 700; line-height: 1;">{{ stats.uns }}</span>
+                    </button>
+
+                    <!-- Ambiguous Filter -->
+                    <button id="btn-filter-amb" type="button" onclick="setFilter('amb')" style="box-sizing: border-box; min-height: 110px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 14px; text-align: left; background: #151A21; border: 2px solid #2A323D; border-radius: 14px; color: #A99BFF; font: inherit; cursor: pointer;">
+                        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9.5a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1.1.9-1.1 1.6"/><path d="M12 17v.01"/></svg>
+                            Ambiguous
+                        </span>
+                        <span style="font-size: 36px; font-weight: 700; line-height: 1;">{{ stats.amb }}</span>
+                    </button>
+
+                    <!-- Supported Filter -->
+                    <button id="btn-filter-sup" type="button" onclick="setFilter('sup')" style="box-sizing: border-box; min-height: 110px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 14px; text-align: left; background: #151A21; border: 2px solid #2A323D; border-radius: 14px; color: #4ADE9A; font: inherit; cursor: pointer;">
+                        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>
+                            Supported
+                        </span>
+                        <span style="font-size: 36px; font-weight: 700; line-height: 1;">{{ stats.sup }}</span>
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- Table Header Bar -->
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+                <span style="font-size: 16px; font-weight: 600;">Promises & Commitments</span>
+                <button id="filter-reset-btn" type="button" onclick="setFilter('all')" style="min-height: 38px; padding: 0 14px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 8px; font: inherit; font-size: 13px; cursor: pointer;">
+                    Showing all 8
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div style="background: #151A21; border: 1px solid #2A323D; border-radius: 14px; overflow-x: auto;">
+                <div style="min-width: 720px;">
+                    <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 160px 84px 96px; gap: 16px; padding: 12px 16px; border-bottom: 1px solid #2A323D; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #9BA5B3;">
+                        <span>ID</span>
+                        <span>PROMISE</span>
+                        <span>VERDICT</span>
+                        <span>SEVERITY</span>
+                        <span>CONFIDENCE</span>
+                    </div>
+
+                    {% for c in claims %}
+                        {% set fg = '#4ADE9A' %}
+                        {% set bg = 'rgba(74,222,154,0.14)' %}
+                        {% if c.st == 'con' %}{% set fg = '#F5B04A' %}{% set bg = 'rgba(245,176,74,0.14)' %}
+                        {% elseif c.st == 'uns' %}{% set fg = '#FF7B7B' %}{% set bg = 'rgba(255,123,123,0.14)' %}
+                        {% elseif c.st == 'amb' %}{% set fg = '#A99BFF' %}{% set bg = 'rgba(169,155,255,0.14)' %}
+                        {% endif %}
+
+                        <div id="row-{{ c.id }}" class="claim-row" data-st="{{ c.st }}" onclick="selectClaim('{{ c.id }}')" style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 160px 84px 96px; gap: 16px; padding: 16px; border-bottom: 1px solid #2A323D; align-items: center; cursor: pointer; transition: background 0.15s; {% if loop.first %}background: #1B222B; box-shadow: inset 3px 0 0 {{ fg }};{% endif %}">
+                            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #E8ECF1;">{{ c.id }}</span>
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <span style="font-size: 15px; font-weight: 500; color: #E8ECF1;">{{ c.promise }}</span>
+                                <span style="font-size: 13px; color: #9BA5B3;">{{ c.psrc }}</span>
+                            </div>
+                            <span style="display: inline-flex; align-items: center; gap: 6px; width: fit-content; padding: 4px 10px; border-radius: 999px; background: {{ bg }}; color: {{ fg }}; font-size: 12px; font-weight: 600;">
+                                {{ c.label }}
+                            </span>
+                            <span style="font-size: 13px; color: #B7C0CC;">{{ c.sev }}</span>
+                            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #B7C0CC;">{{ c.conf }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Evidence Inspector Drawer -->
+        <div id="evidence-drawer" style="flex: 1 1 480px; box-sizing: border-box; background: #151A21; border-left: 1px solid #2A323D; padding: 32px; display: flex; flex-direction: column; gap: 24px;">
+
+            <!-- Drawer Header -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="drawer-id" style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 700; color: #E8ECF1;">P1</span>
+                        <span id="drawer-verdict" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(245,176,74,0.14); color: #F5B04A; font-size: 12px; font-weight: 600;">Contradictory</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="drawer-severity" style="padding: 4px 8px; border-radius: 6px; background: #0E1116; border: 1px solid #3A4553; font-size: 12px; color: #B7C0CC;">Critical</span>
+                        <span id="drawer-conf" style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #9BA5B3;">96% conf · 0.93 sim</span>
+                    </div>
+                </div>
+                <h2 id="drawer-title" style="margin: 0; font-size: 22px; line-height: 1.25; font-weight: 600;">99.99% availability with penalties</h2>
+            </div>
+
+            <!-- Commercial Proposal Quote Card -->
+            <div style="display: flex; flex-direction: column; gap: 10px; padding: 18px; background: #0E1116; border: 1px solid #2A323D; border-top: 3px solid #7FA3FF; border-radius: 12px;">
+                <span id="drawer-psrc" style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #7FA3FF;">PROPOSAL · §2.1 · P.4</span>
+                <p id="drawer-pquote" style="margin: 0; font-size: 16px; line-height: 1.55;">The platform delivers <mark style="background: rgba(127,163,255,0.28); color: #E8ECF1; padding: 1px 3px; border-radius: 3px;">99.99% availability</mark> backed by financial penalties.</p>
+            </div>
+
+            <!-- Technical Specs Evidence Card -->
+            <div id="drawer-evidence-card" style="display: flex; flex-direction: column; gap: 10px; padding: 18px; background: #0E1116; border: 1px solid #2A323D; border-top: 3px solid #B7C0CC; border-radius: 12px;">
+                <span id="drawer-esrc" style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #B7C0CC;">TECH SPECS · §4.2 SLA · P.31</span>
+                <p id="drawer-equote" style="margin: 0; font-size: 16px; line-height: 1.55;">Target monthly availability is <mark style="background: rgba(245,176,74,0.30); color: #E8ECF1; padding: 1px 3px; border-radius: 3px;">99.5%</mark>, excluding planned maintenance.</p>
+            </div>
+
+            <!-- Discrepancy Reason Explanation -->
+            <div style="display: flex; flex-direction: column; gap: 8px; padding: 18px; background: #1B222B; border: 1px solid #3A4553; border-radius: 12px;">
+                <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.06em; color: #9BA5B3;">DISCREPANCY ANALYSIS</span>
+                <p id="drawer-why" style="margin: 0; font-size: 14px; line-height: 1.55; color: #E8ECF1;">
+                    The proposal commits to 99.99% uptime. The specification only targets 99.5%, which allows about 3.6 hours of downtime per month instead of about 4 minutes.
+                </p>
+            </div>
+
+            <!-- Human In The Loop Actions -->
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; padding-top: 16px; border-top: 1px solid #2A323D;">
+                <button type="button" onclick="alert('Claim confirmed as audited discrepancy.')" style="flex: 1; min-height: 44px; background: transparent; color: #4ADE9A; border: 1px solid #4ADE9A; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">
+                    ✓ Mark Verified
+                </button>
+                <button type="button" onclick="alert('Discrepancy flagged for human escalation.')" style="flex: 1; min-height: 44px; background: transparent; color: #FF7B7B; border: 1px solid #FF7B7B; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">
+                    Flag / Dispute
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+const CLAIMS_DATA = {{ claims|json_encode|raw }};
+let currentFilter = 'all';
+
+function setFilter(filterType) {
+    currentFilter = filterType;
+    const rows = document.querySelectorAll('.claim-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        if (filterType === 'all' || row.dataset.st === filterType) {
+            row.style.display = 'grid';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    const resetBtn = document.getElementById('filter-reset-btn');
+    if (filterType === 'all') {
+        resetBtn.textContent = 'Showing all 8';
+    } else {
+        resetBtn.textContent = 'Clear filter (' + filterType.toUpperCase() + ')';
+    }
+}
+
+function selectClaim(claimId) {
+    const claim = CLAIMS_DATA.find(c => c.id === claimId);
+    if (!claim) return;
+
+    // Highlight row
+    document.querySelectorAll('.claim-row').forEach(row => {
+        row.style.background = 'transparent';
+        row.style.boxShadow = 'none';
+    });
+    const selectedRow = document.getElementById('row-' + claimId);
+    if (selectedRow) {
+        selectedRow.style.background = '#1B222B';
+        const color = claim.st === 'sup' ? '#4ADE9A' : (claim.st === 'con' ? '#F5B04A' : (claim.st === 'uns' ? '#FF7B7B' : '#A99BFF'));
+        selectedRow.style.boxShadow = 'inset 3px 0 0 ' + color;
+    }
+
+    // Update Drawer content
+    document.getElementById('drawer-id').textContent = claim.id;
+    document.getElementById('drawer-title').textContent = claim.promise;
+    document.getElementById('drawer-severity').textContent = claim.sev;
+    document.getElementById('drawer-conf').textContent = claim.conf + ' conf · ' + claim.sim + ' sim';
+    document.getElementById('drawer-why').textContent = claim.why;
+
+    const verdictBadge = document.getElementById('drawer-verdict');
+    verdictBadge.textContent = claim.label;
+    if (claim.st === 'con') {
+        verdictBadge.style.color = '#F5B04A';
+        verdictBadge.style.background = 'rgba(245,176,74,0.14)';
+    } else if (claim.st === 'uns') {
+        verdictBadge.style.color = '#FF7B7B';
+        verdictBadge.style.background = 'rgba(255,123,123,0.14)';
+    } else if (claim.st === 'amb') {
+        verdictBadge.style.color = '#A99BFF';
+        verdictBadge.style.background = 'rgba(169,155,255,0.14)';
+    } else {
+        verdictBadge.style.color = '#4ADE9A';
+        verdictBadge.style.background = 'rgba(74,222,154,0.14)';
+    }
+
+    // Proposal quote
+    document.getElementById('drawer-psrc').textContent = claim.psrc.toUpperCase();
+    document.getElementById('drawer-pquote').innerHTML = (claim.pb || '') + '<mark style="background: rgba(127,163,255,0.28); color: #E8ECF1; padding: 1px 3px; border-radius: 3px;">' + (claim.pm || claim.promise) + '</mark>' + (claim.pa || '');
+
+    // Evidence quote
+    const evCard = document.getElementById('drawer-evidence-card');
+    if (claim.hasEv) {
+        evCard.style.display = 'flex';
+        document.getElementById('drawer-esrc').textContent = claim.esrc.toUpperCase();
+        const markColor = claim.st === 'con' ? 'rgba(245,176,74,0.30)' : (claim.st === 'sup' ? 'rgba(74,222,154,0.26)' : 'rgba(169,155,255,0.30)');
+        document.getElementById('drawer-equote').innerHTML = (claim.eb || '') + '<mark style="background: ' + markColor + '; color: #E8ECF1; padding: 1px 3px; border-radius: 3px;">' + (claim.em || '') + '</mark>' + (claim.ea || '');
+    } else {
+        evCard.style.display = 'flex';
+        document.getElementById('drawer-esrc').textContent = 'TECHNICAL SPECIFICATIONS';
+        document.getElementById('drawer-equote').innerHTML = '<span style="color: #FF7B7B; font-style: italic;">No matching passage found in specifications.</span><br><span style="font-size: 13px; color: #9BA5B3;">' + claim.esrc + '</span>';
+    }
+}
+</script>
+{% endblock %}

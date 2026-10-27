@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{#
+    Displays password reset form and success confirmation
+    
+    @param bool isSuccess Whether the password has been reset successfully
+#}
+
+{% block title %}PromiseGap | Reset password{% endblock %}
+
+{% block body %}
+<div style="min-height: 900px; box-sizing: border-box; background: #0E1116; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column;">
+
+    <!-- Topbar -->
+    <div style="padding: 32px 48px;">
+        <a href="{{ path('app_landing') }}" style="display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: #E8ECF1;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="2" y="5" width="14" height="14" rx="3" stroke="#7FA3FF" stroke-width="2"/>
+                <rect x="12" y="9" width="14" height="14" rx="3" stroke="#B7C0CC" stroke-width="2"/>
+            </svg>
+            <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">PromiseGap</span>
+        </a>
+    </div>
+
+    <!-- Centered Form Container -->
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 24px 96px;">
+        <div style="width: 100%; max-width: 460px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; padding: 36px; background: #151A21; border: 1px solid #2A323D; border-radius: 20px;">
+
+            {% if not isSuccess %}
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <h1 style="margin: 0; font-size: 30px; letter-spacing: -0.02em; font-weight: 700;">Choose a new password</h1>
+                        <p style="margin: 0; font-size: 16px; line-height: 1.55; color: #9BA5B3;">Must be at least 12 characters and mix letters and numbers.</p>
+                    </div>
+
+                    <form method="post" action="{{ path('app_reset_password') }}" style="display: flex; flex-direction: column; gap: 18px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label for="password" style="font-size: 14px; font-weight: 500;">New password</label>
+                            <input id="password" name="password" type="password" autocomplete="new-password" placeholder="At least 12 characters" required style="box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 14px; background: #0E1116; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 16px;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label for="confirm" style="font-size: 14px; font-weight: 500;">Confirm password</label>
+                            <input id="confirm" name="confirm" type="password" autocomplete="new-password" placeholder="Repeat new password" required style="box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 14px; background: #0E1116; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 16px;">
+                        </div>
+
+                        <button type="submit" style="min-height: 52px; background: #7FA3FF; color: #0B1020; border: 0; border-radius: 12px; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer;">
+                            Update password
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4ADE9A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>
+                    </svg>
+
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <h1 style="margin: 0; font-size: 30px; letter-spacing: -0.02em; font-weight: 700;">Password updated</h1>
+                        <p style="margin: 0; font-size: 16px; line-height: 1.55; color: #9BA5B3;">Your password has been changed. You can now sign in with your new credentials.</p>
+                    </div>
+
+                    <a href="{{ path('app_login') }}" style="display: flex; align-items: center; justify-content: center; min-height: 52px; background: #7FA3FF; color: #0B1020; border-radius: 12px; font-size: 17px; font-weight: 600; text-decoration: none;">
+                        Sign in now
+                    </a>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
