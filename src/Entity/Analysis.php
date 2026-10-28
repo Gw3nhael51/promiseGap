@@ -28,6 +28,9 @@ class Analysis
     #[ORM\Column(length: 50, enumType: AnalysisStatus::class)]
     private AnalysisStatus $status = AnalysisStatus::PENDING;
 
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $ownerIdentifier = null;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -81,6 +84,39 @@ class Analysis
         $this->title = $title;
 
         return $this;
+    }
+
+    /**
+     * Returns identifier of the user owning the analysis (null for shared demo analyses)
+     *
+     * @return string|null Owner user identifier
+     */
+    public function getOwnerIdentifier(): ?string
+    {
+        return $this->ownerIdentifier;
+    }
+
+    /**
+     * Sets identifier of the user owning the analysis
+     *
+     * @param string|null $ownerIdentifier Owner user identifier
+     * @return static Current instance
+     */
+    public function setOwnerIdentifier(?string $ownerIdentifier): static
+    {
+        $this->ownerIdentifier = $ownerIdentifier;
+
+        return $this;
+    }
+
+    /**
+     * Indicates whether the analysis is a shared demo analysis without owner
+     *
+     * @return bool True when no owner is attached
+     */
+    public function isDemo(): bool
+    {
+        return $this->ownerIdentifier === null;
     }
 
     /**

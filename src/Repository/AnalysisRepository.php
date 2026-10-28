@@ -22,4 +22,16 @@ class AnalysisRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Analysis::class);
     }
+
+    /**
+     * Returns the most recent analyses owned by a given user
+     *
+     * @param string $ownerIdentifier Owner user identifier
+     * @param int|null $limit Maximum number of results
+     * @return Analysis[] Analyses ordered by creation date descending
+     */
+    public function findByOwner(string $ownerIdentifier, ?int $limit = null): array
+    {
+        return $this->findBy(['ownerIdentifier' => $ownerIdentifier], ['createdAt' => 'DESC'], $limit);
+    }
 }
