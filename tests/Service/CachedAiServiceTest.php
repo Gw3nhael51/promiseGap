@@ -27,7 +27,7 @@ class CachedAiServiceTest extends TestCase
             return new MockResponse((string) json_encode([
                 'model' => 'Muse-Spark',
                 'choices' => [
-                    ['message' => ['content' => sprintf('{"call":%d}', $callCount)]],
+                    ['index' => 0, 'finish_reason' => 'stop', 'message' => ['role' => 'assistant', 'content' => sprintf('{"call":%d}', $callCount)]],
                 ],
                 'usage' => ['prompt_tokens' => 100, 'completion_tokens' => 50],
             ]));

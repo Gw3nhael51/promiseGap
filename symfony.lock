@@ -50,6 +50,18 @@
             "bin/phpunit"
         ]
     },
+    "symfony/ai-generic-platform": {
+        "version": "0.15",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "0.1",
+            "ref": "a3919116f59f52377b59cfffe889711f8351d472"
+        },
+        "files": [
+            "config/packages/ai_generic_platform.yaml"
+        ]
+    },
     "symfony/asset-mapper": {
         "version": "8.1",
         "recipe": {
@@ -282,6 +294,15 @@
             "config/packages/twig.yaml",
             "templates/base.html.twig"
         ]
+    },
+    "symfony/uid": {
+        "version": "8.1",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "7.0",
+            "ref": "0df5844274d871b37fc3816c57a768ffc60a43a5"
+        }
     },
     "symfony/ux-turbo": {
         "version": "3.6",

@@ -4,6 +4,12 @@ namespace App\Service;
 
 use App\DTO\AiResponse;
 use Psr\Log\LoggerInterface;
+use Symfony\AI\Platform\Bridge\Generic\Factory as GenericPlatformFactory;
+use Symfony\AI\Platform\Exception\AuthenticationException;
+use Symfony\AI\Platform\Exception\BadRequestException;
+use Symfony\AI\Platform\Message\Message;
+use Symfony\AI\Platform\Message\MessageBag;
+use Symfony\AI\Platform\TokenUsage\TokenUsageInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -69,65 +75,68 @@ class MetaAiClient implements AiClientInterface
             return $this->simulateResponse($systemPrompt, $userPrompt, $model);
         }
 
-        $payload = [
-            'model' => $model,
+        $optionsPayload = [
             'temperature' => $temperature,
-            'messages' => [
-                ['role' => 'system', 'content' => $systemPrompt],
-                ['role' => 'user', 'content' => $userPrompt],
-            ],
         ];
 
         if (isset($options['response_format']) && is_array($options['response_format'])) {
-            $payload['response_format'] = $options['response_format'];
+            $optionsPayload['response_format'] = $options['response_format'];
         }
 
         if (isset($options['max_tokens'])) {
-            $payload['max_tokens'] = (int) $options['max_tokens'];
+            $optionsPayload['max_tokens'] = (int) $options['max_tokens'];
         }
+
+        $baseUrl = rtrim($this->endpoint, '/');
+        $completionsPath = (str_ends_with($baseUrl, '/v1') || str_ends_with($baseUrl, '/compat/v1'))
+            ? '/chat/completions'
+            : '/v1/chat/completions';
+
+        $platform = GenericPlatformFactory::createPlatform(
+            baseUrl: $baseUrl,
+            apiKey: $this->apiKey,
+            httpClient: $this->httpClient->withOptions(['timeout' => $this->timeout]),
+            supportsCompletions: true,
+            supportsEmbeddings: false,
+            completionsPath: $completionsPath,
+            name: 'meta-muse-spark',
+        );
+
+        $messages = new MessageBag(
+            Message::forSystem($systemPrompt),
+            Message::ofUser($userPrompt),
+        );
 
         $attempt = 0;
         $lastException = null;
-        $url = rtrim($this->endpoint, '/') . '/chat/completions';
 
         while ($attempt <= $this->maxRetries) {
             ++$attempt;
 
             try {
-                // Envoyer : Appeler le point de terminaison Meta Model API avec délai maximal
-                $response = $this->httpClient->request('POST', $url, [
-                    'headers' => [
-                        'Authorization' => 'Bearer ' . $this->apiKey,
-                        'Content-Type' => 'application/json',
-                        'Accept' => 'application/json',
-                    ],
-                    'json' => $payload,
-                    'timeout' => $this->timeout,
-                ]);
+                // Invoquer : Appeler Meta Muse Spark via Symfony AI Platform (Generic OpenAI-compatible bridge)
+                $deferredResult = $platform->invoke($model, $messages, $optionsPayload);
+                $content = $deferredResult->asText();
 
-                $statusCode = $response->getStatusCode();
-                if ($statusCode >= 500 || $statusCode === 429) {
-                    throw new \RuntimeException(sprintf('Meta API transient HTTP error %d.', $statusCode));
-                }
-
-                $data = $response->toArray(false);
-                if ($statusCode >= 400) {
-                    $errorMsg = $data['error']['message'] ?? ('HTTP ' . $statusCode);
-                    throw new \InvalidArgumentException(sprintf('Meta API rejected the request: %s', $errorMsg));
-                }
-
-                $content = (string) ($data['choices'][0]['message']['content'] ?? '');
-                $promptTokens = (int) ($data['usage']['prompt_tokens'] ?? $this->estimateTokens($systemPrompt . $userPrompt));
-                $completionTokens = (int) ($data['usage']['completion_tokens'] ?? $this->estimateTokens($content));
+                $tokenUsage = $deferredResult->getMetadata()->get('token_usage');
+                $promptTokens = $tokenUsage instanceof TokenUsageInterface && $tokenUsage->getPromptTokens() !== null
+                    ? $tokenUsage->getPromptTokens()
+                    : $this->estimateTokens($systemPrompt . $userPrompt);
+                $completionTokens = $tokenUsage instanceof TokenUsageInterface && $tokenUsage->getCompletionTokens() !== null
+                    ? $tokenUsage->getCompletionTokens()
+                    : $this->estimateTokens($content);
+                $resolvedModel = $tokenUsage instanceof TokenUsageInterface && $tokenUsage->getModel() !== null
+                    ? $tokenUsage->getModel()
+                    : $model;
 
                 return new AiResponse(
                     content: $content,
-                    model: (string) ($data['model'] ?? $model),
+                    model: $resolvedModel,
                     promptTokens: $promptTokens,
                     completionTokens: $completionTokens,
                 );
-            } catch (\InvalidArgumentException $exception) {
-                throw $exception;
+            } catch (AuthenticationException|BadRequestException $exception) {
+                throw new \InvalidArgumentException(sprintf('Meta API rejected the request: %s', $exception->getMessage()), 0, $exception);
             } catch (\Throwable $exception) {
                 $lastException = $exception;
                 $this->logger->warning('Meta AI request attempt failed', [

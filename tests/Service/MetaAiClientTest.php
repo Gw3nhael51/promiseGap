@@ -21,7 +21,7 @@ class MetaAiClientTest extends TestCase
         $mockResponse = new MockResponse((string) json_encode([
             'model' => 'Muse-Spark',
             'choices' => [
-                ['message' => ['content' => '{"status":"ok","model":"Muse-Spark","summary":"Ready"}']],
+                ['index' => 0, 'finish_reason' => 'stop', 'message' => ['role' => 'assistant', 'content' => '{"status":"ok","model":"Muse-Spark","summary":"Ready"}']],
             ],
             'usage' => [
                 'prompt_tokens' => 42,
@@ -57,7 +57,7 @@ class MetaAiClientTest extends TestCase
             new MockResponse((string) json_encode([
                 'model' => 'Muse-Spark',
                 'choices' => [
-                    ['message' => ['content' => '{"status":"recovered"}']],
+                    ['index' => 0, 'finish_reason' => 'stop', 'message' => ['role' => 'assistant', 'content' => '{"status":"recovered"}']],
                 ],
                 'usage' => ['prompt_tokens' => 10, 'completion_tokens' => 5],
             ])),
