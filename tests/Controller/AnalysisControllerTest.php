@@ -57,9 +57,9 @@ class AnalysisControllerTest extends WebTestCase
     }
 
     /**
-     * Verifies creation of an analysis workspace without any uploaded documents
+     * Verifies that creating an analysis without the commercial proposal is rejected
      */
-    public function testCreateAnalysisWithoutFiles(): void
+    public function testCreateAnalysisWithoutProposalIsRejected(): void
     {
         $this->client->request('GET', '/analysis/new');
 
@@ -67,11 +67,8 @@ class AnalysisControllerTest extends WebTestCase
             'analysis[title]' => 'Enterprise SaaS Audit Q4',
         ]);
 
-        $this->assertResponseRedirects();
-        $crawler = $this->client->followRedirect();
-
-        $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('h1', 'Enterprise SaaS Audit Q4');
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSelectorTextContains('body', 'Please upload the commercial proposal.');
     }
 
     /**

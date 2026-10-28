@@ -12,7 +12,7 @@
 {% block body %}
 <div class="max-w-3xl mx-auto">
     <div class="mb-6">
-        <a href="{{ path('app_analysis_index') }}" class="btn btn-ghost btn-sm mb-2">← Back to Audits</a>
+        <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_analysis_index' : 'app_cockpit') }}" class="btn btn-ghost btn-sm mb-2">← Back to Audits</a>
         <h1 class="text-3xl font-bold">New Audit Workspace</h1>
         <p class="text-base-content/70">Set an audit title and upload documents to cross-examine.</p>
     </div>
@@ -48,7 +48,7 @@
                     </div>
 
                     <div class="pt-4 flex justify-end gap-3">
-                        <a href="{{ path('app_analysis_index') }}" class="btn btn-ghost">Cancel</a>
+                        <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_analysis_index' : 'app_cockpit') }}" class="btn btn-ghost">Cancel</a>
                         {{ form_widget(form.submit) }}
                     </div>
                 </div>
