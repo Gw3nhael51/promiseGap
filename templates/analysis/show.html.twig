@@ -44,6 +44,15 @@
                             <div>
                                 <p class="font-medium text-sm">{{ doc.originalFilename }}</p>
                                 <p class="text-xs text-base-content/60">{{ (doc.fileSize / 1024)|round(1) }} KB • {{ doc.mimeType }}</p>
+                                <p class="text-xs mt-1">
+                                    <span class="badge badge-xs {{ doc.extractionStatus.badgeClass }}">{{ doc.extractionStatus.label }}</span>
+                                    {% if doc.characterCount is not null %}
+                                        <span class="text-base-content/60">{{ doc.characterCount|number_format }} chars • ~{{ doc.estimatedTokens|number_format }} tokens</span>
+                                    {% endif %}
+                                    {% if doc.extractionError %}
+                                        <span class="text-error">{{ doc.extractionError }}</span>
+                                    {% endif %}
+                                </p>
                             </div>
                             <span class="badge badge-sm badge-primary">Commercial</span>
                         </li>
@@ -68,6 +77,15 @@
                             <div>
                                 <p class="font-medium text-sm">{{ doc.originalFilename }}</p>
                                 <p class="text-xs text-base-content/60">{{ (doc.fileSize / 1024)|round(1) }} KB • {{ doc.mimeType }}</p>
+                                <p class="text-xs mt-1">
+                                    <span class="badge badge-xs {{ doc.extractionStatus.badgeClass }}">{{ doc.extractionStatus.label }}</span>
+                                    {% if doc.characterCount is not null %}
+                                        <span class="text-base-content/60">{{ doc.characterCount|number_format }} chars • ~{{ doc.estimatedTokens|number_format }} tokens</span>
+                                    {% endif %}
+                                    {% if doc.extractionError %}
+                                        <span class="text-error">{{ doc.extractionError }}</span>
+                                    {% endif %}
+                                </p>
                             </div>
                             <span class="badge badge-sm badge-secondary">Technical</span>
                         </li>

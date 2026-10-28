@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help up down restart logs ps install db-create db-migrate db-check cache lint test serve
+.PHONY: help up down restart logs ps install db-create db-migrate db-check cache lint test serve worker
 
 help: ## Display available commands
 	@grep -E '(^[a-zA-Z_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-18s\033[0m %s\n", $$1, $$2}'
@@ -49,3 +49,6 @@ test: ## Run test suite via PHPUnit
 
 serve: ## Start Symfony local web server
 	symfony serve -d
+
+worker: ## Consume async messages (document text extraction)
+	php bin/console messenger:consume async -vv

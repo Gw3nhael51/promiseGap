@@ -5,8 +5,10 @@ namespace App\Service;
 use App\Entity\Analysis;
 use App\Enum\AnalysisStatus;
 use App\Enum\DocumentType;
+use App\Message\ExtractDocumentText;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * Creates an analysis workspace with its documents in an all-or-nothing way
@@ -20,10 +22,12 @@ class AnalysisCreator
      *
      * @param DocumentUploader $documentUploader Service storing uploaded files
      * @param EntityManagerInterface $entityManager Doctrine entity manager
+     * @param MessageBusInterface $messageBus Bus dispatching the text extraction requests
      */
     public function __construct(
         private DocumentUploader $documentUploader,
         private EntityManagerInterface $entityManager,
+        private MessageBusInterface $messageBus,
     ) {
     }
 
@@ -70,6 +74,11 @@ class AnalysisCreator
             }
 
             throw $exception;
+        }
+
+        // Déclencher : Lancer l'extraction du texte de chaque document une fois l'analyse enregistrée
+        foreach ($analysis->getDocuments() as $document) {
+            $this->messageBus->dispatch(new ExtractDocumentText($document->getId()));
         }
     }
 }
