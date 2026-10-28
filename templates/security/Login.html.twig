@@ -35,6 +35,7 @@
             {% endif %}
 
             <form method="post" action="{{ path('app_login') }}" style="display: flex; flex-direction: column; gap: 20px;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <label for="email" style="font-size: 14px; font-weight: 500;">Work email</label>
                     <input id="email" type="email" name="_username" value="{{ last_username }}" autocomplete="email" placeholder="you@company.com" required style="box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 16px;">

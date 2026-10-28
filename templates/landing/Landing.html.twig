@@ -28,7 +28,7 @@
                         <span style="padding: 2px 6px; border-radius: 999px; background: rgba(245,176,74,0.2); color: #F5B04A; font-size: 11px; font-weight: 700;">ADMIN</span>
                     {% endif %}
                 </a>
-                <a href="{{ path('app_logout') }}" style="color: #FF7B7B; text-decoration: none;">Sign out</a>
+                <a href="{{ logout_path() }}" style="color: #FF7B7B; text-decoration: none;">Sign out</a>
             {% else %}
                 <a href="{{ path('app_login') }}" style="color: #E8ECF1; text-decoration: none;">Sign in</a>
             {% endif %}

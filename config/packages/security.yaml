@@ -12,10 +12,10 @@ security:
             memory:
                 users:
                     admin@promisegap.ai:
-                        password: '$2y$13$t75iOzpZ5h5jpU1tZRfXf.6mZJZyPZFvfyHCUY6TpehNWSQqWE0TO'
+                        password: '%env(ADMIN_PASSWORD_HASH)%'
                         roles: ['ROLE_ADMIN']
                     auditor@promisegap.ai:
-                        password: '$2y$13$PdviR7.LByVWWXJL1n3hW.DwRFYO.H/P3ujtUIGZ3C.LVT7KrsOS6'
+                        password: '%env(AUDITOR_PASSWORD_HASH)%'
                         roles: ['ROLE_USER']
 
     firewalls:
@@ -30,10 +30,14 @@ security:
                 login_path: app_login
                 check_path: app_login
                 default_target_path: app_cockpit
-                enable_csrf: false
+                enable_csrf: true
+            login_throttling:
+                max_attempts: 5
+                interval: '15 minutes'
             logout:
                 path: app_logout
                 target: app_landing
+                enable_csrf: true
 
     # Note: Only the *first* matching rule is applied
     access_control:
