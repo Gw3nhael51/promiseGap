@@ -1,0 +1,9 @@
+parameters:
+    app.ai.api_key: '%env(string:META_AI_API_KEY)%'
+    app.ai.endpoint: '%env(string:META_AI_ENDPOINT)%'
+    app.ai.model: '%env(string:META_AI_MODEL)%'
+    app.ai.embedding_model: '%env(string:META_AI_EMBEDDING_MODEL)%'
+    app.ai.timeout: '%env(int:META_AI_TIMEOUT)%'
+    app.ai.max_retries: '%env(int:META_AI_MAX_RETRIES)%'
+    app.ai.cache_enabled: '%env(bool:META_AI_CACHE_ENABLED)%'
+    app.ai.budget_credits: '%env(float:META_AI_BUDGET_CREDITS)%'
