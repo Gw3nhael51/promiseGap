@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\NotNull;
 
 /**
  * Defines the form structure for creating and ingesting an analysis workspace
@@ -56,6 +57,9 @@ class AnalysisType extends AbstractType
                     'accept' => '.pdf,.md,.markdown,.txt',
                 ],
                 'constraints' => [
+                    new NotNull(
+                        message: 'Please upload the commercial proposal.',
+                    ),
                     new File(
                         maxSize: '10M',
                         mimeTypes: [

@@ -162,4 +162,18 @@ class DocumentUploaderTest extends TestCase
         $this->uploader->remove($document);
         $this->assertFileDoesNotExist($filePath);
     }
+
+    /**
+     * Verifies that a file declared as PDF without the PDF signature is rejected
+     */
+    public function testUploadRejectsFakePdf(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_fake_pdf_');
+        file_put_contents($tempFile, 'plain text pretending to be a pdf');
+
+        $uploadedFile = new UploadedFile($tempFile, 'fake.pdf', 'application/pdf', null, true);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->uploader->upload($uploadedFile, DocumentType::PROPOSAL);
+    }
 }

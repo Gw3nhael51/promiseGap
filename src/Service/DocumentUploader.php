@@ -31,6 +31,13 @@ class DocumentUploader
         'txt',
     ];
 
+    private const array EXTENSION_MIME_TYPES = [
+        'pdf' => ['application/pdf'],
+        'md' => ['text/plain', 'text/markdown', 'text/x-markdown'],
+        'markdown' => ['text/plain', 'text/markdown', 'text/x-markdown'],
+        'txt' => ['text/plain'],
+    ];
+
     /**
      * Initializes the document upload service
      *
@@ -57,6 +64,10 @@ class DocumentUploader
      */
     public function upload(UploadedFile $file, DocumentType $documentType): Document
     {
+        if (!$file->isValid()) {
+            throw new \InvalidArgumentException('The file upload failed. Please try again.');
+        }
+
         $fileSize = $file->getSize();
         if ($fileSize > self::MAX_FILE_SIZE) {
             throw new \InvalidArgumentException('File size exceeds the maximum allowed limit of 10 MB.');
@@ -65,7 +76,14 @@ class DocumentUploader
         $clientExtension = strtolower($file->getClientOriginalExtension());
         $mimeType = $file->getMimeType() ?? 'application/octet-stream';
 
-        if (!in_array($clientExtension, self::ALLOWED_EXTENSIONS, true) || !in_array($mimeType, self::ALLOWED_MIME_TYPES, true)) {
+        if (!in_array($clientExtension, self::ALLOWED_EXTENSIONS, true)
+            || !in_array($mimeType, self::ALLOWED_MIME_TYPES, true)
+            || !in_array($mimeType, self::EXTENSION_MIME_TYPES[$clientExtension], true)
+        ) {
+            throw new \InvalidArgumentException('Unsupported file format. Allowed formats: PDF and Markdown.');
+        }
+
+        if ($clientExtension === 'pdf' && !$this->hasPdfSignature($file)) {
             throw new \InvalidArgumentException('Unsupported file format. Allowed formats: PDF and Markdown.');
         }
 
@@ -84,7 +102,7 @@ class DocumentUploader
         $file->move($this->targetDirectory, $newFilename);
 
         $document = new Document();
-        $document->setOriginalFilename($file->getClientOriginalName());
+        $document->setOriginalFilename(mb_substr(basename($file->getClientOriginalName()), 0, 255));
         $document->setStoragePath($newFilename);
         $document->setMimeType($mimeType);
         $document->setFileSize($fileSize);
@@ -106,7 +124,7 @@ class DocumentUploader
             return;
         }
 
-        $fullPath = $this->targetDirectory . '/' . $storagePath;
+        $fullPath = $this->targetDirectory . '/' . basename($storagePath);
         if ($this->filesystem->exists($fullPath)) {
             $this->filesystem->remove($fullPath);
         }
@@ -120,5 +138,24 @@ class DocumentUploader
     public function getTargetDirectory(): string
     {
         return $this->targetDirectory;
+    }
+
+    /**
+     * Checks that a file starts with the PDF magic number
+     *
+     * @param UploadedFile $file Uploaded file to inspect
+     * @return bool True when the file header is a valid PDF signature
+     */
+    private function hasPdfSignature(UploadedFile $file): bool
+    {
+        $handle = fopen($file->getPathname(), 'rb');
+        if ($handle === false) {
+            return false;
+        }
+
+        $header = fread($handle, 5);
+        fclose($handle);
+
+        return $header === '%PDF-';
     }
 }
