@@ -50,6 +50,7 @@
             </div>
 
             <form method="post" action="{{ path('app_welcome') }}" style="display: flex; flex-direction: column; gap: 24px;">
+                <input type="hidden" name="_token" value="{{ csrf_token('welcome') }}">
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <label for="workspace" style="font-size: 14px; font-weight: 500;">Workspace name</label>
                     <input id="workspace" name="workspace" type="text" value="Enterprise Deal Audit Lab" placeholder="Your company or team" style="box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 16px;">

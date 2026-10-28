@@ -26,6 +26,7 @@
             </div>
 
             <form method="post" action="{{ path('app_register') }}" style="display: flex; flex-direction: column; gap: 18px;">
+                <input type="hidden" name="_token" value="{{ csrf_token('register') }}">
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <label for="name" style="font-size: 14px; font-weight: 500;">Full name</label>
                     <input id="name" name="name" type="text" autocomplete="name" placeholder="Your name" required style="box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 16px;">
