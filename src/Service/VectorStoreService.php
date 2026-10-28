@@ -7,6 +7,7 @@ use App\DTO\RetrievedChunk;
 use App\Entity\Analysis;
 use App\Enum\DocumentType;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ParameterType;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -122,8 +123,8 @@ class VectorStoreService
 
         $stmt = $this->connection->prepare($sql);
         $stmt->bindValue('queryVector', $queryVector);
-        $stmt->bindValue('analysisId', $analysisId, \PDO::PARAM_INT);
-        $stmt->bindValue('topK', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue('analysisId', $analysisId, ParameterType::INTEGER);
+        $stmt->bindValue('topK', $limit, ParameterType::INTEGER);
         $rows = $stmt->executeQuery()->fetchAllAssociative();
 
         $results = [];

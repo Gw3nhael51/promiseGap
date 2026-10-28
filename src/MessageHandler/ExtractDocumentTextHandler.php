@@ -5,6 +5,7 @@ namespace App\MessageHandler;
 use App\Enum\ExtractionStatus;
 use App\Message\ExtractDocumentText;
 use App\Repository\DocumentRepository;
+use App\Service\AuditPipelineService;
 use App\Service\TextExtractionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -24,6 +25,7 @@ final readonly class ExtractDocumentTextHandler
         private DocumentRepository $documentRepository,
         private TextExtractionService $textExtractionService,
         private EntityManagerInterface $entityManager,
+        private AuditPipelineService $auditPipelineService,
     ) {
     }
 
@@ -41,5 +43,10 @@ final readonly class ExtractDocumentTextHandler
 
         $this->textExtractionService->process($document);
         $this->entityManager->flush();
+
+        $analysis = $document->getAnalysis();
+        if ($analysis !== null) {
+            $this->auditPipelineService->runIfReady($analysis);
+        }
     }
 }

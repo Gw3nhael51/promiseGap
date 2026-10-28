@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Analysis;
 use App\Security\AnalysisVoter;
+use App\Service\AuditPipelineService;
 use App\Service\DemoDealService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,9 +44,11 @@ class AuditController extends AbstractController
      */
     #[Route('/audit/{id}/results', name: 'app_audit_results', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted(AnalysisVoter::VIEW, subject: 'analysis')]
-    public function results(Analysis $analysis, DemoDealService $demoDealService): Response
+    public function results(Analysis $analysis, DemoDealService $demoDealService, AuditPipelineService $auditPipelineService): Response
     {
-        $demoData = $demoDealService->getCloudHostingDealData();
+        $demoData = $analysis->getCommitments()->isEmpty()
+            ? $demoDealService->getCloudHostingDealData()
+            : $auditPipelineService->buildResultsViewData($analysis);
 
         return $this->render('audit/Results.html.twig', [
             'analysis' => $analysis,
