@@ -2,12 +2,15 @@
 
 namespace App\Service;
 
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+
 use App\DTO\DocumentChunk;
 use App\Entity\Document;
 
 /**
  * Splits technical specification documents into overlapping semantic chunks with structural metadata (#11)
  */
+#[Autoconfigure(public: true)]
 class DocumentChunker
 {
     private const int CHARS_PER_TOKEN = 4;

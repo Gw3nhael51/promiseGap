@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+
 use App\DTO\CommitmentDTO;
 use App\DTO\CommitmentExtractionResult;
 use App\Entity\Analysis;
@@ -12,6 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
 /**
  * Extracts explicit and implicit commercial commitments from proposal documents using Meta Muse Spark (US03)
  */
+#[Autoconfigure(public: true)]
 class CommitmentExtractor
 {
     private const string SYSTEM_PROMPT = <<<'PROMPT'
