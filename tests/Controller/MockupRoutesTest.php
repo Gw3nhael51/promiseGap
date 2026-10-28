@@ -65,14 +65,15 @@ class MockupRoutesTest extends WebTestCase
     public function testAnonymousDemoQuota(): void
     {
         // 1st demo trial succeeds
-        $this->client->request('GET', '/demo/open/cloud-hosting');
+        $demoPage = $this->client->request('GET', '/demo');
+        $this->client->submit($demoPage->filter('form[action$="/demo/open/cloud-hosting"]')->form());
         $this->assertResponseRedirects();
         $crawler = $this->client->followRedirect();
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Auditing the contract');
 
         // 2nd demo trial redirects to register
-        $this->client->request('GET', '/demo/open/fintech-api');
+        $this->client->submit($demoPage->filter('form[action$="/demo/open/fintech-api"]')->form());
         $this->assertResponseRedirects('/register');
         $this->client->followRedirect();
         $this->assertSelectorTextContains('body', 'You have used your 1 free demo trial');

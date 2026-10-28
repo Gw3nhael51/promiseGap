@@ -6,6 +6,7 @@ use App\Service\DemoDealService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
@@ -40,9 +41,13 @@ class DemoController extends AbstractController
      * @param Request $request Current HTTP request
      * @return Response HTTP redirect response to progress view or registration if quota exceeded
      */
-    #[Route('/demo/open/{dealKey}', name: 'app_demo_open', methods: ['GET', 'POST'])]
+    #[Route('/demo/open/{dealKey}', name: 'app_demo_open', methods: ['POST'])]
     public function open(string $dealKey, DemoDealService $demoDealService, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('demo_open', $request->getPayload()->getString('_token'))) {
+            throw new AccessDeniedHttpException('Invalid CSRF token.');
+        }
+
         if (!$this->isGranted('ROLE_USER')) {
             $session = $request->getSession();
             $demoCount = $session->get('demo_trials_count', 0);

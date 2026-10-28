@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Analysis;
 use App\Enum\AnalysisStatus;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Lock\LockFactory;
 
 /**
  * Provides preloaded demonstration deals and evidence claims for instant evaluation
@@ -18,6 +19,7 @@ class DemoDealService
      */
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private LockFactory $lockFactory,
     ) {
     }
 
@@ -248,17 +250,26 @@ class DemoDealService
         $deals = $this->getCatalog();
         $deal = $deals[$dealKey] ?? $deals['cloud-hosting'];
 
-        $existing = $this->entityManager->getRepository(Analysis::class)->findOneBy(['title' => $deal['title']]);
-        if ($existing !== null) {
-            return $existing;
+        // Verrouiller : Empêcher la création concurrente de doublons
+        $lock = $this->lockFactory->createLock('demo-analysis-'.$deal['id']);
+        $lock->acquire(true);
+
+        try {
+            $repository = $this->entityManager->getRepository(Analysis::class);
+            $existing = $repository->findOneBy(['title' => $deal['title'], 'ownerIdentifier' => null]);
+            if ($existing !== null) {
+                return $existing;
+            }
+
+            $analysis = new Analysis();
+            $analysis->setTitle($deal['title']);
+            $analysis->setStatus(AnalysisStatus::COMPLETED);
+
+            $this->entityManager->persist($analysis);
+            $this->entityManager->flush();
+        } finally {
+            $lock->release();
         }
-
-        $analysis = new Analysis();
-        $analysis->setTitle($deal['title']);
-        $analysis->setStatus(AnalysisStatus::COMPLETED);
-
-        $this->entityManager->persist($analysis);
-        $this->entityManager->flush();
 
         return $analysis;
     }
