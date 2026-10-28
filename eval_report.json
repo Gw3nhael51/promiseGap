@@ -1,0 +1,261 @@
+{
+    "totalScenarios": 24,
+    "correctPredictions": 23,
+    "accuracy": 0.9583,
+    "macroPrecision": 0.9643,
+    "macroRecall": 0.9583,
+    "macroF1": 0.9581,
+    "passesAcceptanceCriteria": true,
+    "perCategory": {
+        "SUPPORTED": {
+            "tp": 6,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.8571,
+            "recall": 1,
+            "f1": 0.9231
+        },
+        "CONTRADICTORY": {
+            "tp": 6,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1,
+            "recall": 1,
+            "f1": 1
+        },
+        "UNSUPPORTED": {
+            "tp": 5,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1,
+            "recall": 0.8333,
+            "f1": 0.9091
+        },
+        "AMBIGUOUS": {
+            "tp": 6,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1,
+            "recall": 1,
+            "f1": 1
+        }
+    },
+    "scenarios": [
+        {
+            "id": "S01_sla_uptime_match",
+            "title": "Cloud Platform Monthly Uptime Alignment",
+            "expected": "SUPPORTED",
+            "predicted": "SUPPORTED",
+            "match": true,
+            "rationale": "The commercial commitment is directly backed by the technical specification with aligned parameters.",
+            "topEvidence": "Production clusters are engineered to deliver 99.95% monthly platform availability across all production regions."
+        },
+        {
+            "id": "S02_encryption_aes256_match",
+            "title": "Data Encryption At Rest and In Transit Alignment",
+            "expected": "SUPPORTED",
+            "predicted": "SUPPORTED",
+            "match": true,
+            "rationale": "The commercial commitment is directly backed by the technical specification with aligned parameters.",
+            "topEvidence": "Storage volumes encrypt all customer data at rest using AES-256 and enforce TLS 1.3 for all in-transit traffic."
+        },
+        {
+            "id": "S03_support_p1_15min_match",
+            "title": "Critical Incident P1 Response Time Alignment",
+            "expected": "SUPPORTED",
+            "predicted": "SUPPORTED",
+            "match": true,
+            "rationale": "The commercial commitment is directly backed by the technical specification with aligned parameters.",
+            "topEvidence": "The 24/7 support operations center acknowledges P1 critical incidents within 15 minutes of ticket creation."
+        },
+        {
+            "id": "S04_disaster_recovery_rpo_match",
+            "title": "Disaster Recovery RPO 15 Minutes Alignment",
+            "expected": "SUPPORTED",
+            "predicted": "SUPPORTED",
+            "match": true,
+            "rationale": "The commercial commitment is directly backed by the technical specification with aligned parameters.",
+            "topEvidence": "Asynchronous cross-region replication maintains a Recovery Point Objective (RPO) of 15 minutes."
+        },
+        {
+            "id": "S05_compliance_soc2_iso_match",
+            "title": "SOC 2 Type II and ISO 27001 Certification Alignment",
+            "expected": "SUPPORTED",
+            "predicted": "SUPPORTED",
+            "match": true,
+            "rationale": "The commercial commitment is directly backed by the technical specification with aligned parameters.",
+            "topEvidence": "Independent third-party auditors certify the platform annually under SOC 2 Type II and ISO 27001 standards."
+        },
+        {
+            "id": "S06_api_rate_limit_match",
+            "title": "API Throughput 2000 req/s Alignment",
+            "expected": "SUPPORTED",
+            "predicted": "SUPPORTED",
+            "match": true,
+            "rationale": "The commercial commitment is directly backed by the technical specification with aligned parameters.",
+            "topEvidence": "Gateway rate limiters allocate 2000 req/s sustained API throughput per production tenant."
+        },
+        {
+            "id": "S07_sla_9999_vs_995_conflict",
+            "title": "99.99% Proposal Uptime vs 99.5% Spec Target",
+            "expected": "CONTRADICTORY",
+            "predicted": "CONTRADICTORY",
+            "match": true,
+            "rationale": "The commercial proposal promises 99.99% whereas the technical specification states 99.5%.",
+            "topEvidence": "The platform targets 99.5% monthly uptime availability, excluding planned maintenance windows."
+        },
+        {
+            "id": "S08_delivery_3months_vs_7months_conflict",
+            "title": "3 Months Go-Live Promise vs 7 Months Spec Roadmap",
+            "expected": "CONTRADICTORY",
+            "predicted": "CONTRADICTORY",
+            "match": true,
+            "rationale": "The proposal commits to 3 months while the technical specification defines 7 months.",
+            "topEvidence": "Full production deployment across Phases 1 to 3 requires 7 months including acceptance testing."
+        },
+        {
+            "id": "S09_support_247_vs_business_hours_conflict",
+            "title": "24/7 Support Promise vs Business Hours Spec",
+            "expected": "CONTRADICTORY",
+            "predicted": "CONTRADICTORY",
+            "match": true,
+            "rationale": "The proposal promises 24/7 coverage whereas the specification restricts support to standard business hours.",
+            "topEvidence": "Live engineering support is available during standard business hours (Monday to Friday, 9am to 6pm CET)."
+        },
+        {
+            "id": "S10_rpo_zero_vs_4hours_conflict",
+            "title": "Zero Data Loss Promise vs 4 Hours RPO Spec",
+            "expected": "CONTRADICTORY",
+            "predicted": "CONTRADICTORY",
+            "match": true,
+            "rationale": "The proposal claims zero data loss (RPO = 0) while the technical specification defines a non-zero Recovery Point Objective.",
+            "topEvidence": "Database snapshots run every 4 hours, resulting in a Recovery Point Objective (RPO) of 4 hours."
+        },
+        {
+            "id": "S11_single_tenant_vs_multitenant_conflict",
+            "title": "Dedicated Single-Tenant Promise vs Shared Multi-Tenant Spec",
+            "expected": "CONTRADICTORY",
+            "predicted": "CONTRADICTORY",
+            "match": true,
+            "rationale": "The proposal promises dedicated or single-tenant isolation whereas the technical architecture uses shared multi-tenant infrastructure.",
+            "topEvidence": "All customer workloads are hosted on a shared multi-tenant Kubernetes cluster with logical namespace separation."
+        },
+        {
+            "id": "S12_retention_7years_vs_90days_conflict",
+            "title": "7 Years Audit Log Retention vs 90 Days Spec Limit",
+            "expected": "CONTRADICTORY",
+            "predicted": "CONTRADICTORY",
+            "match": true,
+            "rationale": "The proposal commits to 7 years while the technical specification defines 90 days.",
+            "topEvidence": "Audit trail logs are retained online for 90 days before automatic purge."
+        },
+        {
+            "id": "S13_onsite_engineer_ghost_promise",
+            "title": "Dedicated On-Site Resident Engineer Ghost Promise",
+            "expected": "UNSUPPORTED",
+            "predicted": "UNSUPPORTED",
+            "match": true,
+            "rationale": "The technical reference documents do not contain any provision covering this commitment.",
+            "topEvidence": null
+        },
+        {
+            "id": "S14_fedramp_high_ghost_promise",
+            "title": "FedRAMP High Authorization Ghost Promise",
+            "expected": "UNSUPPORTED",
+            "predicted": "UNSUPPORTED",
+            "match": true,
+            "rationale": "The technical reference documents do not contain any provision covering this commitment.",
+            "topEvidence": null
+        },
+        {
+            "id": "S15_legacy_mainframe_migration_ghost_promise",
+            "title": "Free COBOL Mainframe Migration Ghost Promise",
+            "expected": "UNSUPPORTED",
+            "predicted": "SUPPORTED",
+            "match": false,
+            "rationale": "The commercial commitment is directly backed by the technical specification with aligned parameters.",
+            "topEvidence": "User passwords must be at least 12 characters long and rotated every 180 days."
+        },
+        {
+            "id": "S16_source_code_escrow_ghost_promise",
+            "title": "Bespoke Source Code Escrow Ghost Promise",
+            "expected": "UNSUPPORTED",
+            "predicted": "UNSUPPORTED",
+            "match": true,
+            "rationale": "The technical reference documents do not contain any provision covering this commitment.",
+            "topEvidence": null
+        },
+        {
+            "id": "S17_airgapped_hardware_appliance_ghost_promise",
+            "title": "Air-Gapped Sovereign Hardware Appliance Ghost Promise",
+            "expected": "UNSUPPORTED",
+            "predicted": "UNSUPPORTED",
+            "match": true,
+            "rationale": "The technical reference documents do not contain any provision covering this commitment.",
+            "topEvidence": null
+        },
+        {
+            "id": "S18_custom_sap_erp_connector_ghost_promise",
+            "title": "Bi-Directional Real-Time SAP R/3 Connector Ghost Promise",
+            "expected": "UNSUPPORTED",
+            "predicted": "UNSUPPORTED",
+            "match": true,
+            "rationale": "The technical reference documents do not contain any provision covering this commitment.",
+            "topEvidence": null
+        },
+        {
+            "id": "S19_optimal_world_class_performance_vague",
+            "title": "Vague Optimal World-Class Performance Clause",
+            "expected": "AMBIGUOUS",
+            "predicted": "AMBIGUOUS",
+            "match": true,
+            "rationale": "The commitment relies on subjective or non-measurable phrasing without concrete acceptance criteria in the technical specifications.",
+            "topEvidence": "The system is designed for high-speed processing on modern cloud infrastructure."
+        },
+        {
+            "id": "S20_seamless_nextgen_scalability_vague",
+            "title": "Vague Seamless Next-Generation Scalability Clause",
+            "expected": "AMBIGUOUS",
+            "predicted": "AMBIGUOUS",
+            "match": true,
+            "rationale": "The commitment relies on subjective or non-measurable phrasing without concrete acceptance criteria in the technical specifications.",
+            "topEvidence": "Stateless worker services can be scaled horizontally on demand."
+        },
+        {
+            "id": "S21_best_efforts_incident_handling_vague",
+            "title": "Vague Reasonable Best-Efforts Support Clause",
+            "expected": "AMBIGUOUS",
+            "predicted": "AMBIGUOUS",
+            "match": true,
+            "rationale": "The commitment relies on subjective or non-measurable phrasing without concrete acceptance criteria in the technical specifications.",
+            "topEvidence": "Incoming support requests are triaged on a best effort basis without binding response targets."
+        },
+        {
+            "id": "S22_state_of_the_art_ai_accuracy_vague",
+            "title": "Vague State-Of-The-Art Maximum Reliability Clause",
+            "expected": "AMBIGUOUS",
+            "predicted": "AMBIGUOUS",
+            "match": true,
+            "rationale": "The commitment relies on subjective or non-measurable phrasing without concrete acceptance criteria in the technical specifications.",
+            "topEvidence": "Models are evaluated periodically to maintain quality."
+        },
+        {
+            "id": "S23_tbd_latency_target_vague",
+            "title": "Unfinalized TBD Latency Specification Clause",
+            "expected": "AMBIGUOUS",
+            "predicted": "AMBIGUOUS",
+            "match": true,
+            "rationale": "The technical specification leaves the target metric open, optional, or non-binding.",
+            "topEvidence": "Exact p99 latency thresholds are TBD (to be determined) during the pilot phase and subject to change."
+        },
+        {
+            "id": "S24_superior_robust_security_posture_vague",
+            "title": "Vague Superior Robust Security Posture Clause",
+            "expected": "AMBIGUOUS",
+            "predicted": "AMBIGUOUS",
+            "match": true,
+            "rationale": "The commitment relies on subjective or non-measurable phrasing without concrete acceptance criteria in the technical specifications.",
+            "topEvidence": "Standard administrative and technical controls are applied across cloud environments."
+        }
+    ]
+}
