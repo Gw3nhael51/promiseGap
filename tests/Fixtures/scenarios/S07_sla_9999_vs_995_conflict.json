@@ -1,0 +1,10 @@
+{
+    "id": "S07_sla_9999_vs_995_conflict",
+    "title": "99.99% Proposal Uptime vs 99.5% Spec Target",
+    "category": "SLA",
+    "commitment": "We guarantee 99.99% monthly uptime availability with automatic service credits.",
+    "proposal": "# Commercial SLA\nWe guarantee 99.99% monthly uptime availability with automatic service credits.",
+    "technicalSpec": "# Platform SLA Specification\n## 1.1 Uptime Target\nThe platform targets 99.5% monthly uptime availability, excluding planned maintenance windows.",
+    "expectedStatus": "CONTRADICTORY",
+    "expectedEvidenceSubstring": "99.5%"
+}

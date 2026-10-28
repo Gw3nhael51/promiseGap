@@ -1,0 +1,10 @@
+{
+    "id": "S23_tbd_latency_target_vague",
+    "title": "Unfinalized TBD Latency Specification Clause",
+    "category": "SLA",
+    "commitment": "API gateway p99 latency will meet strict real-time enterprise thresholds.",
+    "proposal": "# Latency\nAPI gateway p99 latency will meet strict real-time enterprise thresholds.",
+    "technicalSpec": "# API Latency Targets\n## 5.1 Thresholds\nExact p99 latency thresholds are TBD (to be determined) during the pilot phase and subject to change.",
+    "expectedStatus": "AMBIGUOUS",
+    "expectedEvidenceSubstring": ""
+}

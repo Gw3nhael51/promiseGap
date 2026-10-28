@@ -1,0 +1,10 @@
+{
+    "id": "S17_airgapped_hardware_appliance_ghost_promise",
+    "title": "Air-Gapped Sovereign Hardware Appliance Ghost Promise",
+    "category": "DELIVERY",
+    "commitment": "We deliver pre-configured ruggedized hardware appliances for offline air-gapped bunker deployment.",
+    "proposal": "# Sovereign Option\nWe deliver pre-configured ruggedized hardware appliances for offline air-gapped bunker deployment.",
+    "technicalSpec": "# Billing & Metering\n## 4.1 Monthly Invoices\nUsage metrics are aggregated on the first day of each calendar month.",
+    "expectedStatus": "UNSUPPORTED",
+    "expectedEvidenceSubstring": ""
+}

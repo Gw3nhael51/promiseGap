@@ -1,0 +1,10 @@
+{
+    "id": "S14_fedramp_high_ghost_promise",
+    "title": "FedRAMP High Authorization Ghost Promise",
+    "category": "SECURITY",
+    "commitment": "The platform holds active FedRAMP High and DoD IL5 authorization for federal workloads.",
+    "proposal": "# Government Compliance\nThe platform holds active FedRAMP High and DoD IL5 authorization for federal workloads.",
+    "technicalSpec": "# User Interface Guide\n## 1.1 Dashboard Widgets\nUsers can export CSV reports and customize chart colors from the preferences menu.",
+    "expectedStatus": "UNSUPPORTED",
+    "expectedEvidenceSubstring": ""
+}

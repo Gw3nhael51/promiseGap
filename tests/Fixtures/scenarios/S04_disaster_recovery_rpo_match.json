@@ -1,0 +1,10 @@
+{
+    "id": "S04_disaster_recovery_rpo_match",
+    "title": "Disaster Recovery RPO 15 Minutes Alignment",
+    "category": "SLA",
+    "commitment": "Disaster recovery replication guarantees an RPO of 15 minutes across secondary regions.",
+    "proposal": "# Continuity Plan\nDisaster recovery replication guarantees an RPO of 15 minutes across secondary regions.",
+    "technicalSpec": "# Business Continuity\n## 4.1 Replication & RPO\nAsynchronous cross-region replication maintains a Recovery Point Objective (RPO) of 15 minutes.",
+    "expectedStatus": "SUPPORTED",
+    "expectedEvidenceSubstring": "15 minutes"
+}

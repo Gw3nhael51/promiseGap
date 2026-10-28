@@ -1,0 +1,10 @@
+{
+    "id": "S06_api_rate_limit_match",
+    "title": "API Throughput 2000 req/s Alignment",
+    "category": "SLA",
+    "commitment": "Each production tenant is provisioned with 2000 req/s sustained API throughput.",
+    "proposal": "# API Capacity\nEach production tenant is provisioned with 2000 req/s sustained API throughput.",
+    "technicalSpec": "# API Gateway Specifications\n## 6.1 Quotas\nGateway rate limiters allocate 2000 req/s sustained API throughput per production tenant.",
+    "expectedStatus": "SUPPORTED",
+    "expectedEvidenceSubstring": "2000 req/s"
+}
