@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help up down restart logs ps install db-create db-migrate db-check cache lint test serve worker
+.PHONY: help up down restart logs ps install db-create db-migrate db-check cache lint test serve worker test-ai eval
 
 help: ## Display available commands
 	@grep -E '(^[a-zA-Z_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-18s\033[0m %s\n", $$1, $$2}'
@@ -52,3 +52,9 @@ serve: ## Start Symfony local web server
 
 worker: ## Consume async messages (document text extraction)
 	php bin/console messenger:consume async -vv
+
+test-ai: ## Verify Meta Muse Spark AI connectivity and cache telemetry
+	php bin/console app:test-ai
+
+eval: ## Run the 24-scenario RAG benchmark suite (Precision & Recall)
+	php bin/console app:eval-benchmark
