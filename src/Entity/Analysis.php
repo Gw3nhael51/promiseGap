@@ -44,12 +44,19 @@ class Analysis
     private Collection $documents;
 
     /**
+     * @var Collection<int, Commitment>
+     */
+    #[ORM\OneToMany(targetEntity: Commitment::class, mappedBy: 'analysis', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $commitments;
+
+    /**
      * Initializes a new analysis instance with default values
      */
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->documents = new ArrayCollection();
+        $this->commitments = new ArrayCollection();
         $this->status = AnalysisStatus::PENDING;
     }
 
@@ -234,6 +241,43 @@ class Analysis
         if ($this->documents->removeElement($document)) {
             if ($document->getAnalysis() === $this) {
                 $document->setAnalysis(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Returns all commercial commitments extracted for this analysis
+     *
+     * @return Collection<int, Commitment>
+     */
+    public function getCommitments(): Collection
+    {
+        return $this->commitments;
+    }
+
+    /**
+     * Attaches a commercial commitment to this analysis
+     */
+    public function addCommitment(Commitment $commitment): static
+    {
+        if (!$this->commitments->contains($commitment)) {
+            $this->commitments->add($commitment);
+            $commitment->setAnalysis($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Detaches a commercial commitment from this analysis
+     */
+    public function removeCommitment(Commitment $commitment): static
+    {
+        if ($this->commitments->removeElement($commitment)) {
+            if ($commitment->getAnalysis() === $this) {
+                $commitment->setAnalysis(null);
             }
         }
 
