@@ -10,6 +10,7 @@ use App\Service\DemoDealService;
 use App\Service\TextExtractionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -27,6 +28,7 @@ class AuditController extends AbstractController
      * @param TextExtractionService $textExtractionService Document text extraction service
      * @param AuditPipelineService $auditPipelineService End-to-end RAG audit pipeline service
      * @param EntityManagerInterface $entityManager Doctrine entity manager
+     * @param Request $request Current HTTP request
      * @return Response HTTP response rendering the progress template
      */
     #[Route('/audit/{id}/progress', name: 'app_audit_progress', requirements: ['id' => '\d+'], methods: ['GET'])]
@@ -37,12 +39,14 @@ class AuditController extends AbstractController
         TextExtractionService $textExtractionService,
         AuditPipelineService $auditPipelineService,
         EntityManagerInterface $entityManager,
+        Request $request,
     ): Response {
         $this->ensureAnalysisProcessed($analysis, $textExtractionService, $auditPipelineService, $entityManager);
+        $locale = $request->getLocale();
 
         $demoData = $analysis->getCommitments()->isEmpty()
-            ? $demoDealService->getCloudHostingDealData()
-            : $auditPipelineService->buildResultsViewData($analysis);
+            ? $demoDealService->getCloudHostingDealData($locale)
+            : $auditPipelineService->buildResultsViewData($analysis, $locale);
 
         return $this->render('audit/Audit.html.twig', [
             'analysis' => $analysis,
@@ -58,6 +62,7 @@ class AuditController extends AbstractController
      * @param TextExtractionService $textExtractionService Document text extraction service
      * @param AuditPipelineService $auditPipelineService End-to-end RAG audit pipeline service
      * @param EntityManagerInterface $entityManager Doctrine entity manager
+     * @param Request $request Current HTTP request
      * @return Response HTTP response rendering the results dashboard
      */
     #[Route('/audit/{id}/results', name: 'app_audit_results', requirements: ['id' => '\d+'], methods: ['GET'])]
@@ -68,12 +73,14 @@ class AuditController extends AbstractController
         TextExtractionService $textExtractionService,
         AuditPipelineService $auditPipelineService,
         EntityManagerInterface $entityManager,
+        Request $request,
     ): Response {
         $this->ensureAnalysisProcessed($analysis, $textExtractionService, $auditPipelineService, $entityManager);
+        $locale = $request->getLocale();
 
         $demoData = $analysis->getCommitments()->isEmpty()
-            ? $demoDealService->getCloudHostingDealData()
-            : $auditPipelineService->buildResultsViewData($analysis);
+            ? $demoDealService->getCloudHostingDealData($locale)
+            : $auditPipelineService->buildResultsViewData($analysis, $locale);
 
         return $this->render('audit/Results.html.twig', [
             'analysis' => $analysis,
@@ -85,6 +92,12 @@ class AuditController extends AbstractController
 
     /**
      * Processes any pending documents synchronously when no background worker has consumed them yet
+     *
+     * @param Analysis $analysis Analysis workspace to process
+     * @param TextExtractionService $textExtractionService Document text extraction service
+     * @param AuditPipelineService $auditPipelineService End-to-end RAG audit pipeline service
+     * @param EntityManagerInterface $entityManager Doctrine entity manager
+     * @return void
      */
     private function ensureAnalysisProcessed(
         Analysis $analysis,

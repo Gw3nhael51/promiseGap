@@ -21,9 +21,11 @@
             </svg>
             <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">PromiseGap</span>
         </a>
+        {% set isFr = app.request.locale == 'fr' %}
         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px; font-size: 14px;">
-            <a href="#past-audits" style="text-decoration: none; color: #9BA5B3;">Past audits</a>
-            <a href="{{ path('app_demo') }}" style="text-decoration: none; color: #9BA5B3;">Deals</a>
+            {% include '_locale_switcher.html.twig' %}
+            <a href="#past-audits" style="text-decoration: none; color: #9BA5B3;">{{ isFr ? 'Audits récents' : 'Past audits' }}</a>
+            <a href="{{ path('app_demo') }}" style="text-decoration: none; color: #9BA5B3;">{{ isFr ? 'Contrats démo' : 'Deals' }}</a>
 
             {% if app.user %}
                 <div style="display: flex; align-items: center; gap: 10px; padding: 4px 12px; background: #151A21; border: 1px solid #3A4553; border-radius: 999px;">
@@ -34,9 +36,9 @@
                         <span style="padding: 2px 8px; border-radius: 999px; background: rgba(127,163,255,0.2); color: #7FA3FF; font-size: 11px; font-weight: 600;">USER</span>
                     {% endif %}
                 </div>
-                <a href="{{ logout_path() }}" style="color: #FF7B7B; text-decoration: none; font-size: 13px;">Sign out</a>
+                <a href="{{ logout_path() }}" style="color: #FF7B7B; text-decoration: none; font-size: 13px;">{{ isFr ? 'Déconnexion' : 'Sign out' }}</a>
             {% else %}
-                <a href="{{ path('app_login') }}" style="color: #E8ECF1; text-decoration: none;">Sign in</a>
+                <a href="{{ path('app_login') }}" style="color: #E8ECF1; text-decoration: none;">{{ isFr ? 'Connexion' : 'Sign in' }}</a>
             {% endif %}
 
             <span style="padding: 6px 12px; border: 1px solid #2A323D; border-radius: 999px; color: #B7C0CC; font-size: 13px;">Meta AI Hackathon</span>
@@ -48,16 +50,16 @@
 
         <!-- Title Header -->
         <div style="display: flex; flex-direction: column; gap: 16px; max-width: 760px;">
-            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.08em; color: #7FA3FF;">EVIDENCE-BACKED CONTRACT AUDIT</span>
-            <h1 style="margin: 0; font-size: 52px; line-height: 1.08; letter-spacing: -0.02em; font-weight: 700;">What was sold versus what is written.</h1>
-            <p style="margin: 0; font-size: 18px; line-height: 1.55; color: #9BA5B3;">Drop a commercial proposal and its technical specs. PromiseGap extracts every commitment and shows, with the exact quote, which ones the documentation actually supports.</p>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.08em; color: #7FA3FF;">{{ isFr ? 'AUDIT DE CONTRATS ORIENTÉ PREUVES' : 'EVIDENCE-BACKED CONTRACT AUDIT' }}</span>
+            <h1 style="margin: 0; font-size: 52px; line-height: 1.08; letter-spacing: -0.02em; font-weight: 700;">{{ isFr ? 'Ce qui a été vendu face à ce qui est écrit.' : 'What was sold versus what is written.' }}</h1>
+            <p style="margin: 0; font-size: 18px; line-height: 1.55; color: #9BA5B3;">{{ isFr ? 'Déposez une proposition commerciale et ses spécifications techniques. PromiseGap extrait chaque engagement et montre, citation exacte à l’appui, lesquels sont réellement tenus.' : 'Drop a commercial proposal and its technical specs. PromiseGap extracts every commitment and shows, with the exact quote, which ones the documentation actually supports.' }}</p>
         </div>
 
         {{ form_start(form, {'attr': {'id': 'cockpit-form'}}) }}
             <!-- Hidden or styled Title input -->
             <div style="margin-bottom: 24px; max-width: 500px;">
-                <label for="{{ form.title.vars.id }}" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #B7C0CC;">Audit Title</label>
-                {{ form_widget(form.title, {'attr': {'value': 'Cloud hosting contract audit', 'style': 'box-sizing: border-box; width: 100%; min-height: 44px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 15px;'}}) }}
+                <label for="{{ form.title.vars.id }}" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #B7C0CC;">{{ isFr ? 'Titre de l’audit' : 'Audit Title' }}</label>
+                {{ form_widget(form.title, {'attr': {'value': isFr ? 'Audit contrat hébergement Cloud' : 'Cloud hosting contract audit', 'style': 'box-sizing: border-box; width: 100%; min-height: 44px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 15px;'}}) }}
                 {{ form_errors(form.title) }}
             </div>
 
@@ -71,18 +73,22 @@
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7FA3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>
                             </svg>
-                            <span style="font-size: 20px; font-weight: 600;">Commercial Proposal</span>
+                            <span style="font-size: 20px; font-weight: 600;">{{ isFr ? 'Proposition Commerciale' : 'Commercial Proposal' }}</span>
                         </div>
-                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #7FA3FF; letter-spacing: 0.06em;">WHAT WAS SOLD</span>
+                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #7FA3FF; letter-spacing: 0.06em;">{{ isFr ? 'CE QUI A ÉTÉ VENDU' : 'WHAT WAS SOLD' }}</span>
                     </div>
 
                     <label for="{{ form.proposalFile.vars.id }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; border: 2px dashed #3A4553; border-radius: 12px; text-align: center; cursor: pointer; transition: border-color 0.2s;">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9BA5B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-                        <span id="proposal-text" style="font-size: 16px;">Drag and drop the proposal here</span>
-                        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 10px; font: inherit; font-size: 15px;">Browse files</span>
-                        <span style="font-size: 13px; color: #9BA5B3;">PDF or Markdown, up to 20 MB</span>
+                        <span id="proposal-text" style="font-size: 16px;">{{ isFr ? 'Glissez-déposez la proposition ici' : 'Drag and drop the proposal here' }}</span>
+                        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 10px; font: inherit; font-size: 15px;">{{ isFr ? 'Parcourir' : 'Browse files' }}</span>
+                        <span style="font-size: 13px; color: #9BA5B3;">{{ isFr ? 'PDF ou Markdown, jusqu’à 20 Mo' : 'PDF or Markdown, up to 20 MB' }}</span>
                         {{ form_widget(form.proposalFile, {'attr': {'style': 'display: none;', 'onchange': 'handleProposalSelected(this)'}}) }}
                     </label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #9BA5B3;">
+                        <span>{{ isFr ? 'Besoin d’un fichier test ?' : 'Need a test file?' }}</span>
+                        <a href="/samples/commercial_proposal.pdf" download="commercial_proposal.pdf" style="color: #7FA3FF; text-decoration: none; font-weight: 500;">⬇ {{ isFr ? 'Télécharger proposal.pdf' : 'Download sample proposal.pdf' }}</a>
+                    </div>
                     {{ form_errors(form.proposalFile) }}
                 </div>
 
@@ -96,18 +102,22 @@
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B7C0CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M9 8h7M9 12h5"/>
                             </svg>
-                            <span style="font-size: 20px; font-weight: 600;">Technical Specs</span>
+                            <span style="font-size: 20px; font-weight: 600;">{{ isFr ? 'Spécifications Techniques' : 'Technical Specs' }}</span>
                         </div>
-                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #B7C0CC; letter-spacing: 0.06em;">WHAT IS WRITTEN</span>
+                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #B7C0CC; letter-spacing: 0.06em;">{{ isFr ? 'CE QUI EST ÉCRIT' : 'WHAT IS WRITTEN' }}</span>
                     </div>
 
                     <label for="{{ form.technicalSpecFiles.vars.id }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; border: 2px dashed #3A4553; border-radius: 12px; text-align: center; cursor: pointer; transition: border-color 0.2s;">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9BA5B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-                        <span id="specs-text" style="font-size: 16px;">Drag and drop the architecture docs here</span>
-                        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 10px; font: inherit; font-size: 15px;">Browse files</span>
-                        <span style="font-size: 13px; color: #9BA5B3;">PDF or Markdown, up to 20 MB</span>
+                        <span id="specs-text" style="font-size: 16px;">{{ isFr ? 'Glissez-déposez les specs d’architecture ici' : 'Drag and drop the architecture docs here' }}</span>
+                        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 10px; font: inherit; font-size: 15px;">{{ isFr ? 'Parcourir' : 'Browse files' }}</span>
+                        <span style="font-size: 13px; color: #9BA5B3;">{{ isFr ? 'PDF ou Markdown, jusqu’à 20 Mo' : 'PDF or Markdown, up to 20 MB' }}</span>
                         {{ form_widget(form.technicalSpecFiles, {'attr': {'style': 'display: none;', 'onchange': 'handleSpecsSelected(this)'}}) }}
                     </label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #9BA5B3;">
+                        <span>{{ isFr ? 'Besoin d’un fichier test ?' : 'Need a test file?' }}</span>
+                        <a href="/samples/technical_specifications.pdf" download="technical_specifications.pdf" style="color: #B7C0CC; text-decoration: none; font-weight: 500;">⬇ {{ isFr ? 'Télécharger specs.pdf' : 'Download sample specs.pdf' }}</a>
+                    </div>
                     {{ form_errors(form.technicalSpecFiles) }}
                 </div>
 
@@ -117,18 +127,18 @@
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 32px;">
                 <a href="{{ path('app_cockpit_demo') }}" style="display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 28px; background: #7FA3FF; color: #0B1020; border-radius: 12px; font-size: 17px; font-weight: 600; text-decoration: none;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>
-                    Load Demo Deal
+                    {{ isFr ? 'Charger le contrat démo' : 'Load Demo Deal' }}
                 </a>
 
                 {{ form_widget(form.submit, {
                     'id': 'run-audit-btn',
-                    'label': 'Run Audit',
+                    'label': isFr ? 'Lancer l’audit' : 'Run Audit',
                     'attr': {
                         'style': 'min-height: 52px; padding: 0 28px; background: transparent; color: #E8ECF1; border: 1px solid #7FA3FF; border-radius: 12px; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer; transition: all 0.2s;'
                     }
                 }) }}
 
-                <span style="font-size: 14px; color: #9BA5B3;">You can audit uploaded files or instantly load the ready-made demo deal.</span>
+                <span style="font-size: 14px; color: #9BA5B3;">{{ isFr ? 'Auditez vos propres fichiers ou chargez instantanément le contrat démo.' : 'You can audit uploaded files or instantly load the ready-made demo deal.' }}</span>
             </div>
         {{ form_end(form) }}
 

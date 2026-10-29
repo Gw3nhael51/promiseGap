@@ -23,10 +23,26 @@
             </svg>
             <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">PromiseGap</span>
         </a>
-        <div style="display: flex; align-items: center; gap: 14px;">
-            <a href="{{ path('app_cockpit') }}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1px solid #4A5565; border-radius: 10px; color: #E8ECF1; font-size: 14px; text-decoration: none;">
-                + New audit
+        {% set isFr = app.request.locale == 'fr' %}
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px;">
+            {% include '_locale_switcher.html.twig' %}
+            <a href="{{ path('app_demo') }}" style="color: #9BA5B3; font-size: 14px; text-decoration: none;">{{ isFr ? 'Contrats démo' : 'Deals' }}</a>
+            <a href="{{ path('app_cockpit') }}" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border: 1px solid #4A5565; border-radius: 10px; color: #E8ECF1; font-size: 14px; text-decoration: none;">
+                {{ isFr ? '+ Nouvel audit' : '+ New audit' }}
             </a>
+            {% if app.user %}
+                <div style="display: flex; align-items: center; gap: 10px; padding: 4px 12px; background: #151A21; border: 1px solid #3A4553; border-radius: 999px;">
+                    <span style="font-size: 13px; color: #E8ECF1;">{{ app.user.userIdentifier }}</span>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <span style="padding: 2px 8px; border-radius: 999px; background: rgba(245,176,74,0.2); color: #F5B04A; font-size: 11px; font-weight: 700;">ADMIN</span>
+                    {% else %}
+                        <span style="padding: 2px 8px; border-radius: 999px; background: rgba(127,163,255,0.2); color: #7FA3FF; font-size: 11px; font-weight: 600;">USER</span>
+                    {% endif %}
+                </div>
+                <a href="{{ logout_path() }}" style="color: #FF7B7B; text-decoration: none; font-size: 13px;">{{ isFr ? 'Déconnexion' : 'Sign out' }}</a>
+            {% else %}
+                <a href="{{ path('app_login') }}" style="color: #E8ECF1; text-decoration: none; font-size: 14px;">{{ isFr ? 'Connexion' : 'Sign in' }}</a>
+            {% endif %}
         </div>
     </header>
 
@@ -41,10 +57,10 @@
                 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
                     <h1 style="margin: 0; font-size: 30px; letter-spacing: -0.02em; font-weight: 700;">{{ analysis.title }}</h1>
                     <span style="padding: 4px 10px; border-radius: 999px; background: #1B222B; border: 1px solid #3A4553; font-size: 12px; color: #B7C0CC;">
-                        Audited Deal
+                        {{ isFr ? 'Contrat audité' : 'Audited Deal' }}
                     </span>
                 </div>
-                <span style="font-size: 14px; color: #9BA5B3;">Proposal against Technical Specifications · {{ claims|length }} commitments audited</span>
+                <span style="font-size: 14px; color: #9BA5B3;">{{ isFr ? 'Proposition commerciale vs Spécifications techniques · ' ~ (claims|length) ~ ' engagements audités' : 'Proposal against Technical Specifications · ' ~ (claims|length) ~ ' commitments audited' }}</span>
             </div>
 
             <!-- Top Row: Risk Gauge & 4 Filter Cards -->
@@ -52,16 +68,22 @@
 
                 <!-- Risk Gauge Card -->
                 <div style="flex: 1 1 280px; box-sizing: border-box; display: flex; align-items: center; gap: 20px; padding: 20px; background: #151A21; border: 1px solid #2A323D; border-radius: 14px;">
-                    <svg width="150" height="95" viewBox="0 0 200 120" role="img" aria-label="Risk score 78 out of 100, high risk">
+                    <svg width="150" height="95" viewBox="0 0 200 120" role="img" aria-label="Risk score {{ deal.riskScore }} out of 100, {{ deal.risk }}">
                         <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#2A323D" stroke-width="16" stroke-linecap="round"/>
-                        <path d="M20 100 A80 80 0 0 1 161.7 49.1" fill="none" stroke="#FF7B7B" stroke-width="16" stroke-linecap="round"/>
-                        <text x="100" y="98" text-anchor="middle" font-family="'IBM Plex Sans', sans-serif" font-size="40" font-weight="700" fill="#E8ECF1">78</text>
-                        <text x="100" y="116" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#9BA5B3">OUT OF 100</text>
+                        <path d="M20 100 A80 80 0 0 1 161.7 49.1" fill="none" stroke="{{ deal.riskColor }}" stroke-width="16" stroke-linecap="round"/>
+                        <text x="100" y="98" text-anchor="middle" font-family="'IBM Plex Sans', sans-serif" font-size="40" font-weight="700" fill="#E8ECF1">{{ deal.riskScore }}</text>
+                        <text x="100" y="116" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#9BA5B3">{{ isFr ? 'SUR 100' : 'OUT OF 100' }}</text>
                     </svg>
                     <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.06em; color: #9BA5B3;">GLOBAL RISK</span>
-                        <span style="font-size: 22px; font-weight: 700; color: #FF7B7B;">High risk</span>
-                        <span style="font-size: 13px; line-height: 1.45; color: #9BA5B3;">Do not sign before the contradictions are resolved.</span>
+                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.06em; color: #9BA5B3;">{{ isFr ? 'RISQUE GLOBAL' : 'GLOBAL RISK' }}</span>
+                        <span style="font-size: 22px; font-weight: 700; color: {{ deal.riskColor }};">{{ deal.risk }}</span>
+                        <span style="font-size: 13px; line-height: 1.45; color: #9BA5B3;">
+                            {% if stats.con > 0 or stats.uns > 0 %}
+                                {{ isFr ? 'Ne signez pas avant d’avoir résolu les contradictions.' : 'Do not sign before the contradictions are resolved.' }}
+                            {% else %}
+                                {{ isFr ? 'Tous les engagements sont alignés avec les spécifications.' : 'All commitments are aligned with technical specifications.' }}
+                            {% endif %}
+                        </span>
                     </div>
                 </div>
 
@@ -72,7 +94,7 @@
                     <button id="btn-filter-con" type="button" onclick="setFilter('con')" style="box-sizing: border-box; min-height: 110px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 14px; text-align: left; background: rgba(245,176,74,0.14); border: 2px solid #F5B04A; border-radius: 14px; color: #F5B04A; font: inherit; cursor: pointer;">
                         <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l9 16H3z"/><path d="M12 10v4"/><path d="M12 17.5v.01"/></svg>
-                            Contradictory
+                            {{ isFr ? 'Contradictoire' : 'Contradictory' }}
                         </span>
                         <span style="font-size: 36px; font-weight: 700; line-height: 1;">{{ stats.con }}</span>
                     </button>
@@ -81,7 +103,7 @@
                     <button id="btn-filter-uns" type="button" onclick="setFilter('uns')" style="box-sizing: border-box; min-height: 110px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 14px; text-align: left; background: #151A21; border: 2px solid #2A323D; border-radius: 14px; color: #FF7B7B; font: inherit; cursor: pointer;">
                         <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
-                            Unsupported
+                            {{ isFr ? 'Non supporté' : 'Unsupported' }}
                         </span>
                         <span style="font-size: 36px; font-weight: 700; line-height: 1;">{{ stats.uns }}</span>
                     </button>
@@ -90,7 +112,7 @@
                     <button id="btn-filter-amb" type="button" onclick="setFilter('amb')" style="box-sizing: border-box; min-height: 110px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 14px; text-align: left; background: #151A21; border: 2px solid #2A323D; border-radius: 14px; color: #A99BFF; font: inherit; cursor: pointer;">
                         <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9.5a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1.1.9-1.1 1.6"/><path d="M12 17v.01"/></svg>
-                            Ambiguous
+                            {{ isFr ? 'Ambigu' : 'Ambiguous' }}
                         </span>
                         <span style="font-size: 36px; font-weight: 700; line-height: 1;">{{ stats.amb }}</span>
                     </button>
@@ -99,7 +121,7 @@
                     <button id="btn-filter-sup" type="button" onclick="setFilter('sup')" style="box-sizing: border-box; min-height: 110px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 14px; text-align: left; background: #151A21; border: 2px solid #2A323D; border-radius: 14px; color: #4ADE9A; font: inherit; cursor: pointer;">
                         <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>
-                            Supported
+                            {{ isFr ? 'Supporté' : 'Supported' }}
                         </span>
                         <span style="font-size: 36px; font-weight: 700; line-height: 1;">{{ stats.sup }}</span>
                     </button>
@@ -110,9 +132,9 @@
 
             <!-- Table Header Bar -->
             <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
-                <span style="font-size: 16px; font-weight: 600;">Promises & Commitments</span>
+                <span style="font-size: 16px; font-weight: 600;">{{ isFr ? 'Promesses & Engagements' : 'Promises & Commitments' }}</span>
                 <button id="filter-reset-btn" type="button" onclick="setFilter('all')" style="min-height: 38px; padding: 0 14px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 8px; font: inherit; font-size: 13px; cursor: pointer;">
-                    Showing all 8
+                    {{ isFr ? 'Tout afficher (' ~ (claims|length) ~ ')' : 'Showing all ' ~ (claims|length) }}
                 </button>
             </div>
 
@@ -121,10 +143,10 @@
                 <div style="min-width: 720px;">
                     <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 160px 84px 96px; gap: 16px; padding: 12px 16px; border-bottom: 1px solid #2A323D; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #9BA5B3;">
                         <span>ID</span>
-                        <span>PROMISE</span>
+                        <span>{{ isFr ? 'PROMESSE' : 'PROMISE' }}</span>
                         <span>VERDICT</span>
-                        <span>SEVERITY</span>
-                        <span>CONFIDENCE</span>
+                        <span>{{ isFr ? 'GRAVITÉ' : 'SEVERITY' }}</span>
+                        <span>{{ isFr ? 'CONFIANCE' : 'CONFIDENCE' }}</span>
                     </div>
 
                     {% for c in claims %}
@@ -185,7 +207,7 @@
 
             <!-- Discrepancy Reason Explanation -->
             <div style="display: flex; flex-direction: column; gap: 8px; padding: 18px; background: #1B222B; border: 1px solid #3A4553; border-radius: 12px;">
-                <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.06em; color: #9BA5B3;">DISCREPANCY ANALYSIS</span>
+                <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.06em; color: #9BA5B3;">{{ isFr ? 'ANALYSE DE L’ÉCART (MUSE SPARK)' : 'DISCREPANCY ANALYSIS' }}</span>
                 <p id="drawer-why" style="margin: 0; font-size: 14px; line-height: 1.55; color: #E8ECF1;">
                     The proposal commits to 99.99% uptime. The specification only targets 99.5%, which allows about 3.6 hours of downtime per month instead of about 4 minutes.
                 </p>
@@ -193,11 +215,11 @@
 
             <!-- Human In The Loop Actions -->
             <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; padding-top: 16px; border-top: 1px solid #2A323D;">
-                <button type="button" onclick="alert('Claim confirmed as audited discrepancy.')" style="flex: 1; min-height: 44px; background: transparent; color: #4ADE9A; border: 1px solid #4ADE9A; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">
-                    ✓ Mark Verified
+                <button type="button" onclick="alert('{{ isFr ? 'Écart confirmé et vérifié.' : 'Claim confirmed as audited discrepancy.' }}')" style="flex: 1; min-height: 44px; background: transparent; color: #4ADE9A; border: 1px solid #4ADE9A; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">
+                    ✓ {{ isFr ? 'Marquer vérifié' : 'Mark Verified' }}
                 </button>
-                <button type="button" onclick="alert('Discrepancy flagged for human escalation.')" style="flex: 1; min-height: 44px; background: transparent; color: #FF7B7B; border: 1px solid #FF7B7B; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">
-                    Flag / Dispute
+                <button type="button" onclick="alert('{{ isFr ? 'Écart signalé pour arbitrage humain.' : 'Discrepancy flagged for human escalation.' }}')" style="flex: 1; min-height: 44px; background: transparent; color: #FF7B7B; border: 1px solid #FF7B7B; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">
+                    {{ isFr ? 'Signaler / Contester' : 'Flag / Dispute' }}
                 </button>
             </div>
 
@@ -209,9 +231,9 @@
 
 <script>
 const CLAIMS_DATA = {{ claims|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_APOS') b-or constant('JSON_HEX_QUOT'))|raw }};
+const IS_FR = {{ isFr ? 'true' : 'false' }};
 let currentFilter = 'all';
 
-// Construire : Afficher une citation sans interpréter de HTML
 function renderQuote(container, before, match, after, background) {
     const mark = document.createElement('mark');
     mark.style.cssText = 'background: ' + background + '; color: #E8ECF1; padding: 1px 3px; border-radius: 3px;';
@@ -219,11 +241,10 @@ function renderQuote(container, before, match, after, background) {
     container.replaceChildren(document.createTextNode(before || ''), mark, document.createTextNode(after || ''));
 }
 
-// Construire : Afficher l'absence de passage correspondant sans interpréter de HTML
 function renderMissingEvidence(container, source) {
     const title = document.createElement('span');
     title.style.cssText = 'color: #FF7B7B; font-style: italic;';
-    title.textContent = 'No matching passage found in specifications.';
+    title.textContent = IS_FR ? 'Aucun passage correspondant trouvé dans les spécifications.' : 'No matching passage found in specifications.';
     const detail = document.createElement('span');
     detail.style.cssText = 'font-size: 13px; color: #9BA5B3;';
     detail.textContent = source || '';
@@ -246,10 +267,14 @@ function setFilter(filterType) {
 
     const resetBtn = document.getElementById('filter-reset-btn');
     if (filterType === 'all') {
-        resetBtn.textContent = 'Showing all 8';
+        resetBtn.textContent = (IS_FR ? 'Tout afficher (' : 'Showing all ') + CLAIMS_DATA.length + (IS_FR ? ')' : '');
     } else {
-        resetBtn.textContent = 'Clear filter (' + filterType.toUpperCase() + ')';
+        resetBtn.textContent = (IS_FR ? 'Effacer le filtre (' : 'Clear filter (') + filterType.toUpperCase() + ')';
     }
+}
+
+if (CLAIMS_DATA.length > 0) {
+    selectClaim(CLAIMS_DATA[0].id);
 }
 
 function selectClaim(claimId) {

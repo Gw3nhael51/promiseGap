@@ -21,20 +21,37 @@
             <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">PromiseGap</span>
         </a>
         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px; font-size: 14px;">
+            {% include '_locale_switcher.html.twig' %}
             <a href="{{ path('app_cockpit') }}" style="color: #9BA5B3; text-decoration: none;">Cockpit</a>
-            <a href="{{ path('app_login') }}" style="color: #E8ECF1; text-decoration: none;">Sign in</a>
-            <a href="{{ path('app_register') }}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1px solid #4A5565; border-radius: 10px; color: #E8ECF1; text-decoration: none;">Create an account</a>
+            {% if app.user %}
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_analysis_index') }}" style="color: #9BA5B3; text-decoration: none;">All Audits</a>
+                {% endif %}
+                <div style="display: flex; align-items: center; gap: 10px; padding: 4px 12px; background: #151A21; border: 1px solid #3A4553; border-radius: 999px;">
+                    <span style="font-size: 13px; color: #E8ECF1;">{{ app.user.userIdentifier }}</span>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <span style="padding: 2px 8px; border-radius: 999px; background: rgba(245,176,74,0.2); color: #F5B04A; font-size: 11px; font-weight: 700;">ADMIN</span>
+                    {% else %}
+                        <span style="padding: 2px 8px; border-radius: 999px; background: rgba(127,163,255,0.2); color: #7FA3FF; font-size: 11px; font-weight: 600;">USER</span>
+                    {% endif %}
+                </div>
+                <a href="{{ logout_path() }}" style="color: #FF7B7B; text-decoration: none; font-size: 13px;">Sign out</a>
+            {% else %}
+                <a href="{{ path('app_login') }}" style="color: #E8ECF1; text-decoration: none;">Sign in</a>
+                <a href="{{ path('app_register') }}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1px solid #4A5565; border-radius: 10px; color: #E8ECF1; text-decoration: none;">Create an account</a>
+            {% endif %}
         </div>
     </header>
 
     <!-- Main Container -->
     <div style="flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; box-sizing: border-box; padding: 64px 32px 72px; display: flex; flex-direction: column; gap: 40px;">
 
+        {% set isFr = app.request.locale == 'fr' %}
         <!-- Header -->
         <div style="display: flex; flex-direction: column; gap: 16px; max-width: 700px;">
-            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.08em; color: #7FA3FF;">DEMO · NO ACCOUNT NEEDED</span>
-            <h1 style="margin: 0; font-size: 48px; line-height: 1.08; letter-spacing: -0.02em; font-weight: 700;">Pick a deal and see the audit.</h1>
-            <p style="margin: 0; font-size: 18px; line-height: 1.55; color: #9BA5B3;">Each deal is a real-world scenario pairing a sales proposal with its technical specs. Open one to watch the commitments get checked and read the evidence.</p>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.08em; color: #7FA3FF;">{% if app.user %}{{ isFr ? 'CATALOGUE DÉMO · ACCÈS ILLIMITÉ' : 'DEMO CATALOG · UNLIMITED ACCESS' }}{% else %}{{ isFr ? 'DÉMO · SANS COMPTE REQUIS' : 'DEMO · NO ACCOUNT NEEDED' }}{% endif %}</span>
+            <h1 style="margin: 0; font-size: 48px; line-height: 1.08; letter-spacing: -0.02em; font-weight: 700;">{{ isFr ? 'Choisissez un contrat et voyez l’audit.' : 'Pick a deal and see the audit.' }}</h1>
+            <p style="margin: 0; font-size: 18px; line-height: 1.55; color: #9BA5B3;">{{ isFr ? 'Chaque contrat confronte une proposition commerciale à sa spécification technique. Ouvrez-en un pour voir les engagements vérifiés preuve à l’appui.' : 'Each deal is a real-world scenario pairing a sales proposal with its technical specs. Open one to watch the commitments get checked and read the evidence.' }}</p>
             {% if not is_granted('ROLE_USER') %}
                 <div style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 6px 14px; border-radius: 999px; background: rgba(127,163,255,0.12); border: 1px solid #7FA3FF; font-size: 13px; color: #7FA3FF;">
                     <span>🛡️ Guest Access: {% if demoTrialsCount >= 1 %}1 of 1 trial used{% else %}1 free demo trial available{% endif %} · <a href="{{ path('app_register') }}" style="color: #E8ECF1; text-decoration: underline;">Sign up for unlimited</a></span>
@@ -65,7 +82,7 @@
                         <form method="post" action="{{ path('app_demo_open', {'dealKey': dealKey}) }}" style="display: contents;">
                             <input type="hidden" name="_token" value="{{ csrf_token('demo_open') }}">
                             <button type="submit" style="display: flex; align-items: center; justify-content: center; min-height: 48px; background: #7FA3FF; color: #0B1020; border-radius: 12px; font-size: 16px; font-weight: 600; text-decoration: none; transition: background 0.15s; width: 100%; border: 0; font-family: inherit; cursor: pointer;">
-                                Open this audit
+                                {{ isFr ? 'Ouvrir cet audit' : 'Open this audit' }}
                             </button>
                         </form>
                     </div>

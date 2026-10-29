@@ -19,15 +19,22 @@
             <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">PromiseGap</span>
         </a>
         <nav style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; font-size: 14px;">
+            {% include '_locale_switcher.html.twig' %}
             <a href="#how" style="color: #9BA5B3; text-decoration: none;">How it works</a>
             <a href="#verdicts" style="color: #9BA5B3; text-decoration: none;">Verdicts</a>
             {% if app.user %}
-                <a href="{{ path('app_cockpit') }}" style="display: inline-flex; align-items: center; gap: 8px; color: #E8ECF1; text-decoration: none;">
-                    <span>Cockpit</span>
+                <a href="{{ path('app_cockpit') }}" style="color: #E8ECF1; text-decoration: none;">Cockpit</a>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_analysis_index') }}" style="color: #9BA5B3; text-decoration: none;">All Audits</a>
+                {% endif %}
+                <div style="display: flex; align-items: center; gap: 10px; padding: 4px 12px; background: #151A21; border: 1px solid #3A4553; border-radius: 999px;">
+                    <span style="font-size: 13px; color: #E8ECF1;">{{ app.user.userIdentifier }}</span>
                     {% if is_granted('ROLE_ADMIN') %}
-                        <span style="padding: 2px 6px; border-radius: 999px; background: rgba(245,176,74,0.2); color: #F5B04A; font-size: 11px; font-weight: 700;">ADMIN</span>
+                        <span style="padding: 2px 8px; border-radius: 999px; background: rgba(245,176,74,0.2); color: #F5B04A; font-size: 11px; font-weight: 700;">ADMIN</span>
+                    {% else %}
+                        <span style="padding: 2px 8px; border-radius: 999px; background: rgba(127,163,255,0.2); color: #7FA3FF; font-size: 11px; font-weight: 600;">USER</span>
                     {% endif %}
-                </a>
+                </div>
                 <a href="{{ logout_path() }}" style="color: #FF7B7B; text-decoration: none;">Sign out</a>
             {% else %}
                 <a href="{{ path('app_login') }}" style="color: #E8ECF1; text-decoration: none;">Sign in</a>
@@ -50,9 +57,11 @@
                 <a href="{{ path('app_cockpit') }}" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 20px; border: 1px solid #4A5565; border-radius: 12px; color: #E8ECF1; font-size: 17px; text-decoration: none;">
                     Open Cockpit
                 </a>
-                <a href="{{ path('app_register') }}" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 12px; color: #E8ECF1; font-size: 17px; text-decoration: none; border-bottom: 1px solid #4A5565;">
-                    Create an account
-                </a>
+                {% if not app.user %}
+                    <a href="{{ path('app_register') }}" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 12px; color: #E8ECF1; font-size: 17px; text-decoration: none; border-bottom: 1px solid #4A5565;">
+                        Create an account
+                    </a>
+                {% endif %}
             </div>
             <span style="font-size: 14px; color: #9BA5B3;">The demo needs no account and loads a ready-made deal.</span>
         </div>
@@ -224,7 +233,11 @@
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
                 <a href="{{ path('app_demo') }}" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 28px; background: #7FA3FF; color: #0B1020; border-radius: 12px; font-size: 17px; font-weight: 600; text-decoration: none;">Try a demo</a>
-                <a href="{{ path('app_register') }}" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 24px; border: 1px solid #4A5565; border-radius: 12px; color: #E8ECF1; font-size: 17px; text-decoration: none;">Create an account</a>
+                {% if app.user %}
+                    <a href="{{ path('app_cockpit') }}" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 24px; border: 1px solid #4A5565; border-radius: 12px; color: #E8ECF1; font-size: 17px; text-decoration: none;">Open Cockpit</a>
+                {% else %}
+                    <a href="{{ path('app_register') }}" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 24px; border: 1px solid #4A5565; border-radius: 12px; color: #E8ECF1; font-size: 17px; text-decoration: none;">Create an account</a>
+                {% endif %}
             </div>
         </div>
     </section>
@@ -233,7 +246,14 @@
     <footer style="border-top: 1px solid #2A323D;">
         <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; width: 100%; max-width: 1200px; margin: 0 auto; box-sizing: border-box; padding: 28px 32px; font-size: 14px; color: #9BA5B3;">
             <span>PromiseGap · built at the Meta AI Hackathon</span>
-            <a href="{{ path('app_login') }}" style="color: #B7C0CC; text-decoration: none;">Sign in</a>
+            {% if app.user %}
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <a href="{{ path('app_cockpit') }}" style="color: #B7C0CC; text-decoration: none;">Cockpit</a>
+                    <a href="{{ logout_path() }}" style="color: #FF7B7B; text-decoration: none;">Sign out</a>
+                </div>
+            {% else %}
+                <a href="{{ path('app_login') }}" style="color: #B7C0CC; text-decoration: none;">Sign in</a>
+            {% endif %}
         </div>
     </footer>
 

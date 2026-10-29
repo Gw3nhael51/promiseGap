@@ -6,92 +6,115 @@
     @param Analysis analysis Analysis entity being viewed
 #}
 
+{% set is_fr = app.request.locale == 'fr' %}
+
 {% block title %}PromiseGap | {{ analysis.title }}{% endblock %}
 
-{% block body %}
-<div class="mb-6 flex justify-between items-start">
-    <div>
-        <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_analysis_index' : 'app_cockpit') }}" class="btn btn-ghost btn-sm mb-2">← Back to Audits</a>
-        <h1 class="text-3xl font-bold">{{ analysis.title }}</h1>
-        <p class="text-base-content/70">
-            Workspace #{{ analysis.id }} • Created on {{ analysis.createdAt|date('M d, Y \\a\\t H:i') }}
-        </p>
+{% block header %}
+<header class="navbar bg-base-200 border-b border-base-300 px-4 lg:px-8 sticky top-0 z-50">
+    <div class="navbar-start gap-3">
+        <a href="{{ path('app_landing') }}" class="btn btn-ghost normal-case text-xl font-bold flex items-center gap-2">
+            <span>Promise<span class="text-primary">Gap</span></span>
+        </a>
     </div>
-    <div class="flex items-center gap-2">
-        <span class="badge badge-lg badge-info">{{ analysis.status.value }}</span>
-        {% if is_granted('ANALYSIS_DELETE', analysis) %}
-            <form method="post" action="{{ path('app_analysis_delete', {'id': analysis.id}) }}" onsubmit="return confirm('Are you sure you want to delete this audit workspace?');">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ analysis.id) }}">
-                <button class="btn btn-sm btn-error btn-outline">Delete</button>
-            </form>
-        {% endif %}
+    <div class="navbar-end gap-3">
+        {% include '_locale_switcher.html.twig' %}
+        <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_analysis_index' : 'app_cockpit') }}" class="btn btn-ghost btn-sm">
+            ← {{ is_fr ? 'Retour aux audits' : 'Back to Audits' }}
+        </a>
     </div>
-</div>
+</header>
+{% endblock %}
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="card bg-base-200 shadow-md">
-        <div class="card-body">
-            <h2 class="card-title flex items-center gap-2">
-                <span>📄</span> Commercial Proposal
-            </h2>
-            {% set proposalDocs = analysis.documents|filter(d => d.documentType.value == 'PROPOSAL') %}
-            {% if proposalDocs is empty %}
-                <p class="text-sm text-base-content/60 italic">No commercial proposal attached.</p>
-            {% else %}
-                <ul class="space-y-2 mt-2">
-                    {% for doc in proposalDocs %}
-                        <li class="p-3 bg-base-100 rounded-lg flex justify-between items-center">
-                            <div>
-                                <p class="font-medium text-sm">{{ doc.originalFilename }}</p>
-                                <p class="text-xs text-base-content/60">{{ (doc.fileSize / 1024)|round(1) }} KB • {{ doc.mimeType }}</p>
-                                <p class="text-xs mt-1">
-                                    <span class="badge badge-xs {{ doc.extractionStatus.badgeClass }}">{{ doc.extractionStatus.label }}</span>
-                                    {% if doc.characterCount is not null %}
-                                        <span class="text-base-content/60">{{ doc.characterCount|number_format }} chars • ~{{ doc.estimatedTokens|number_format }} tokens</span>
-                                    {% endif %}
-                                    {% if doc.extractionError %}
-                                        <span class="text-error">{{ doc.extractionError }}</span>
-                                    {% endif %}
-                                </p>
-                            </div>
-                            <span class="badge badge-sm badge-primary">Commercial</span>
-                        </li>
-                    {% endfor %}
-                </ul>
+{% block body %}
+<div class="container mx-auto px-4 lg:px-8 py-8">
+    <div class="mb-6 flex flex-col sm:flex-row justify-between sm:items-start gap-4">
+        <div>
+            <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_analysis_index' : 'app_cockpit') }}" class="btn btn-ghost btn-sm mb-2">← Back to Audits</a>
+            <h1 class="text-3xl font-bold">{{ analysis.title }}</h1>
+            <p class="text-base-content/70">
+                Workspace #{{ analysis.id }} • Created on {{ analysis.createdAt|date('M d, Y \\a\\t H:i') }}
+            </p>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="badge badge-lg badge-info">{{ analysis.status.value }}</span>
+            <a href="{{ path('app_audit_results', {'id': analysis.id}) }}" class="btn btn-sm btn-primary">
+                {{ is_fr ? 'Voir résultats IA' : 'View AI Results' }}
+            </a>
+            {% if is_granted('ANALYSIS_DELETE', analysis) %}
+                <form method="post" action="{{ path('app_analysis_delete', {'id': analysis.id}) }}" onsubmit="return confirm('Are you sure you want to delete this audit workspace?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ analysis.id) }}">
+                    <button class="btn btn-sm btn-error btn-outline">Delete</button>
+                </form>
             {% endif %}
         </div>
     </div>
 
-    <div class="card bg-base-200 shadow-md">
-        <div class="card-body">
-            <h2 class="card-title flex items-center gap-2">
-                <span>📘</span> Technical Specifications
-            </h2>
-            {% set techDocs = analysis.documents|filter(d => d.documentType.value == 'TECHNICAL_SPEC') %}
-            {% if techDocs is empty %}
-                <p class="text-sm text-base-content/60 italic">No technical specification attached.</p>
-            {% else %}
-                <ul class="space-y-2 mt-2">
-                    {% for doc in techDocs %}
-                        <li class="p-3 bg-base-100 rounded-lg flex justify-between items-center">
-                            <div>
-                                <p class="font-medium text-sm">{{ doc.originalFilename }}</p>
-                                <p class="text-xs text-base-content/60">{{ (doc.fileSize / 1024)|round(1) }} KB • {{ doc.mimeType }}</p>
-                                <p class="text-xs mt-1">
-                                    <span class="badge badge-xs {{ doc.extractionStatus.badgeClass }}">{{ doc.extractionStatus.label }}</span>
-                                    {% if doc.characterCount is not null %}
-                                        <span class="text-base-content/60">{{ doc.characterCount|number_format }} chars • ~{{ doc.estimatedTokens|number_format }} tokens</span>
-                                    {% endif %}
-                                    {% if doc.extractionError %}
-                                        <span class="text-error">{{ doc.extractionError }}</span>
-                                    {% endif %}
-                                </p>
-                            </div>
-                            <span class="badge badge-sm badge-secondary">Technical</span>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card bg-base-200 border border-base-300 shadow-md">
+            <div class="card-body">
+                <h2 class="card-title flex items-center gap-2">
+                    <span>📄</span> Commercial Proposal
+                </h2>
+                {% set proposalDocs = analysis.documents|filter(d => d.documentType.value == 'PROPOSAL') %}
+                {% if proposalDocs is empty %}
+                    <p class="text-sm text-base-content/60 italic">No commercial proposal attached.</p>
+                {% else %}
+                    <ul class="space-y-2 mt-2">
+                        {% for doc in proposalDocs %}
+                            <li class="p-3 bg-base-100 rounded-lg flex justify-between items-center">
+                                <div>
+                                    <p class="font-medium text-sm">{{ doc.originalFilename }}</p>
+                                    <p class="text-xs text-base-content/60">{{ (doc.fileSize / 1024)|round(1) }} KB • {{ doc.mimeType }}</p>
+                                    <p class="text-xs mt-1">
+                                        <span class="badge badge-xs {{ doc.extractionStatus.badgeClass }}">{{ doc.extractionStatus.label }}</span>
+                                        {% if doc.characterCount is not null %}
+                                            <span class="text-base-content/60">{{ doc.characterCount|number_format }} chars • ~{{ doc.estimatedTokens|number_format }} tokens</span>
+                                        {% endif %}
+                                        {% if doc.extractionError %}
+                                            <span class="text-error">{{ doc.extractionError }}</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <span class="badge badge-sm badge-primary">Commercial</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card bg-base-200 border border-base-300 shadow-md">
+            <div class="card-body">
+                <h2 class="card-title flex items-center gap-2">
+                    <span>📘</span> Technical Specifications
+                </h2>
+                {% set techDocs = analysis.documents|filter(d => d.documentType.value == 'TECHNICAL_SPEC') %}
+                {% if techDocs is empty %}
+                    <p class="text-sm text-base-content/60 italic">No technical specification attached.</p>
+                {% else %}
+                    <ul class="space-y-2 mt-2">
+                        {% for doc in techDocs %}
+                            <li class="p-3 bg-base-100 rounded-lg flex justify-between items-center">
+                                <div>
+                                    <p class="font-medium text-sm">{{ doc.originalFilename }}</p>
+                                    <p class="text-xs text-base-content/60">{{ (doc.fileSize / 1024)|round(1) }} KB • {{ doc.mimeType }}</p>
+                                    <p class="text-xs mt-1">
+                                        <span class="badge badge-xs {{ doc.extractionStatus.badgeClass }}">{{ doc.extractionStatus.label }}</span>
+                                        {% if doc.characterCount is not null %}
+                                            <span class="text-base-content/60">{{ doc.characterCount|number_format }} chars • ~{{ doc.estimatedTokens|number_format }} tokens</span>
+                                        {% endif %}
+                                        {% if doc.extractionError %}
+                                            <span class="text-error">{{ doc.extractionError }}</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <span class="badge badge-sm badge-secondary">Technical</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

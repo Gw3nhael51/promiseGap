@@ -33,9 +33,9 @@ class MetaAiClient implements AiClientInterface
         #[Autowire('%app.ai.api_key%')]
         private string $apiKey = '',
         #[Autowire('%app.ai.endpoint%')]
-        private string $endpoint = 'https://api.llama.com/compat/v1',
+        private string $endpoint = 'https://api.meta.ai/v1',
         #[Autowire('%app.ai.model%')]
-        private string $model = 'Muse-Spark',
+        private string $model = 'muse-spark-1.3',
         #[Autowire('%app.ai.timeout%')]
         private int $timeout = 30,
         #[Autowire('%app.ai.max_retries%')]
@@ -65,6 +65,11 @@ class MetaAiClient implements AiClientInterface
 
     /**
      * Sends a chat completion request to Meta Muse Spark with retry and fallback handling
+     *
+     * @param string $systemPrompt System instructions for the reasoning model
+     * @param string $userPrompt User content or RAG context
+     * @param array<string, mixed> $options Optional model parameters
+     * @return AiResponse Normalized AI completion response
      */
     public function chat(string $systemPrompt, string $userPrompt, array $options = []): AiResponse
     {
@@ -77,6 +82,7 @@ class MetaAiClient implements AiClientInterface
 
         $optionsPayload = [
             'temperature' => $temperature,
+            'reasoning_effort' => (string) ($options['reasoning_effort'] ?? 'low'),
         ];
 
         if (isset($options['response_format']) && is_array($options['response_format'])) {
@@ -114,7 +120,6 @@ class MetaAiClient implements AiClientInterface
             ++$attempt;
 
             try {
-                // Invoquer : Appeler Meta Muse Spark via Symfony AI Platform (Generic OpenAI-compatible bridge)
                 $deferredResult = $platform->invoke($model, $messages, $optionsPayload);
                 $content = $deferredResult->asText();
 
@@ -156,6 +161,12 @@ class MetaAiClient implements AiClientInterface
 
     /**
      * Requests a structured JSON output from the model and validates required top-level keys
+     *
+     * @param string $systemPrompt System instructions for the reasoning model
+     * @param string $userPrompt User content or RAG context
+     * @param array<string, mixed> $jsonSchema Optional expected JSON schema
+     * @param array<string, mixed> $options Optional model parameters
+     * @return array<string, mixed> Validated decoded JSON payload
      */
     public function completeJson(string $systemPrompt, string $userPrompt, array $jsonSchema = [], array $options = []): array
     {
@@ -180,7 +191,6 @@ class MetaAiClient implements AiClientInterface
      */
     public function decodeAndValidateJson(string $raw, array $jsonSchema = []): array
     {
-        // Nettoyer : Retirer les éventuelles balises markdown autour du JSON
         $cleaned = trim($raw);
         if (preg_match('/^```(?:json)?\s*(.*?)\s*```$/is', $cleaned, $matches) === 1) {
             $cleaned = trim($matches[1]);
@@ -210,7 +220,11 @@ class MetaAiClient implements AiClientInterface
     {
         $combined = strtolower($systemPrompt . "\n" . $userPrompt);
 
-        if (str_contains($combined, '"commitments"') || str_contains($combined, 'extract commercial commitments')) {
+        if (str_contains($combined, '"translations"') || str_contains($combined, 'translate the following contract audit claims')) {
+            $decodedInput = json_decode($userPrompt, true);
+            $items = is_array($decodedInput['items'] ?? null) ? $decodedInput['items'] : [];
+            $content = json_encode(['translations' => $items], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        } elseif (str_contains($combined, '"commitments"') || str_contains($combined, 'extract commercial commitments')) {
             $content = $this->simulateCommitmentExtraction($userPrompt);
         } elseif (str_contains($combined, '"status"') && (str_contains($combined, 'supported') || str_contains($combined, 'contradictory'))) {
             $content = $this->simulateDiscrepancyQualification($userPrompt);

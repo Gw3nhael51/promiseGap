@@ -123,6 +123,57 @@ class MockupRoutesTest extends WebTestCase
     }
 
     /**
+     * Verifies that authenticated users see their profile badge and Sign out instead of Sign in across public and audit pages
+     */
+    public function testAuthenticatedNavigationAcrossPages(): void
+    {
+        $this->client->request('GET', '/login');
+        $this->client->submitForm('Sign in', [
+            '_username' => 'auditor@promisegap.ai',
+            '_password' => 'password123',
+        ]);
+        $this->assertResponseRedirects('/cockpit');
+
+        $analysis = new Analysis();
+        $analysis->setTitle('Auth Header Audit');
+        $analysis->setStatus(AnalysisStatus::COMPLETED);
+        $analysis->setOwnerIdentifier('auditor@promisegap.ai');
+        $this->entityManager->persist($analysis);
+        $this->entityManager->flush();
+
+        foreach (['/', '/demo', '/audit/' . $analysis->getId() . '/progress', '/audit/' . $analysis->getId() . '/results'] as $url) {
+            $this->client->request('GET', $url);
+            $this->assertResponseIsSuccessful();
+            $this->assertSelectorTextContains('header', 'auditor@promisegap.ai', $url);
+            $this->assertSelectorTextContains('header', 'Sign out', $url);
+            $this->assertSelectorTextNotContains('header', 'Sign in', $url);
+        }
+    }
+
+    /**
+     * Verifies that the EN / FR locale toggle switches interface and results labels to French
+     */
+    public function testLocaleSwitcherTranslatesAuditResultsToFrench(): void
+    {
+        $analysis = new Analysis();
+        $analysis->setTitle('Audit Bilingue');
+        $analysis->setStatus(AnalysisStatus::COMPLETED);
+        $this->entityManager->persist($analysis);
+        $this->entityManager->flush();
+
+        $this->client->request('GET', '/locale/fr', [], [], [
+            'HTTP_REFERER' => 'http://localhost/audit/' . $analysis->getId() . '/results',
+        ]);
+        $this->assertResponseRedirects('/audit/' . $analysis->getId() . '/results');
+        $this->client->followRedirect();
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('body', 'RISQUE GLOBAL');
+        $this->assertSelectorTextContains('body', 'Promesses & Engagements');
+        $this->assertSelectorTextContains('body', 'Contradictoire');
+    }
+
+    /**
      * Verifies that the registration page renders and processes signup
      */
     public function testRegisterPage(): void

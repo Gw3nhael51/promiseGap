@@ -28,7 +28,7 @@ class DemoController extends AbstractController
         $demoTrialsCount = $session->get('demo_trials_count', 0);
 
         return $this->render('demo/Demo.html.twig', [
-            'deals' => $demoDealService->getCatalog(),
+            'deals' => $demoDealService->getCatalog($request->getLocale()),
             'demoTrialsCount' => $demoTrialsCount,
         ]);
     }
