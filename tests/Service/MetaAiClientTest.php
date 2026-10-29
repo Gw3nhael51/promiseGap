@@ -109,6 +109,6 @@ class MetaAiClientTest extends TestCase
         );
 
         $this->assertSame('ok', $data['status']);
-        $this->assertSame('Muse-Spark', $data['model']);
+        $this->assertSame('muse-spark-1.3', $data['model']);
     }
 }

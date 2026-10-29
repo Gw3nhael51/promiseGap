@@ -28,7 +28,7 @@ class TestAiCommandTest extends KernelTestCase
 
         $this->assertSame(0, $exitCode);
         $output = $tester->getDisplay();
-        $this->assertStringContainsString('Muse-Spark', $output);
+        $this->assertStringContainsString('muse-spark-1.3', $output);
         $this->assertStringContainsString('Meta AI diagnostic completed successfully', $output);
     }
 }
