@@ -13,6 +13,11 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class EvidenceRepository extends ServiceEntityRepository
 {
+    /**
+     * Initializes the evidence repository
+     *
+     * @param ManagerRegistry $registry Doctrine persistence manager registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Evidence::class);

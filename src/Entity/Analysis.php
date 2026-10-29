@@ -197,6 +197,8 @@ class Analysis
 
     /**
      * Automatically updates the modification timestamp before update
+     *
+     * @return void
      */
     #[ORM\PreUpdate]
     public function updateTimestamp(): void
@@ -259,6 +261,9 @@ class Analysis
 
     /**
      * Attaches a commercial commitment to this analysis
+     *
+     * @param Commitment $commitment Commercial commitment entity to attach
+     * @return static Current instance
      */
     public function addCommitment(Commitment $commitment): static
     {
@@ -272,6 +277,9 @@ class Analysis
 
     /**
      * Detaches a commercial commitment from this analysis
+     *
+     * @param Commitment $commitment Commercial commitment entity to detach
+     * @return static Current instance
      */
     public function removeCommitment(Commitment $commitment): static
     {

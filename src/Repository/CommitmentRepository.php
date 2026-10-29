@@ -13,6 +13,11 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class CommitmentRepository extends ServiceEntityRepository
 {
+    /**
+     * Initializes the commitment repository
+     *
+     * @param ManagerRegistry $registry Doctrine persistence manager registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Commitment::class);

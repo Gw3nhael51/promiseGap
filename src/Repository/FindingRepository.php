@@ -13,6 +13,11 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class FindingRepository extends ServiceEntityRepository
 {
+    /**
+     * Initializes the finding repository
+     *
+     * @param ManagerRegistry $registry Doctrine persistence manager registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Finding::class);
