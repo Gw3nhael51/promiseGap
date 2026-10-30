@@ -251,4 +251,44 @@ class MockupRoutesTest extends WebTestCase
 
         $this->assertResponseRedirects('/cockpit');
     }
+
+    /**
+     * Verifies cockpit past-audits pagination, boundary clamping, and reasoning mode selector
+     */
+    public function testCockpitPaginationAndReasoningModeSelector(): void
+    {
+        $this->client->request('GET', '/login');
+        $this->client->submitForm('Sign in', [
+            '_username' => 'auditor@promisegap.ai',
+            '_password' => 'password123',
+        ]);
+
+        for ($i = 1; $i <= 7; ++$i) {
+            $analysis = new Analysis();
+            $analysis->setTitle(sprintf('Cockpit Paginated Audit %02d', $i));
+            $analysis->setStatus(AnalysisStatus::COMPLETED);
+            $analysis->setOwnerIdentifier('auditor@promisegap.ai');
+            $this->entityManager->persist($analysis);
+        }
+        $this->entityManager->flush();
+
+        // Page 1 shows reasoning selector and pagination controls
+        $crawler = $this->client->request('GET', '/cockpit?page=1');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('#reasoning-selector');
+        $this->assertCount(4, $crawler->filter('input[name="reasoning_mode"]'));
+        $this->assertSelectorTextContains('#past-audits', 'Page 1 /');
+
+        // Page 2 and out-of-bounds clamping (page=0 and page=999)
+        $this->client->request('GET', '/cockpit?page=2');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('#past-audits', 'Page 2 /');
+
+        $this->client->request('GET', '/cockpit?page=0');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('#past-audits', 'Page 1 /');
+
+        $this->client->request('GET', '/cockpit?page=999');
+        $this->assertResponseIsSuccessful();
+    }
 }

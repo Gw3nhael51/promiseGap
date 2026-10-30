@@ -31,6 +31,9 @@
                 {{ isFr ? '+ Nouvel audit' : '+ New audit' }}
             </a>
             {% if app.user %}
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_analysis_index') }}" style="color: #9BA5B3; font-size: 14px; text-decoration: none;">{{ isFr ? 'Tous les audits' : 'All Audits' }}</a>
+                {% endif %}
                 <div style="display: flex; align-items: center; gap: 10px; padding: 4px 12px; background: #151A21; border: 1px solid #3A4553; border-radius: 999px;">
                     <span style="font-size: 13px; color: #E8ECF1;">{{ app.user.userIdentifier }}</span>
                     {% if is_granted('ROLE_ADMIN') %}

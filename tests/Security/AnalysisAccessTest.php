@@ -26,7 +26,7 @@ class AnalysisAccessTest extends WebTestCase
     {
         $this->client = static::createClient();
 
-        // Isoler : Utiliser une IP unique pour ne pas polluer les compteurs de throttling entre exécutions
+        // Use a unique client IP per test to isolate login throttling counters
         $this->client->setServerParameter('REMOTE_ADDR', sprintf('10.%d.%d.%d', random_int(1, 254), random_int(1, 254), random_int(1, 254)));
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
     }
@@ -229,5 +229,20 @@ class AnalysisAccessTest extends WebTestCase
             $this->client->request('POST', $url, ['name' => 'x']);
             $this->assertResponseStatusCodeSame(403, $url);
         }
+    }
+
+    /**
+     * Verifies that the admin console (/analyses) is restricted to ROLE_ADMIN and denied to ROLE_USER
+     */
+    public function testAdminConsoleRequiresAdminRole(): void
+    {
+        $this->loginAs(self::AUDITOR, 'password123');
+        $this->client->request('GET', '/analyses');
+        $this->assertResponseStatusCodeSame(403);
+
+        $this->loginAs('admin@promisegap.ai', 'admin123');
+        $this->client->request('GET', '/analyses');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('h1', 'Commercial Commitment Audits');
     }
 }

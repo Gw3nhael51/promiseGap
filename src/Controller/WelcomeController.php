@@ -29,6 +29,18 @@ class WelcomeController extends AbstractController
                 throw new AccessDeniedHttpException('Invalid CSRF token.');
             }
 
+            $workspace = mb_substr(trim(strip_tags($request->getPayload()->getString('workspace', 'Enterprise Deal Audit Lab'))), 0, 80);
+            $role = $request->getPayload()->getString('role', 'legal');
+            $allowedRoles = [
+                'legal' => 'Legal Counsel / Compliance',
+                'cto' => 'CTO / VP Engineering',
+                'procurement' => 'Procurement / Buyer',
+                'sales' => 'Sales Engineering / Pre-sales',
+            ];
+
+            $request->getSession()->set('_workspace_name', $workspace !== '' ? $workspace : 'Enterprise Deal Audit Lab');
+            $request->getSession()->set('_workspace_role', $allowedRoles[$role] ?? $allowedRoles['legal']);
+
             return $this->redirectToRoute('app_cockpit');
         }
 

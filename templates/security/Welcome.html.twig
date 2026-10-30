@@ -12,16 +12,19 @@
 <div style="min-height: 900px; box-sizing: border-box; background: #0E1116; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column;">
 
     <!-- Topbar -->
-    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 32px 48px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
+    <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 32px 48px;">
+        <a href="{{ path('app_landing') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #E8ECF1;">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
                 <rect x="2" y="5" width="14" height="14" rx="3" stroke="#7FA3FF" stroke-width="2"/>
                 <rect x="12" y="9" width="14" height="14" rx="3" stroke="#B7C0CC" stroke-width="2"/>
             </svg>
             <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">PromiseGap</span>
+        </a>
+        <div style="display: flex; align-items: center; gap: 16px;">
+            {% include '_locale_switcher.html.twig' %}
+            <a href="{{ path('app_cockpit') }}" style="font-size: 14px; color: #9BA5B3; text-decoration: none;">Skip for now</a>
         </div>
-        <a href="{{ path('app_cockpit') }}" style="font-size: 14px; color: #9BA5B3; text-decoration: none;">Skip for now</a>
-    </div>
+    </header>
 
     <!-- Onboarding Container -->
     <div style="flex: 1; width: 100%; max-width: 760px; margin: 0 auto; box-sizing: border-box; padding: 24px 32px 72px; display: flex; flex-direction: column; gap: 36px;">
@@ -58,27 +61,27 @@
 
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     <span style="font-size: 14px; font-weight: 500;">What best describes your role?</span>
-                    <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+                    <div id="role-cards" style="display: flex; flex-wrap: wrap; gap: 12px;">
 
-                        <label style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #1B222B; border: 2px solid #7FA3FF; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
+                        <label class="role-card" onclick="selectRoleCard(this)" style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #1B222B; border: 2px solid #7FA3FF; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
                             <input type="radio" name="role" value="legal" checked style="display: none;">
                             <span style="font-size: 16px; font-weight: 600;">Legal Counsel / Compliance</span>
                             <span style="font-size: 13px; color: #9BA5B3;">Focus on SLAs, liability, and unsupported clauses.</span>
                         </label>
 
-                        <label style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
+                        <label class="role-card" onclick="selectRoleCard(this)" style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
                             <input type="radio" name="role" value="cto" style="display: none;">
                             <span style="font-size: 16px; font-weight: 600;">CTO / VP Engineering</span>
                             <span style="font-size: 13px; color: #9BA5B3;">Check architectural promises vs technical realities.</span>
                         </label>
 
-                        <label style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
+                        <label class="role-card" onclick="selectRoleCard(this)" style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
                             <input type="radio" name="role" value="procurement" style="display: none;">
                             <span style="font-size: 16px; font-weight: 600;">Procurement / Buyer</span>
                             <span style="font-size: 13px; color: #9BA5B3;">Identify negotiation leverage and contradictory timelines.</span>
                         </label>
 
-                        <label style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
+                        <label class="role-card" onclick="selectRoleCard(this)" style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
                             <input type="radio" name="role" value="sales" style="display: none;">
                             <span style="font-size: 16px; font-weight: 600;">Sales Engineering / Pre-sales</span>
                             <span style="font-size: 13px; color: #9BA5B3;">Prevent overselling before quotes reach customers.</span>
@@ -98,4 +101,15 @@
     </div>
 
 </div>
+
+<script>
+function selectRoleCard(selectedLabel) {
+    document.querySelectorAll('.role-card').forEach(function (card) {
+        card.style.border = '2px solid #2A323D';
+        card.style.background = '#151A21';
+    });
+    selectedLabel.style.border = '2px solid #7FA3FF';
+    selectedLabel.style.background = '#1B222B';
+}
+</script>
 {% endblock %}
