@@ -35,19 +35,28 @@ class AnalysisCreator
      * Stores the uploaded files and persists the analysis, removing stored files on any failure
      *
      * @param Analysis $analysis Analysis to persist
-     * @param UploadedFile|null $proposalFile Commercial proposal file
+     * @param UploadedFile|UploadedFile[]|null $proposalFiles Commercial proposal file or list of files
      * @param UploadedFile[] $technicalSpecFiles Technical reference files
      * @param string $ownerIdentifier Identifier of the user owning the analysis
      * @param AnalysisStatus $status Initial status of the analysis
+     * @return void
      * @throws \InvalidArgumentException When a file is rejected or too many files are provided
      */
     public function create(
         Analysis $analysis,
-        ?UploadedFile $proposalFile,
+        UploadedFile|array|null $proposalFiles,
         array $technicalSpecFiles,
         string $ownerIdentifier,
         AnalysisStatus $status = AnalysisStatus::PENDING,
     ): void {
+        $proposalList = is_array($proposalFiles)
+            ? array_values(array_filter($proposalFiles))
+            : ($proposalFiles !== null ? [$proposalFiles] : []);
+
+        if (count($proposalList) > self::MAX_TECHNICAL_SPEC_FILES) {
+            throw new \InvalidArgumentException(sprintf('You can upload at most %d commercial proposal files.', self::MAX_TECHNICAL_SPEC_FILES));
+        }
+
         $technicalSpecFiles = array_values(array_filter($technicalSpecFiles));
         if (count($technicalSpecFiles) > self::MAX_TECHNICAL_SPEC_FILES) {
             throw new \InvalidArgumentException(sprintf('You can upload at most %d technical specification files.', self::MAX_TECHNICAL_SPEC_FILES));
@@ -57,7 +66,7 @@ class AnalysisCreator
         $analysis->setStatus($status);
 
         try {
-            if ($proposalFile !== null) {
+            foreach ($proposalList as $proposalFile) {
                 $analysis->addDocument($this->documentUploader->upload($proposalFile, DocumentType::PROPOSAL));
             }
 

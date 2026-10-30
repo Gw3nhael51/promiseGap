@@ -53,7 +53,7 @@ class AnalysisControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSelectorExists('form[name="analysis"]');
         $this->assertCount(1, $crawler->filter('input[name="analysis[title]"]'));
-        $this->assertCount(1, $crawler->filter('input[name="analysis[proposalFile]"]'));
+        $this->assertCount(1, $crawler->filter('input[name="analysis[proposalFile][]"]'));
     }
 
     /**
@@ -89,7 +89,7 @@ class AnalysisControllerTest extends WebTestCase
 
         $this->client->submitForm('Run Audit', [
             'analysis[title]' => 'Multi Document Audit Test',
-            'analysis[proposalFile]' => $proposalFile,
+            'analysis[proposalFile]' => [$proposalFile],
             'analysis[technicalSpecFiles]' => [$specFile],
         ]);
 

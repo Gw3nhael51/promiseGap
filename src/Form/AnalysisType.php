@@ -10,10 +10,10 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\NotNull;
 
 /**
  * Defines the form structure for creating and ingesting an analysis workspace
@@ -51,28 +51,35 @@ class AnalysisType extends AbstractType
             ->add('proposalFile', FileType::class, [
                 'label' => 'Commercial Proposal (PDF, Markdown, or Image)',
                 'mapped' => false,
+                'multiple' => true,
                 'required' => false,
                 'attr' => [
                     'class' => 'file-input file-input-bordered w-full',
                     'accept' => '.pdf,.md,.markdown,.txt,.png,.jpg,.jpeg,.webp',
+                    'multiple' => 'multiple',
                 ],
                 'constraints' => [
-                    new NotNull(
-                        message: 'Please upload the commercial proposal.',
+                    new Count(
+                        min: 1,
+                        minMessage: 'Please upload the commercial proposal.',
                     ),
-                    new File(
-                        maxSize: '10M',
-                        mimeTypes: [
-                            'application/pdf',
-                            'text/plain',
-                            'text/markdown',
-                            'text/x-markdown',
-                            'image/png',
-                            'image/jpeg',
-                            'image/webp',
+                    new All(
+                        constraints: [
+                            new File(
+                                maxSize: '10M',
+                                mimeTypes: [
+                                    'application/pdf',
+                                    'text/plain',
+                                    'text/markdown',
+                                    'text/x-markdown',
+                                    'image/png',
+                                    'image/jpeg',
+                                    'image/webp',
+                                ],
+                                maxSizeMessage: 'File size cannot exceed 10 MB.',
+                                mimeTypesMessage: 'Unsupported format. Allowed formats: PDF, Markdown, PNG, JPG, or WEBP.',
+                            ),
                         ],
-                        maxSizeMessage: 'File size cannot exceed 10 MB.',
-                        mimeTypesMessage: 'Unsupported format. Allowed formats: PDF, Markdown, PNG, JPG, or WEBP.',
                     ),
                 ],
             ])

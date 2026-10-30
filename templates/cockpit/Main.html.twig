@@ -284,15 +284,19 @@ function selectReasoningMode(selectedPill) {
 }
 
 function handleProposalSelected(input) {
-    if (input.files && input.files[0]) {
-        document.getElementById('proposal-text').textContent = '📄 ' + input.files[0].name;
+    if (input.files && input.files.length > 0) {
+        document.getElementById('proposal-text').textContent = input.files.length === 1
+            ? '📄 ' + input.files[0].name
+            : '📄 ' + input.files.length + ' file(s) selected';
         document.getElementById('proposal-card').style.borderColor = '#7FA3FF';
     }
 }
 
 function handleSpecsSelected(input) {
     if (input.files && input.files.length > 0) {
-        document.getElementById('specs-text').textContent = '📘 ' + input.files.length + ' file(s) selected';
+        document.getElementById('specs-text').textContent = input.files.length === 1
+            ? '📘 ' + input.files[0].name
+            : '📘 ' + input.files.length + ' file(s) selected';
         document.getElementById('specs-card').style.borderColor = '#B7C0CC';
     }
 }

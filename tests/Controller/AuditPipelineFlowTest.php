@@ -38,7 +38,7 @@ class AuditPipelineFlowTest extends WebTestCase
         $client->request('GET', '/cockpit');
         $client->submitForm('Run Audit', [
             'analysis[title]' => 'End-to-End RAG Cloud Deal',
-            'analysis[proposalFile]' => $proposalFile,
+            'analysis[proposalFile]' => [$proposalFile],
             'analysis[technicalSpecFiles]' => [$specFile],
         ]);
 
