@@ -82,7 +82,7 @@
                 </span>
             {% endif %}
 
-            <a href="{{ path('app_audit_results', {'id': analysis.id}) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#7FA3FF] hover:bg-[#A9C0FF] text-[#0B1020] text-sm font-semibold no-underline transition-colors">
+            <a href="{{ path('app_audit_results', {'id': analysis.id}) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#7FA3FF] hover:bg-[#93B4FF] text-[#0B1020] hover:text-[#0B1020] text-sm font-semibold no-underline shadow-sm hover:shadow-md hover:shadow-[#7FA3FF]/20 transition-all">
                 {{ is_fr ? 'Voir résultats IA' : 'View AI Results' }} →
             </a>
 
