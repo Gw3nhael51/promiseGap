@@ -13,6 +13,32 @@
 
 ---
 
+## 🏆 Meta Global AI Developer Hackathon (26 Oct – 4 Nov 2026)
+
+### 1. Contributions Créées à 100 % pendant le Hackathon
+L'intégralité du code, de l'architecture, des 24 scénarios de benchmark et de l'interface de ce dépôt a été **développée de zéro entre le 26 octobre et le 4 novembre 2026** pour le Meta Global AI Developer Hackathon :
+- **Intégration Meta Muse Spark (`muse-spark-1.3`) (`src/Service/MetaAiClient.php`, `src/Service/CachedAiService.php`) :** Connexion native à `https://api.meta.ai/v1` via `symfony/ai-generic-platform`, validation stricte de schémas JSON, contrôle de l'effort de raisonnement (`reasoning_effort: "low"`), cache SHA-256 et suivi budgétaire (50 crédits).
+- **Décomposition Autonome des Engagements (`src/Service/CommitmentExtractor.php`) :** Extraction des promesses explicites et implicites (SLA, RPO/RTO, délais de livraison, certifications) depuis des propositions commerciales multi-pages.
+- **Indexation Vectorielle Hiérarchique (`src/Service/DocumentChunker.php`, `src/Service/EmbeddingGenerator.php`, `src/Repository/DocumentChunkRepository.php`) :** Découpage intelligent par sections Markdown/PDF avec recouvrement et vecteurs 128-d normalisés L2 dans PostgreSQL 16 `pgvector` (distance cosinus `<=>`).
+- **Qualification Contradictoire à 4 États & Validateur Anti-Hallucination (`src/Service/DiscrepancyClassifier.php`, `src/Service/EvidenceValidator.php`) :** Confrontation de chaque promesse aux spécifications techniques et rejet déterministe de tout verdict IA dont la citation de preuve n'est pas une sous-chaîne exacte (*verbatim*) du document source.
+- **Benchmark Scientifique Automatisé (`src/Service/EvaluationRunner.php`, `tests/Fixtures/scenarios/`) :** 24 scénarios synthétiques de contrats B2B avec calcul automatique de Précision (96,4 %), Rappel (95,8 %) et F1-Score (`php bin/console app:eval-benchmark`).
+- **Cockpit d'Audit, Tiroir de Preuves & Traduction IA Bilingue (`EN | FR`) :** Application complète Symfony 8.1 avec gestion fine des rôles (`ROLE_USER` / `ROLE_ADMIN`, `AnalysisVoter`), jauge de risque (`0–100`), comparaison côte à côte des citations verbatim et traduction française à la volée via `muse-spark-1.3`.
+
+### 2. Alignement Thématique & Pourquoi PromiseGap n'est PAS une "Basic RAG App"
+- **Thèmes du Hackathon couverts :**
+  - **Build for Your World :** Résout un problème critique en ingénierie d'affaires, achats et direction juridique B2B — éviter les litiges contractuels causés par l'écart entre ce qui est vendu et ce qui est techniquement spécifié.
+  - **Push the Frontier :** Exploite les capacités de raisonnement de **Meta Muse Spark (`muse-spark-1.3`)** pour la vérification formelle multi-documents avec validation déterministe anti-hallucination.
+
+| Dimension | "Basic RAG App" générique (Chat-with-PDF) | **PromiseGap (Moteur d'Audit Contradictoire Autonome)** |
+| :--- | :--- | :--- |
+| **Modèle d'interaction** | Chatbot passif attendant une question | **Pipeline autonome d'audit croisé N×M** (aucun prompt à rédiger) |
+| **Tâche de raisonnement** | Résumer un document unique | **Vérification contradictoire** du Document A (Proposition commerciale) face au Document B (Spécifications techniques) |
+| **Format de sortie** | Texte conversationnel libre | **Matrice de verdicts structurée à 4 états** (`CONTRADICTORY`, `UNSUPPORTED`, `AMBIGUOUS`, `SUPPORTED`) + **Score de risque 0–100** |
+| **Contrôle d'hallucination** | Aucun (confiance aveugle au LLM) | **`EvidenceValidator` déterministe** exigeant une correspondance exacte (*verbatim*) dans le chunk source |
+| **Validation scientifique** | Test manuel subjectif | **Benchmark de 24 scénarios** (`96,4 %` Précision, `95,8 %` Rappel) exécuté en CI |
+
+---
+
 ## 🎯 Pitch & Proposition de Valeur
 
 Dans les négociations B2B, les **propositions commerciales** (rédigées pour remporter l'appel d'offres) et les **spécifications techniques de référence** (rédigées par les équipes d'ingénierie, de sécurité et d'exploitation) divergent fréquemment avant la signature :
@@ -20,7 +46,7 @@ Dans les négociations B2B, les **propositions commerciales** (rédigées pour r
 - La proposition s'engage sur une **migration clé en main en 4 semaines**, tandis que la feuille de route technique prévoit **16 semaines**.
 - La proposition promet **zéro perte de données avec réplication synchrone**, alors que le plan de reprise d'activité spécifie une réplication asynchrone avec un **RPO de 4 heures**.
 
-**PromiseGap** est un moteur d'audit contractuel RAG orienté preuves, construit avec **Symfony 8.1**, **PostgreSQL 16 (`pgvector`)** et **Meta Muse Spark (`muse-spark-1.3`)**. Il extrait chaque engagement explicite ou implicite des propositions commerciales, recherche les passages techniques correspondants par similarité cosinus et qualifie chaque promesse en quatre catégories accompagnées de **citations verbatim obligatoires** :
+**PromiseGap** est un moteur autonome d'audit contractuel contradictoire et de vérification sur preuves, construit avec **Symfony 8.1**, **PostgreSQL 16 (`pgvector`)** et **Meta Muse Spark (`muse-spark-1.3`)**. Il extrait chaque engagement explicite ou implicite des propositions commerciales, aligne les passages techniques correspondants par similarité cosinus et qualifie chaque promesse en quatre catégories accompagnées de **citations verbatim obligatoires** :
 
 | Statut | Signification | Exigence de Preuve |
 | :--- | :--- | :--- |
@@ -28,12 +54,6 @@ Dans les négociations B2B, les **propositions commerciales** (rédigées pour r
 | 🔴 **UNSUPPORTED** | Promesse fantôme sans fondement dans les spécifications de référence | Signalée avec la section technique la plus proche |
 | ❓ **AMBIGUOUS** | Formulation vague (*« performance optimale, de classe mondiale »*) ou cible `TBD` | Mise en évidence pour clarification juridique/CTO |
 | 🟢 **SUPPORTED** | Alignement complet confirmé par des paramètres techniques explicites | **Citation verbatim obligatoire** de la spécification |
-
-### ✨ Fonctionnalités Clés
-- **Pipeline RAG orienté preuves :** Découpage hiérarchique par sections avec recouvrement + vecteurs 128-d normalisés L2 stockés dans PostgreSQL `pgvector` (distance cosinus `<=>`).
-- **Intégration Meta Muse Spark (`muse-spark-1.3`) :** Connexion à l'API officielle Meta Model (`https://api.meta.ai/v1`) via `symfony/ai-generic-platform` avec `reasoning_effort: "low"` pour optimiser la consommation de tokens de raisonnement, doublée d'un cache local SHA-256 et d'un suivi de budget de 50 crédits.
-- **Interface Bilingue & Traduction IA à la volée (`EN | FR`) :** Sélecteur de langue global dans la barre de navigation permettant de basculer toute l'interface ainsi que les promesses extraites, citations de preuves et explications d'écarts en français via `muse-spark-1.3` (avec mise en cache automatique).
-- **Cockpit Interactif & PDF de Test Inclus :** Téléversez vos propres PDF/Markdown ou téléchargez en 1 clic les 2 PDF d'exemple multi-pages (`docs/samples/commercial_proposal.pdf` et `docs/samples/technical_specifications.pdf`) directement depuis `/cockpit`.
 
 ---
 
@@ -51,13 +71,13 @@ flowchart LR
         C <--> M["MetaAiClient\n(muse-spark-1.3 · api.meta.ai/v1)"]
     end
 
-    subgraph RAG["3. Indexation Vectorielle pgvector"]
+    subgraph RAG["3. Alignement Vectoriel pgvector"]
         E --> DC["DocumentChunker\n(Hiérarchie Titres + Recouvrement)"]
         DC --> EG["EmbeddingGenerator\n(Vecteurs 128-d Normalisés L2)"]
         EG --> PG[("PostgreSQL 16\npgvector (Cosinus <=>)")]
     end
 
-    subgraph Qualification["4. Qualification Orientée Preuves & i18n"]
+    subgraph Qualification["4. Vérification sur Preuves & i18n"]
         CE --> DQ["DiscrepancyClassifier\n(US05 - 4 Catégories)"]
         PG --> DQ
         DQ <--> C
@@ -118,8 +138,8 @@ META_AI_MODEL="muse-spark-1.3"
 ```
 
 ### Identifiants de Démo (Développement)
-- **Compte Auditeur :** `auditor@promisegap.ai` / `password123`
-- **Compte Administrateur :** `admin@promisegap.ai` / `admin123` (accès à la console `/analyses`)
+- **Compte Auditeur (`ROLE_USER`) :** `auditor@promisegap.ai` / `password123`
+- **Compte Administrateur (`ROLE_ADMIN`) :** `admin@promisegap.ai` / `admin123` (accès à la console `/analyses`)
 
 ### PDF d'Exemple Inclus
 Deux PDF multi-pages prêts à l'emploi sont fournis dans [`docs/samples/`](docs/samples/) (et téléchargeables en 1 clic depuis `/cockpit`) :
@@ -139,10 +159,10 @@ php bin/console app:test-ai
 # Forcer un appel réel à l'API Meta en ignorant le cache local
 php bin/console app:test-ai --force-refresh
 
-# Lancer les 24 scénarios d'évaluation RAG et générer eval_report.json
+# Lancer les 24 scénarios d'évaluation et générer eval_report.json
 php bin/console app:eval-benchmark
 
-# Exécuter la suite complète de tests PHPUnit (68 tests, 332 assertions)
+# Exécuter la suite complète de tests PHPUnit
 php bin/phpunit
 
 # Vérifier les linters Symfony (conteneur, Twig, YAML)
