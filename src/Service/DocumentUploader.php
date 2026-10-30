@@ -22,6 +22,9 @@ class DocumentUploader
         'text/plain',
         'text/markdown',
         'text/x-markdown',
+        'image/png',
+        'image/jpeg',
+        'image/webp',
     ];
 
     private const array ALLOWED_EXTENSIONS = [
@@ -29,6 +32,10 @@ class DocumentUploader
         'md',
         'markdown',
         'txt',
+        'png',
+        'jpg',
+        'jpeg',
+        'webp',
     ];
 
     private const array EXTENSION_MIME_TYPES = [
@@ -36,6 +43,10 @@ class DocumentUploader
         'md' => ['text/plain', 'text/markdown', 'text/x-markdown'],
         'markdown' => ['text/plain', 'text/markdown', 'text/x-markdown'],
         'txt' => ['text/plain'],
+        'png' => ['image/png'],
+        'jpg' => ['image/jpeg'],
+        'jpeg' => ['image/jpeg'],
+        'webp' => ['image/webp'],
     ];
 
     /**
@@ -84,6 +95,10 @@ class DocumentUploader
         }
 
         if ($clientExtension === 'pdf' && !$this->hasPdfSignature($file)) {
+            throw new \InvalidArgumentException('Unsupported file format. Allowed formats: PDF and Markdown.');
+        }
+
+        if (in_array($clientExtension, ['png', 'jpg', 'jpeg', 'webp'], true) && !$this->hasImageSignature($file, $clientExtension)) {
             throw new \InvalidArgumentException('Unsupported file format. Allowed formats: PDF and Markdown.');
         }
 
@@ -157,5 +172,34 @@ class DocumentUploader
         fclose($handle);
 
         return $header === '%PDF-';
+    }
+
+    /**
+     * Checks that an image file starts with the expected magic byte signature for its format
+     *
+     * @param UploadedFile $file Uploaded file to inspect
+     * @param string $extension Normalized lowercase file extension
+     * @return bool True when the binary header matches PNG, JPEG, or WEBP magic bytes
+     */
+    private function hasImageSignature(UploadedFile $file, string $extension): bool
+    {
+        $handle = fopen($file->getPathname(), 'rb');
+        if ($handle === false) {
+            return false;
+        }
+
+        $header = fread($handle, 12);
+        fclose($handle);
+
+        if ($header === false) {
+            return false;
+        }
+
+        return match ($extension) {
+            'png' => str_starts_with($header, "\x89PNG\r\n\x1a\n"),
+            'jpg', 'jpeg' => str_starts_with($header, "\xFF\xD8\xFF"),
+            'webp' => strlen($header) >= 12 && substr($header, 0, 4) === 'RIFF' && substr($header, 8, 4) === 'WEBP',
+            default => false,
+        };
     }
 }

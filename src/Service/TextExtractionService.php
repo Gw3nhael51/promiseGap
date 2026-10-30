@@ -11,24 +11,33 @@ use App\Exception\TextExtractionException;
  */
 class TextExtractionService
 {
+    private const array EPHEMERAL_IMAGE_MIMES = [
+        'image/png',
+        'image/jpeg',
+        'image/webp',
+    ];
+
     /**
      * Initializes the text extraction service
      *
      * @param DocumentUploader $documentUploader Service giving access to stored files
      * @param PdfExtractor $pdfExtractor Extractor for PDF files
      * @param MarkdownExtractor $markdownExtractor Extractor for Markdown and plain text files
+     * @param ImageExtractor $imageExtractor Multimodal vision extractor for PNG, JPEG, and WEBP images
      */
     public function __construct(
         private DocumentUploader $documentUploader,
         private PdfExtractor $pdfExtractor,
         private MarkdownExtractor $markdownExtractor,
+        private ImageExtractor $imageExtractor,
     ) {
     }
 
     /**
-     * Extracts the text of a document and updates its extraction fields (caller must flush)
+     * Extracts the text of a document, updates its extraction fields, and purges raw image files after extraction
      *
      * @param Document $document Document to process
+     * @return void
      */
     public function process(Document $document): void
     {
@@ -46,6 +55,10 @@ class TextExtractionService
             $document->setEstimatedTokens(null);
             $document->setExtractionError(mb_substr($exception->getMessage(), 0, 500));
             $document->setExtractionStatus(ExtractionStatus::FAILED);
+        } finally {
+            if (in_array($document->getMimeType(), self::EPHEMERAL_IMAGE_MIMES, true)) {
+                $this->documentUploader->remove($document);
+            }
         }
     }
 
@@ -63,6 +76,7 @@ class TextExtractionService
         return match ($document->getMimeType()) {
             'application/pdf' => $this->pdfExtractor->extract($path),
             'text/plain', 'text/markdown', 'text/x-markdown' => $this->markdownExtractor->extract($path),
+            'image/png', 'image/jpeg', 'image/webp' => $this->imageExtractor->extract($path),
             default => throw new TextExtractionException('This document format is not supported.'),
         };
     }

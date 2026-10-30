@@ -47,6 +47,12 @@ class CachedAiService implements AiClientInterface
     public function computeCacheKey(string $systemPrompt, string $userPrompt, array $options = []): string
     {
         unset($options['force_refresh']);
+
+        if (isset($options['image_path']) && is_string($options['image_path']) && is_file($options['image_path'])) {
+            $options['image_sha256'] = hash_file('sha256', $options['image_path']);
+            unset($options['image_path']);
+        }
+
         ksort($options);
 
         $payload = json_encode([

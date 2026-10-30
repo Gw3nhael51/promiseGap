@@ -7,6 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\AI\Platform\Bridge\Generic\Factory as GenericPlatformFactory;
 use Symfony\AI\Platform\Exception\AuthenticationException;
 use Symfony\AI\Platform\Exception\BadRequestException;
+use Symfony\AI\Platform\Message\Content\Image;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\TokenUsage\TokenUsageInterface;
@@ -75,9 +76,12 @@ class MetaAiClient implements AiClientInterface
     {
         $model = (string) ($options['model'] ?? $this->model);
         $temperature = (float) ($options['temperature'] ?? 0.1);
+        $imagePath = isset($options['image_path']) && is_string($options['image_path'])
+            ? $options['image_path']
+            : null;
 
         if (!$this->isConfigured()) {
-            return $this->simulateResponse($systemPrompt, $userPrompt, $model);
+            return $this->simulateResponse($systemPrompt, $userPrompt, $model, $imagePath);
         }
 
         $optionsPayload = [
@@ -108,9 +112,13 @@ class MetaAiClient implements AiClientInterface
             name: 'meta-muse-spark',
         );
 
+        $userMessage = ($imagePath !== null && is_file($imagePath))
+            ? Message::ofUser($userPrompt, Image::fromFile($imagePath))
+            : Message::ofUser($userPrompt);
+
         $messages = new MessageBag(
             Message::forSystem($systemPrompt),
-            Message::ofUser($userPrompt),
+            $userMessage,
         );
 
         $attempt = 0;
@@ -215,12 +223,30 @@ class MetaAiClient implements AiClientInterface
 
     /**
      * Generates a deterministic local response when no live API key is configured
+     *
+     * @param string $systemPrompt System prompt sent to the model
+     * @param string $userPrompt User prompt sent to the model
+     * @param string $model Target model identifier
+     * @param string|null $imagePath Optional path to an uploaded image for multimodal vision
+     * @return AiResponse Simulated AI completion response
      */
-    private function simulateResponse(string $systemPrompt, string $userPrompt, string $model): AiResponse
+    private function simulateResponse(string $systemPrompt, string $userPrompt, string $model, ?string $imagePath = null): AiResponse
     {
         $combined = strtolower($systemPrompt . "\n" . $userPrompt);
 
-        if (str_contains($combined, '"translations"') || str_contains($combined, 'translate the following contract audit claims')) {
+        if ($imagePath !== null || str_contains($combined, 'multimodal document vision') || str_contains($combined, 'transcribe this document image')) {
+            $filenameHint = $imagePath !== null ? basename($imagePath) : 'document_scan.png';
+            $content = implode("\n\n", [
+                '[Page 1]',
+                '# Scanned Contractual & Technical Document (' . $filenameHint . ')',
+                '## 1. Service Level Agreement & Availability',
+                '- The platform guarantees 99.95% monthly uptime availability across production clusters.',
+                '- Recovery Point Objective (RPO) is strictly bounded to 15 minutes with automated encrypted backups.',
+                '## 2. Security & Support Commitments',
+                '- All customer data is encrypted at rest using AES-256 and in transit via TLS 1.3.',
+                '- Critical severity incidents receive 24/7 engineering support with a 30-minute initial response time.',
+            ]);
+        } elseif (str_contains($combined, '"translations"') || str_contains($combined, 'translate the following contract audit claims')) {
             $decodedInput = json_decode($userPrompt, true);
             $items = is_array($decodedInput['items'] ?? null) ? $decodedInput['items'] : [];
             $content = json_encode(['translations' => $items], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);

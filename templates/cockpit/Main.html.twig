@@ -85,7 +85,7 @@
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9BA5B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
                         <span id="proposal-text" style="font-size: 16px;">{{ isFr ? 'Glissez-déposez la proposition ici' : 'Drag and drop the proposal here' }}</span>
                         <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 10px; font: inherit; font-size: 15px;">{{ isFr ? 'Parcourir' : 'Browse files' }}</span>
-                        <span style="font-size: 13px; color: #9BA5B3;">{{ isFr ? 'PDF ou Markdown, jusqu’à 20 Mo' : 'PDF or Markdown, up to 20 MB' }}</span>
+                        <span style="font-size: 13px; color: #9BA5B3;">{{ isFr ? 'PDF, Markdown ou Photo/Scan (PNG, JPG, WEBP — Muse Spark Vision)' : 'PDF, Markdown, or Photo/Scan (PNG, JPG, WEBP — Muse Spark Vision)' }}</span>
                         {{ form_widget(form.proposalFile, {'attr': {'style': 'display: none;', 'onchange': 'handleProposalSelected(this)'}}) }}
                     </label>
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #9BA5B3;">
@@ -114,7 +114,7 @@
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9BA5B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
                         <span id="specs-text" style="font-size: 16px;">{{ isFr ? 'Glissez-déposez les specs d’architecture ici' : 'Drag and drop the architecture docs here' }}</span>
                         <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 10px; font: inherit; font-size: 15px;">{{ isFr ? 'Parcourir' : 'Browse files' }}</span>
-                        <span style="font-size: 13px; color: #9BA5B3;">{{ isFr ? 'PDF ou Markdown, jusqu’à 20 Mo' : 'PDF or Markdown, up to 20 MB' }}</span>
+                        <span style="font-size: 13px; color: #9BA5B3;">{{ isFr ? 'PDF, Markdown ou Photo/Schéma (PNG, JPG, WEBP — Muse Spark Vision)' : 'PDF, Markdown, or Photo/Diagram (PNG, JPG, WEBP — Muse Spark Vision)' }}</span>
                         {{ form_widget(form.technicalSpecFiles, {'attr': {'style': 'display: none;', 'onchange': 'handleSpecsSelected(this)'}}) }}
                     </label>
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #9BA5B3;">
