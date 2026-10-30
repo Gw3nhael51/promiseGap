@@ -17,7 +17,8 @@
 
 ### 1. Contributions Créées à 100 % pendant le Hackathon
 L'intégralité du code, de l'architecture, des 24 scénarios de benchmark et de l'interface de ce dépôt a été **développée de zéro entre le 26 octobre et le 4 novembre 2026** pour le Meta Global AI Developer Hackathon :
-- **Intégration Meta Muse Spark (`muse-spark-1.3`) (`src/Service/MetaAiClient.php`, `src/Service/CachedAiService.php`) :** Connexion native à `https://api.meta.ai/v1` via `symfony/ai-generic-platform`, validation stricte de schémas JSON, contrôle de l'effort de raisonnement (`reasoning_effort: "low"`), cache SHA-256 et suivi budgétaire (50 crédits).
+- **Intégration Meta Muse Spark (`muse-spark-1.3`) (`src/Service/MetaAiClient.php`, `src/Service/CachedAiService.php`) :** Connexion native à `https://api.meta.ai/v1` via `symfony/ai-generic-platform`, validation stricte de schémas JSON, effort de raisonnement adaptatif ou sélectionnable (`Auto`, `Low`, `Medium`, `High`), cache SHA-256 et suivi budgétaire (50 crédits).
+- **Ingestion Multimodale Vision & Zero-Image-Retention (`src/Service/ImageExtractor.php`, `src/Service/TextExtractionService.php`) :** Analyse directe de photos ou scans de contrats, devis, factures et schémas d'architecture (`PNG`, `JPG/JPEG`, `WEBP`) via la vision multimodale de `muse-spark-1.3`, mise en cache du texte extrait via l'empreinte `SHA-256` de l'image, indexation vectorielle dans `pgvector` et **suppression physique immédiate de l'image brute après extraction (`Zero-Image-Retention`)** pour une confidentialité juridique maximale.
 - **Décomposition Autonome des Engagements (`src/Service/CommitmentExtractor.php`) :** Extraction des promesses explicites et implicites (SLA, RPO/RTO, délais de livraison, certifications) depuis des propositions commerciales multi-pages.
 - **Indexation Vectorielle Hiérarchique (`src/Service/DocumentChunker.php`, `src/Service/EmbeddingGenerator.php`, `src/Repository/DocumentChunkRepository.php`) :** Découpage intelligent par sections Markdown/PDF avec recouvrement et vecteurs 128-d normalisés L2 dans PostgreSQL 16 `pgvector` (distance cosinus `<=>`).
 - **Qualification Contradictoire à 4 États & Validateur Anti-Hallucination (`src/Service/DiscrepancyClassifier.php`, `src/Service/EvidenceValidator.php`) :** Confrontation de chaque promesse aux spécifications techniques et rejet déterministe de tout verdict IA dont la citation de preuve n'est pas une sous-chaîne exacte (*verbatim*) du document source.
@@ -61,8 +62,8 @@ Dans les négociations B2B, les **propositions commerciales** (rédigées pour r
 
 ```mermaid
 flowchart LR
-    subgraph Ingestion["1. Ingestion Sécurisée & Extraction"]
-        U["Upload PDF & Markdown\n(DocumentUploader)"] --> E["Extraction Texte Asynchrone\n(PdfExtractor / MarkdownExtractor)"]
+    subgraph Ingestion["1. Ingestion Multimodale & Zero-Image-Retention"]
+        U["Upload PDF, Markdown & Images\n(PNG/JPG/WEBP · DocumentUploader)"] --> E["Extraction Texte & Vision\n(PdfExtractor / MarkdownExtractor / ImageExtractor)"]
     end
 
     subgraph AI["2. Meta Muse Spark & Frugalité Tokens"]

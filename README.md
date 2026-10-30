@@ -17,7 +17,8 @@
 
 ### 1. New Work & Team Contributions (100% Built During the Hackathon)
 Every line of code, architecture, benchmark scenario, and UI view in this repository was **built from scratch between October 26 and November 4, 2026** for the Meta Global AI Developer Hackathon:
-- **Meta Muse Spark (`muse-spark-1.3`) Integration (`src/Service/MetaAiClient.php`, `src/Service/CachedAiService.php`):** Native integration with `https://api.meta.ai/v1` via Symfony AI Generic Platform (`symfony/ai-generic-platform`), structured JSON schema enforcement, adaptive `reasoning_effort` token control, SHA-256 response caching, and a 50-credit budget ledger.
+- **Meta Muse Spark (`muse-spark-1.3`) Integration (`src/Service/MetaAiClient.php`, `src/Service/CachedAiService.php`):** Native integration with `https://api.meta.ai/v1` via Symfony AI Generic Platform (`symfony/ai-generic-platform`), structured JSON schema enforcement, adaptive & user-selectable `reasoning_effort` (`Auto`, `Low`, `Medium`, `High`), SHA-256 response caching, and a 50-credit budget ledger.
+- **Multimodal Vision Ingestion & Zero-Image-Retention (`src/Service/ImageExtractor.php`, `src/Service/TextExtractionService.php`):** Accepts contract scans, photographed invoices, commercial quotes, or architecture diagrams (`PNG`, `JPG/JPEG`, `WEBP`), transcribes them into structured Markdown via `muse-spark-1.3` multimodal vision, caches the extracted text by image `SHA-256` fingerprint, embeds chunks into `pgvector`, and **immediately purges the physical image file from disk (`Zero-Image-Retention`)** for strict legal/GDPR confidentiality.
 - **Autonomous Claim Decomposition (`src/Service/CommitmentExtractor.php`):** Extracts explicit and implicit vendor promises (SLAs, RPO/RTO, delivery timelines, security certifications) from multi-page commercial proposals.
 - **Heading-Aware Vector Indexing (`src/Service/DocumentChunker.php`, `src/Service/EmbeddingGenerator.php`, `src/Repository/DocumentChunkRepository.php`):** Hierarchical Markdown/PDF section chunking with token overlap and 128-d L2-normalized vectors stored in PostgreSQL 16 `pgvector` (`<=>` cosine distance).
 - **4-State Formal Discrepancy Classifier & Anti-Hallucination Validator (`src/Service/DiscrepancyClassifier.php`, `src/Service/EvidenceValidator.php`):** Cross-examines each commercial promise against retrieved technical chunks and deterministically rejects any AI verdict whose evidence quote is not a verbatim substring of the source specification.
@@ -61,8 +62,8 @@ In enterprise B2B deals, **commercial proposals** (written by sales teams to win
 
 ```mermaid
 flowchart LR
-    subgraph Ingestion["1. Secure Ingestion & Extraction"]
-        U["PDF & Markdown Upload\n(DocumentUploader)"] --> E["Async Text Extraction\n(PdfExtractor / MarkdownExtractor)"]
+    subgraph Ingestion["1. Multimodal Ingestion & Zero-Image-Retention"]
+        U["PDF, Markdown & Image Upload\n(PNG/JPG/WEBP · DocumentUploader)"] --> E["Text & Vision Extraction\n(PdfExtractor / MarkdownExtractor / ImageExtractor)"]
     end
 
     subgraph AI["2. Meta Muse Spark & Token Frugality"]
