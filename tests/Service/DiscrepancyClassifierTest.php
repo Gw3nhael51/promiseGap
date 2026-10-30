@@ -62,4 +62,79 @@ class DiscrepancyClassifierTest extends KernelTestCase
         $this->assertSame(FindingStatus::UNSUPPORTED, $result->status);
         $this->assertEmpty($result->evidences);
     }
+
+    /**
+     * Verifies adaptive reasoning effort ('auto') escalation and explicit user overrides ('low', 'medium', 'high')
+     */
+    public function testAdaptiveAndExplicitReasoningEffortResolution(): void
+    {
+        self::bootKernel();
+        $classifier = static::getContainer()->get(DiscrepancyClassifier::class);
+
+        $grayZoneChunk = new RetrievedChunk(
+            text: 'Monthly platform availability target is 99.5% excluding scheduled maintenance.',
+            sectionTitle: 'SLA & Availability',
+            documentTitle: 'specs.md',
+            pageNumber: 1,
+            chunkIndex: 0,
+            similarityScore: 0.58,
+        );
+
+        $highConfidenceChunk = new RetrievedChunk(
+            text: 'All data at rest is encrypted with AES-256.',
+            sectionTitle: 'Security',
+            documentTitle: 'specs.md',
+            pageNumber: 1,
+            chunkIndex: 0,
+            similarityScore: 0.92,
+        );
+
+        // 1. Auto mode with no chunks -> low
+        $this->assertSame('low', $classifier->resolveReasoningEffort('We guarantee 99.99% uptime.', [], 'auto'));
+
+        // 2. Auto mode with high-stakes SLA/penalty clause and borderline similarity (0.58) -> high
+        $this->assertSame(
+            'high',
+            $classifier->resolveReasoningEffort(
+                'The platform guarantees 99.99% monthly availability with financial penalties.',
+                [$grayZoneChunk],
+                'auto',
+            ),
+        );
+
+        // 3. Auto mode with high-stakes clause and very high similarity (0.92) -> medium
+        $this->assertSame(
+            'medium',
+            $classifier->resolveReasoningEffort(
+                'The hosting infrastructure is ISO 27001 and SOC 2 certified.',
+                [$highConfidenceChunk],
+                'auto',
+            ),
+        );
+
+        // 4. Auto mode with quantitative timeline metric -> medium
+        $this->assertSame(
+            'medium',
+            $classifier->resolveReasoningEffort(
+                'Migration will be delivered within 4 weeks.',
+                [$highConfidenceChunk],
+                'auto',
+            ),
+        );
+
+        // 5. Auto mode with qualitative non-metric claim -> low
+        $this->assertSame(
+            'low',
+            $classifier->resolveReasoningEffort(
+                'The user interface is modern and intuitive.',
+                [$highConfidenceChunk],
+                'auto',
+            ),
+        );
+
+        // 6. Explicit user overrides always take precedence
+        $this->assertSame('low', $classifier->resolveReasoningEffort('99.99% SLA with penalties', [$grayZoneChunk], 'low'));
+        $this->assertSame('medium', $classifier->resolveReasoningEffort('Simple qualitative claim', [$highConfidenceChunk], 'medium'));
+        $this->assertSame('high', $classifier->resolveReasoningEffort('Simple qualitative claim', [], 'high'));
+    }
 }

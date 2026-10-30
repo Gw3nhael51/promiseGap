@@ -14,11 +14,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
 /**
- * Proof-oriented RAG discrepancy qualification engine comparing commitments to reference chunks (US05 / #13)
+ * Proof-oriented discrepancy qualification engine comparing commitments to reference chunks (US05 / #13)
  */
 #[Autoconfigure(public: true)]
 class DiscrepancyClassifier
 {
+    public const array ALLOWED_REASONING_MODES = ['auto', 'low', 'medium', 'high'];
+
     private const string SYSTEM_PROMPT = <<<'PROMPT'
 You are an enterprise B2B contract compliance and discrepancy qualification engine powered by Meta Muse Spark.
 Given a commercial COMMITMENT from a sales proposal and the top RETRIEVED_CHUNKS from technical reference specifications, classify the commitment into one of 4 categories:
@@ -44,13 +46,61 @@ PROMPT;
     }
 
     /**
+     * Resolves the Meta Muse Spark reasoning_effort level ('low', 'medium', or 'high')
+     * either from an explicit user choice or adaptively based on clause risk and chunk similarity
+     *
+     * @param string $commitmentText Commercial commitment text
+     * @param RetrievedChunk[] $retrievedChunks Retrieved technical specification chunks
+     * @param string $mode User-selected mode ('auto', 'low', 'medium', or 'high')
+     * @return string Resolved reasoning effort ('low', 'medium', or 'high')
+     */
+    public function resolveReasoningEffort(string $commitmentText, array $retrievedChunks, string $mode = 'auto'): string
+    {
+        $normalizedMode = strtolower(trim($mode));
+        if (in_array($normalizedMode, ['low', 'medium', 'high'], true)) {
+            return $normalizedMode;
+        }
+
+        if ($retrievedChunks === []) {
+            return 'low';
+        }
+
+        $topSimilarity = $retrievedChunks[0]->similarityScore;
+        $hasHighStakesClause = (bool) preg_match(
+            '/\b(99\.\d+|penalt|liabilit|indemn|zero\s+data\s+loss|synchron|rpo|rto|iso\s*27001|soc\s*2|gdpr|hipaa|turnkey|guarantee|sla)\b/i',
+            $commitmentText,
+        );
+
+        if ($hasHighStakesClause) {
+            // Borderline semantic similarity on a high-stakes legal/SLA clause requires deep reasoning
+            if ($topSimilarity >= 0.35 && $topSimilarity <= 0.70) {
+                return 'high';
+            }
+
+            return 'medium';
+        }
+
+        $hasQuantitativeMetric = (bool) preg_match(
+            '/\b\d+(\.\d+)?\s*(%|percent|ms|seconds?|minutes?|hours?|days?|weeks?|months?|gb|tb)\b/i',
+            $commitmentText,
+        );
+
+        if ($hasQuantitativeMetric) {
+            return 'medium';
+        }
+
+        return 'low';
+    }
+
+    /**
      * Qualifies a raw commitment string against a list of retrieved reference chunks
      *
      * @param string $commitmentText Commercial commitment verbatim text
      * @param RetrievedChunk[] $retrievedChunks Top-k retrieved chunks from pgvector
+     * @param string $reasoningMode Reasoning mode ('auto', 'low', 'medium', 'high')
      * @return QualificationResult Validated qualification verdict and evidence
      */
-    public function qualifyText(string $commitmentText, array $retrievedChunks): QualificationResult
+    public function qualifyText(string $commitmentText, array $retrievedChunks, string $reasoningMode = 'auto'): QualificationResult
     {
         $serializedChunks = array_map(static fn (RetrievedChunk $chunk): array => [
             'documentId' => $chunk->documentId,
@@ -72,7 +122,14 @@ PROMPT;
             'required' => ['status', 'rationale', 'evidence'],
         ];
 
-        $raw = $this->aiClient->completeJson(self::SYSTEM_PROMPT, $userPrompt, $schema);
+        $resolvedEffort = $this->resolveReasoningEffort($commitmentText, $retrievedChunks, $reasoningMode);
+
+        $raw = $this->aiClient->completeJson(
+            self::SYSTEM_PROMPT,
+            $userPrompt,
+            $schema,
+            ['reasoning_effort' => $resolvedEffort],
+        );
         $statusStr = strtoupper(trim((string) ($raw['status'] ?? 'AMBIGUOUS')));
         $status = FindingStatus::tryFrom($statusStr) ?? FindingStatus::AMBIGUOUS;
         $rationale = (string) ($raw['rationale'] ?? '');
@@ -101,11 +158,12 @@ PROMPT;
      *
      * @param Commitment $commitment Commitment entity to qualify
      * @param RetrievedChunk[] $retrievedChunks Top-k retrieved chunks from pgvector
+     * @param string $reasoningMode Reasoning mode ('auto', 'low', 'medium', 'high')
      * @return Finding Persisted Finding entity with linked Evidence
      */
-    public function qualifyAndPersist(Commitment $commitment, array $retrievedChunks): Finding
+    public function qualifyAndPersist(Commitment $commitment, array $retrievedChunks, string $reasoningMode = 'auto'): Finding
     {
-        $result = $this->qualifyText((string) $commitment->getVerbatimText(), $retrievedChunks);
+        $result = $this->qualifyText((string) $commitment->getVerbatimText(), $retrievedChunks, $reasoningMode);
 
         $finding = $commitment->getFinding() ?? new Finding();
         $finding->setStatus($result->status);

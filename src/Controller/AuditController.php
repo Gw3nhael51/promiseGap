@@ -41,7 +41,8 @@ class AuditController extends AbstractController
         EntityManagerInterface $entityManager,
         Request $request,
     ): Response {
-        $this->ensureAnalysisProcessed($analysis, $textExtractionService, $auditPipelineService, $entityManager);
+        $reasoningMode = (string) $request->getSession()->get('_reasoning_mode', 'auto');
+        $this->ensureAnalysisProcessed($analysis, $textExtractionService, $auditPipelineService, $entityManager, $reasoningMode);
         $locale = $request->getLocale();
 
         $demoData = $analysis->getCommitments()->isEmpty()
@@ -51,6 +52,7 @@ class AuditController extends AbstractController
         return $this->render('audit/Audit.html.twig', [
             'analysis' => $analysis,
             'demoData' => $demoData,
+            'reasoningMode' => $reasoningMode,
         ]);
     }
 
@@ -75,7 +77,8 @@ class AuditController extends AbstractController
         EntityManagerInterface $entityManager,
         Request $request,
     ): Response {
-        $this->ensureAnalysisProcessed($analysis, $textExtractionService, $auditPipelineService, $entityManager);
+        $reasoningMode = (string) $request->getSession()->get('_reasoning_mode', 'auto');
+        $this->ensureAnalysisProcessed($analysis, $textExtractionService, $auditPipelineService, $entityManager, $reasoningMode);
         $locale = $request->getLocale();
 
         $demoData = $analysis->getCommitments()->isEmpty()
@@ -87,6 +90,7 @@ class AuditController extends AbstractController
             'deal' => $demoData['deal'],
             'stats' => $demoData['stats'],
             'claims' => $demoData['claims'],
+            'reasoningMode' => $reasoningMode,
         ]);
     }
 
@@ -97,6 +101,7 @@ class AuditController extends AbstractController
      * @param TextExtractionService $textExtractionService Document text extraction service
      * @param AuditPipelineService $auditPipelineService End-to-end RAG audit pipeline service
      * @param EntityManagerInterface $entityManager Doctrine entity manager
+     * @param string $reasoningMode Selected reasoning mode ('auto', 'low', 'medium', 'high')
      * @return void
      */
     private function ensureAnalysisProcessed(
@@ -104,6 +109,7 @@ class AuditController extends AbstractController
         TextExtractionService $textExtractionService,
         AuditPipelineService $auditPipelineService,
         EntityManagerInterface $entityManager,
+        string $reasoningMode = 'auto',
     ): void {
         if ($analysis->getDocuments()->isEmpty()) {
             return;
@@ -121,6 +127,6 @@ class AuditController extends AbstractController
             $entityManager->flush();
         }
 
-        $auditPipelineService->runIfReady($analysis);
+        $auditPipelineService->runIfReady($analysis, $reasoningMode);
     }
 }

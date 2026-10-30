@@ -36,9 +36,10 @@ class AuditPipelineService
      * Runs commitment extraction, pgvector indexing and discrepancy qualification when all documents are extracted
      *
      * @param Analysis $analysis Target analysis workspace
+     * @param string $reasoningMode Reasoning mode ('auto', 'low', 'medium', 'high')
      * @return bool True if the pipeline ran to completion
      */
-    public function runIfReady(Analysis $analysis): bool
+    public function runIfReady(Analysis $analysis, string $reasoningMode = 'auto'): bool
     {
         $documents = $analysis->getDocuments();
         if ($documents->isEmpty()) {
@@ -51,20 +52,23 @@ class AuditPipelineService
             }
         }
 
-        // Ignorer : Ne pas relancer le pipeline si des engagements ont déjà été extraits
         if (!$analysis->getCommitments()->isEmpty()) {
             return false;
         }
 
-        $this->run($analysis);
+        $this->run($analysis, $reasoningMode);
 
         return true;
     }
 
     /**
-     * Executes the full RAG discrepancy pipeline on an Analysis workspace
+     * Executes the full discrepancy pipeline on an Analysis workspace
+     *
+     * @param Analysis $analysis Target analysis workspace
+     * @param string $reasoningMode Reasoning mode ('auto', 'low', 'medium', 'high')
+     * @return void
      */
-    public function run(Analysis $analysis): void
+    public function run(Analysis $analysis, string $reasoningMode = 'auto'): void
     {
         $this->vectorStoreService->indexAnalysisDocuments($analysis);
         $commitments = $this->commitmentExtractor->extractForAnalysis($analysis);
@@ -75,7 +79,7 @@ class AuditPipelineService
                 (string) $commitment->getVerbatimText(),
                 4,
             );
-            $this->discrepancyClassifier->qualifyAndPersist($commitment, $topChunks);
+            $this->discrepancyClassifier->qualifyAndPersist($commitment, $topChunks, $reasoningMode);
         }
 
         $analysis->setStatus(AnalysisStatus::COMPLETED);
