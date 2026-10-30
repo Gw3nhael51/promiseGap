@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {#
-    Displays list of existing analysis workspaces and call-to-action to create a new audit
+    Displays list of existing analysis workspaces with responsive contextual selection bar
     
     @param array analyses List of Analysis entities ordered by date
 #}
@@ -11,100 +11,293 @@
 {% block title %}PromiseGap | Commitment Audits{% endblock %}
 
 {% block header %}
-<header class="navbar bg-base-200 border-b border-base-300 px-4 lg:px-8 sticky top-0 z-50">
+<header class="navbar bg-[#0E1116] border-b border-[#2A323D] px-4 lg:px-8 sticky top-0 z-50">
     <div class="navbar-start gap-3">
-        <a href="{{ path('app_landing') }}" class="btn btn-ghost normal-case text-xl font-bold flex items-center gap-2">
-            <span>Promise<span class="text-primary">Gap</span></span>
-            <span class="badge badge-primary badge-outline badge-sm font-mono">ADMIN</span>
+        <a href="{{ path('app_landing') }}" class="flex items-center gap-3 text-[#E8ECF1] hover:text-white no-underline">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="2" y="5" width="14" height="14" rx="3" stroke="#7FA3FF" stroke-width="2"/>
+                <rect x="12" y="9" width="14" height="14" rx="3" stroke="#B7C0CC" stroke-width="2"/>
+            </svg>
+            <span class="text-lg font-bold tracking-tight">PromiseGap</span>
+            <span class="px-2 py-0.5 rounded-full bg-[#7FA3FF]/12 text-[#7FA3FF] border border-[#7FA3FF]/30 font-mono text-[11px] font-semibold">ADMIN</span>
         </a>
     </div>
-    <div class="navbar-center hidden md:flex">
-        <ul class="menu menu-horizontal px-1 gap-2 font-medium">
-            <li><a href="{{ path('app_analysis_index') }}" class="active">{{ is_fr ? 'Tous les audits' : 'All Audits' }}</a></li>
-            <li><a href="{{ path('app_cockpit') }}">Cockpit</a></li>
-            <li><a href="{{ path('app_demo') }}">{{ is_fr ? 'Démo' : 'Demo' }}</a></li>
-        </ul>
+    <div class="navbar-center hidden md:flex items-center gap-6 text-sm">
+        <a href="{{ path('app_analysis_index') }}" class="text-[#E8ECF1] font-medium no-underline">{{ is_fr ? 'Tous les audits' : 'All Audits' }}</a>
+        <a href="{{ path('app_cockpit') }}" class="text-[#9BA5B3] hover:text-[#E8ECF1] no-underline">Cockpit</a>
+        <a href="{{ path('app_demo') }}" class="text-[#9BA5B3] hover:text-[#E8ECF1] no-underline">{{ is_fr ? 'Démo' : 'Demo' }}</a>
     </div>
     <div class="navbar-end gap-3">
         {% include '_locale_switcher.html.twig' %}
         {% if app.user %}
-            <span class="badge badge-neutral gap-2 py-3 px-3 hidden sm:inline-flex">
-                <span class="w-2 h-2 rounded-full bg-success"></span>
-                {{ app.user.userIdentifier }}
-            </span>
-            <a href="{{ logout_path() }}" class="btn btn-ghost btn-sm">{{ is_fr ? 'Déconnexion' : 'Sign out' }}</a>
+            <div class="hidden sm:inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-[#151A21] border border-[#3A4553]">
+                <span class="w-2 h-2 rounded-full bg-[#4ADE9A]"></span>
+                <span class="text-xs text-[#E8ECF1]">{{ app.user.userIdentifier }}</span>
+                <span class="px-2 py-0.5 rounded-full bg-[#F5B04A]/15 text-[#F5B04A] border border-[#F5B04A]/30 font-mono text-[11px] font-semibold">ADMIN</span>
+            </div>
+            <a href="{{ logout_path() }}" class="text-xs font-medium text-[#FF7B7B] hover:text-[#ff9999] px-2 py-1 no-underline">{{ is_fr ? 'Déconnexion' : 'Sign out' }}</a>
         {% endif %}
     </div>
 </header>
 {% endblock %}
 
 {% block body %}
-<div class="container mx-auto px-4 lg:px-8 py-8 space-y-6">
-    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+<div class="container mx-auto px-4 lg:px-8 py-8 pb-24 sm:pb-8 max-w-7xl space-y-6">
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-[#2A323D]">
         <div>
-            <h1 class="text-3xl font-bold">Commercial Commitment Audits</h1>
-            <p class="text-base-content/70">
+            <h1 class="text-3xl font-bold text-[#E8ECF1] tracking-tight">Commercial Commitment Audits</h1>
+            <p class="text-sm text-[#9BA5B3] mt-1">
                 {{ is_fr
                     ? 'Supervisez les propositions commerciales confrontées aux spécifications techniques.'
                     : 'Audit commercial proposals against technical architecture and specs.' }}
             </p>
         </div>
-        <div class="flex items-center gap-2">
-            <a href="{{ path('app_cockpit') }}" class="btn btn-outline btn-sm sm:btn-md">
+        <div class="flex flex-wrap items-center gap-2.5">
+            {% if analyses is not empty %}
+                <label class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#151A21] hover:bg-[#1B222B] border border-[#2A323D] text-xs font-medium text-[#E8ECF1] cursor-pointer select-none transition-colors">
+                    <input id="select-all-analyses" type="checkbox" class="checkbox checkbox-primary checkbox-xs rounded" onchange="toggleAllAnalyses(this)">
+                    <span>{{ is_fr ? 'Tout sélectionner' : 'Select all' }}</span>
+                    <span class="px-1.5 py-0.5 rounded bg-[#0E1116] text-[#9BA5B3] font-mono text-[11px]">{{ analyses|length }}</span>
+                </label>
+            {% endif %}
+            <a href="{{ path('app_cockpit') }}" class="inline-flex items-center px-3.5 py-2 rounded-xl border border-[#3A4553] bg-[#151A21] hover:border-[#4A5565] text-xs sm:text-sm font-medium text-[#E8ECF1] no-underline transition-colors">
                 {{ is_fr ? 'Ouvrir le Cockpit' : 'Open Cockpit' }}
             </a>
-            <a href="{{ path('app_analysis_new') }}" class="btn btn-primary btn-sm sm:btn-md">
+            <a href="{{ path('app_analysis_new') }}" class="inline-flex items-center px-4 py-2 rounded-xl bg-[#7FA3FF] hover:bg-[#A9C0FF] text-[#0B1020] text-xs sm:text-sm font-semibold no-underline transition-colors">
                 + New Audit
             </a>
         </div>
     </div>
 
     {% if analyses is empty %}
-        <div class="card bg-base-200 shadow-md p-8 text-center">
-            <h2 class="text-xl font-semibold mb-2">{{ is_fr ? 'Aucun espace d\'audit' : 'No audit workspace yet' }}</h2>
-            <p class="text-base-content/70 mb-4">
+        <div class="rounded-2xl bg-[#151A21] border border-[#2A323D] p-10 text-center space-y-4">
+            <h2 class="text-xl font-semibold text-[#E8ECF1]">{{ is_fr ? 'Aucun espace d\'audit' : 'No audit workspace yet' }}</h2>
+            <p class="text-sm text-[#9BA5B3] max-w-md mx-auto">
                 {{ is_fr
                     ? 'Commencez par créer votre premier espace d\'audit pour analyser vos documents.'
                     : 'Start by creating your first audit workspace to cross-examine documents.' }}
             </p>
             <div>
-                <a href="{{ path('app_analysis_new') }}" class="btn btn-primary">Create First Audit</a>
+                <a href="{{ path('app_analysis_new') }}" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-[#7FA3FF] text-[#0B1020] text-sm font-semibold no-underline">Create First Audit</a>
             </div>
         </div>
     {% else %}
+        <!-- Contextual Selection Bar (hidden until >= 1 card is checked; sticky bottom on mobile, inline bar on desktop) -->
+        <form
+            id="bulk-delete-form"
+            method="post"
+            action="{{ path('app_analysis_bulk_delete') }}"
+            onsubmit="return confirmBulkDelete();"
+            class="hidden fixed bottom-4 inset-x-4 z-50 sm:static sm:z-auto rounded-2xl bg-[#1B222B]/95 backdrop-blur border border-[#FF7B7B]/40 shadow-2xl sm:shadow-md transition-all"
+        >
+            <input type="hidden" name="_token" value="{{ csrf_token('bulk_delete_analyses') }}">
+            <div class="py-3 px-4 flex flex-row items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <span id="selected-count-badge" class="inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-[#7FA3FF]/20 text-[#7FA3FF] border border-[#7FA3FF]/40 font-mono text-xs font-bold">0</span>
+                    <span id="selection-status" class="text-sm font-medium text-[#E8ECF1]">
+                        {{ is_fr ? 'audit sélectionné' : 'audit selected' }}
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-2.5">
+                    <button type="button" onclick="clearSelection()" class="px-3 py-1.5 rounded-lg bg-transparent hover:bg-[#151A21] text-xs font-medium text-[#9BA5B3] hover:text-[#E8ECF1] border border-transparent cursor-pointer">
+                        {{ is_fr ? 'Annuler' : 'Clear' }}
+                    </button>
+                    <button id="bulk-delete-btn" type="submit" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-[#FF7B7B] hover:bg-[#ff9494] text-[#0B1020] text-xs sm:text-sm font-semibold border-0 cursor-pointer transition-colors">
+                        <span id="bulk-delete-label">{{ is_fr ? 'Supprimer' : 'Delete' }}</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for analysis in analyses %}
-                <div class="card bg-base-200 border border-base-300 shadow-md hover:shadow-lg transition-shadow">
-                    <div class="card-body">
-                        <div class="flex items-start justify-between gap-2">
-                            <h2 class="card-title text-lg">{{ analysis.title }}</h2>
-                            <span class="badge badge-ghost font-mono text-xs">#{{ analysis.id }}</span>
-                        </div>
-                        <p class="text-sm text-base-content/70">
-                            {{ is_fr ? 'Créé le' : 'Created on' }} {{ analysis.createdAt|date('M d, Y \\a\\t H:i') }}
-                        </p>
-                        {% if analysis.ownerIdentifier %}
-                            <p class="text-xs text-base-content/60">
-                                {{ is_fr ? 'Propriétaire :' : 'Owner:' }} <span class="font-medium text-base-content/80">{{ analysis.ownerIdentifier }}</span>
-                            </p>
-                        {% endif %}
-                        <div class="flex flex-wrap items-center gap-2 mt-2">
-                            <span class="badge {{ analysis.status.value == 'COMPLETED' ? 'badge-success' : (analysis.status.value == 'FAILED' ? 'badge-error' : 'badge-info') }}">
-                                {{ analysis.status.value }}
+                {% set st = analysis.status.value %}
+                <div
+                    id="analysis-card-{{ analysis.id }}"
+                    class="rounded-2xl bg-[#151A21] border border-[#2A323D] hover:border-[#3A4553] p-6 flex flex-col justify-between gap-5 transition-all"
+                >
+                    <div class="space-y-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <label class="flex items-start gap-3 cursor-pointer flex-1 select-none">
+                                <input
+                                    type="checkbox"
+                                    name="ids[]"
+                                    value="{{ analysis.id }}"
+                                    form="bulk-delete-form"
+                                    class="analysis-checkbox checkbox checkbox-primary checkbox-sm rounded mt-1"
+                                    onchange="updateBulkSelectionState()"
+                                >
+                                <span class="text-lg font-semibold text-[#E8ECF1] leading-snug">{{ analysis.title }}</span>
+                            </label>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-[#0E1116] border border-[#2A323D] font-mono text-xs text-[#9BA5B3] shrink-0">
+                                #{{ analysis.id }}
                             </span>
-                            <span class="badge badge-ghost">{{ analysis.documents|length }} document(s)</span>
-                            <span class="badge badge-ghost">{{ analysis.commitments|length }} {{ is_fr ? 'promesse(s)' : 'commitment(s)' }}</span>
                         </div>
-                        <div class="card-actions justify-end items-center gap-2 mt-4 pt-3 border-t border-base-300">
-                            <a href="{{ path('app_audit_results', {'id': analysis.id}) }}" class="btn btn-sm btn-primary">
-                                {{ is_fr ? 'Résultats IA' : 'AI Results' }}
-                            </a>
-                            <a href="{{ path('app_analysis_show', {'id': analysis.id}) }}" class="btn btn-sm btn-outline">Open</a>
+
+                        <div class="space-y-1 text-xs text-[#9BA5B3]">
+                            <p class="m-0">
+                                {{ is_fr ? 'Créé le' : 'Created on' }} {{ analysis.createdAt|date('M d, Y \\a\\t H:i') }}
+                            </p>
+                            {% if analysis.ownerIdentifier %}
+                                <p class="m-0">
+                                    {{ is_fr ? 'Propriétaire :' : 'Owner:' }} <span class="font-medium text-[#B7C0CC]">{{ analysis.ownerIdentifier }}</span>
+                                </p>
+                            {% endif %}
                         </div>
+
+                        <div class="flex flex-wrap items-center gap-2 pt-1">
+                            {% if st == 'COMPLETED' %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#4ADE9A]/12 text-[#4ADE9A] border border-[#4ADE9A]/30 font-mono text-[11px] font-semibold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#4ADE9A]"></span>
+                                    {{ st }}
+                                </span>
+                            {% elseif st == 'FAILED' %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FF7B7B]/12 text-[#FF7B7B] border border-[#FF7B7B]/30 font-mono text-[11px] font-semibold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#FF7B7B]"></span>
+                                    {{ st }}
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#7FA3FF]/12 text-[#7FA3FF] border border-[#7FA3FF]/30 font-mono text-[11px] font-semibold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#7FA3FF]"></span>
+                                    {{ st }}
+                                </span>
+                            {% endif %}
+
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#1B222B] border border-[#2A323D] text-xs text-[#B7C0CC]">
+                                {{ analysis.documents|length }} document(s)
+                            </span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#1B222B] border border-[#2A323D] text-xs text-[#7FA3FF]">
+                                {{ analysis.commitments|length }} {{ is_fr ? 'promesse(s)' : 'commitment(s)' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end items-center gap-2 pt-4 border-t border-[#2A323D]">
+                        <a href="{{ path('app_audit_results', {'id': analysis.id}) }}" class="inline-flex items-center px-3.5 py-1.5 rounded-lg bg-[#7FA3FF] hover:bg-[#A9C0FF] text-[#0B1020] text-xs font-semibold no-underline transition-colors">
+                            {{ is_fr ? 'Résultats IA' : 'AI Results' }}
+                        </a>
+                        <a href="{{ path('app_analysis_show', {'id': analysis.id}) }}" class="inline-flex items-center px-3.5 py-1.5 rounded-lg border border-[#3A4553] bg-[#1B222B] hover:border-[#4A5565] text-xs font-medium text-[#E8ECF1] no-underline transition-colors">
+                            Open
+                        </a>
                     </div>
                 </div>
             {% endfor %}
         </div>
+
+        {% if pagination is defined and pagination.totalPages > 1 %}
+            <nav aria-label="Pagination" class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[#2A323D]">
+                <span class="text-xs font-mono text-[#9BA5B3]">
+                    Page {{ pagination.currentPage }} / {{ pagination.totalPages }} • {{ pagination.totalItems }} {{ is_fr ? 'audit(s) au total' : 'total audit(s)' }}
+                </span>
+                <div class="flex items-center gap-1.5">
+                    {% if pagination.hasPrev %}
+                        <a href="{{ path('app_analysis_index', {'page': pagination.currentPage - 1}) }}" class="inline-flex items-center px-3 py-1.5 rounded-lg border border-[#2A323D] bg-[#151A21] hover:border-[#4A5565] text-xs font-medium text-[#E8ECF1] no-underline">
+                            ← {{ is_fr ? 'Précédent' : 'Previous' }}
+                        </a>
+                    {% endif %}
+                    {% for p in 1..pagination.totalPages %}
+                        <a href="{{ path('app_analysis_index', {'page': p}) }}" class="inline-flex items-center justify-center min-w-8 h-8 px-2.5 rounded-lg font-mono text-xs no-underline transition-colors {{ p == pagination.currentPage ? 'bg-[#7FA3FF] text-[#0B1020] font-semibold' : 'border border-[#2A323D] bg-[#151A21] text-[#9BA5B3] hover:text-[#E8ECF1]' }}">
+                            {{ p }}
+                        </a>
+                    {% endfor %}
+                    {% if pagination.hasNext %}
+                        <a href="{{ path('app_analysis_index', {'page': pagination.currentPage + 1}) }}" class="inline-flex items-center px-3 py-1.5 rounded-lg border border-[#2A323D] bg-[#151A21] hover:border-[#4A5565] text-xs font-medium text-[#E8ECF1] no-underline">
+                            {{ is_fr ? 'Suivant' : 'Next' }} →
+                        </a>
+                    {% endif %}
+                </div>
+            </nav>
+        {% endif %}
     {% endif %}
 </div>
+
+<script>
+const IS_FR = {{ is_fr ? 'true' : 'false' }};
+
+function getAnalysisCheckboxes() {
+    return Array.from(document.querySelectorAll('.analysis-checkbox'));
+}
+
+function updateBulkSelectionState() {
+    const checkboxes = getAnalysisCheckboxes();
+    const checkedCount = checkboxes.filter(cb => cb.checked).length;
+    const selectAll = document.getElementById('select-all-analyses');
+    const bulkForm = document.getElementById('bulk-delete-form');
+    const countBadge = document.getElementById('selected-count-badge');
+    const statusText = document.getElementById('selection-status');
+    const deleteLabel = document.getElementById('bulk-delete-label');
+
+    checkboxes.forEach(cb => {
+        const card = document.getElementById('analysis-card-' + cb.value);
+        if (card) {
+            card.classList.toggle('border-[#7FA3FF]', cb.checked);
+            card.classList.toggle('ring-1', cb.checked);
+            card.classList.toggle('ring-[#7FA3FF]/40', cb.checked);
+        }
+    });
+
+    if (selectAll) {
+        selectAll.checked = checkboxes.length > 0 && checkedCount === checkboxes.length;
+        selectAll.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+    }
+
+    if (bulkForm) {
+        bulkForm.classList.toggle('hidden', checkedCount === 0);
+    }
+
+    if (countBadge) {
+        countBadge.textContent = String(checkedCount);
+    }
+
+    if (statusText) {
+        if (IS_FR) {
+            statusText.textContent = checkedCount > 1 ? 'audits sélectionnés' : 'audit sélectionné';
+        } else {
+            statusText.textContent = checkedCount > 1 ? 'audits selected' : 'audit selected';
+        }
+    }
+
+    if (deleteLabel) {
+        if (IS_FR) {
+            deleteLabel.textContent = checkedCount > 1
+                ? 'Supprimer les ' + checkedCount + ' audits'
+                : 'Supprimer cet audit';
+        } else {
+            deleteLabel.textContent = checkedCount > 1
+                ? 'Delete ' + checkedCount + ' audits'
+                : 'Delete this audit';
+        }
+    }
+}
+
+function toggleAllAnalyses(masterCheckbox) {
+    getAnalysisCheckboxes().forEach(cb => {
+        cb.checked = masterCheckbox.checked;
+    });
+    updateBulkSelectionState();
+}
+
+function clearSelection() {
+    getAnalysisCheckboxes().forEach(cb => {
+        cb.checked = false;
+    });
+    updateBulkSelectionState();
+}
+
+function confirmBulkDelete() {
+    const checkedCount = getAnalysisCheckboxes().filter(cb => cb.checked).length;
+    if (checkedCount === 0) {
+        return false;
+    }
+    if (IS_FR) {
+        return confirm(checkedCount > 1
+            ? 'Supprimer définitivement les ' + checkedCount + ' espaces d\'audit sélectionnés ?'
+            : 'Supprimer définitivement cet espace d\'audit ?');
+    }
+    return confirm(checkedCount > 1
+        ? 'Permanently delete the ' + checkedCount + ' selected audit workspaces?'
+        : 'Permanently delete this audit workspace?');
+}
+</script>
 {% endblock %}

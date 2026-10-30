@@ -22,19 +22,22 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class AnalysisController extends AbstractController
 {
     /**
-     * Lists existing analysis workspaces ordered by creation date (administrators only)
+     * Lists existing analysis workspaces ordered by creation date with pagination (administrators only)
      *
+     * @param Request $request Current HTTP request containing optional page query parameter
      * @param AnalysisRepository $analysisRepository Repository for querying analysis records
      * @return Response HTTP response rendering the index template
      */
     #[Route('/analyses', name: 'app_analysis_index', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function index(AnalysisRepository $analysisRepository): Response
+    public function index(Request $request, AnalysisRepository $analysisRepository): Response
     {
-        $analyses = $analysisRepository->findBy([], ['createdAt' => 'DESC']);
+        $page = $request->query->getInt('page', 1);
+        $pagination = $analysisRepository->findPaginated(null, $page, 9);
 
         return $this->render('analysis/index.html.twig', [
-            'analyses' => $analyses,
+            'analyses' => $pagination['items'],
+            'pagination' => $pagination,
         ]);
     }
 
@@ -117,7 +120,6 @@ class AnalysisController extends AbstractController
             $entityManager->remove($analysis);
             $entityManager->flush();
 
-            // Supprimer : Effacer les fichiers uniquement après la suppression en base
             foreach ($documents as $document) {
                 $documentUploader->remove($document);
             }
@@ -126,5 +128,69 @@ class AnalysisController extends AbstractController
         }
 
         return $this->redirectToRoute($this->isGranted('ROLE_ADMIN') ? 'app_analysis_index' : 'app_cockpit');
+    }
+
+    /**
+     * Deletes one or multiple selected analysis workspaces and their stored documents in bulk
+     *
+     * @param Request $request Current HTTP request containing the CSRF token and selected IDs
+     * @param AnalysisRepository $analysisRepository Repository used to load selected analyses
+     * @param EntityManagerInterface $entityManager Doctrine entity manager
+     * @param DocumentUploader $documentUploader Service managing physical files
+     * @return Response HTTP redirect to the admin audit list
+     */
+    #[Route('/analyses/bulk-delete', name: 'app_analysis_bulk_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function bulkDelete(
+        Request $request,
+        AnalysisRepository $analysisRepository,
+        EntityManagerInterface $entityManager,
+        DocumentUploader $documentUploader,
+    ): Response {
+        $token = $request->getPayload()->getString('_token');
+        if (!$this->isCsrfTokenValid('bulk_delete_analyses', $token)) {
+            $this->addFlash('error', 'Invalid security token for bulk deletion.');
+
+            return $this->redirectToRoute('app_analysis_index');
+        }
+
+        /** @var array<int, scalar> $rawIds */
+        $rawIds = $request->request->all('ids');
+        $ids = array_values(array_unique(array_filter(array_map('intval', $rawIds), static fn (int $id): bool => $id > 0)));
+
+        if ($ids === []) {
+            $this->addFlash('warning', 'Please select at least one audit workspace to delete.');
+
+            return $this->redirectToRoute('app_analysis_index');
+        }
+
+        $analyses = $analysisRepository->findBy(['id' => $ids]);
+        $documentsToRemove = [];
+        $deletedCount = 0;
+
+        foreach ($analyses as $analysis) {
+            if (!$this->isGranted(AnalysisVoter::DELETE, $analysis)) {
+                continue;
+            }
+
+            foreach ($analysis->getDocuments() as $document) {
+                $documentsToRemove[] = $document;
+            }
+
+            $entityManager->remove($analysis);
+            ++$deletedCount;
+        }
+
+        $entityManager->flush();
+
+        foreach ($documentsToRemove as $document) {
+            $documentUploader->remove($document);
+        }
+
+        if ($deletedCount > 0) {
+            $this->addFlash('success', sprintf('%d audit workspace(s) deleted successfully.', $deletedCount));
+        }
+
+        return $this->redirectToRoute('app_analysis_index');
     }
 }

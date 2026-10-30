@@ -1,8 +1,8 @@
 {#
-    Displays the EN / FR language toggle using DaisyUI join buttons
+    Displays the EN / FR language toggle pill
 #}
 {% set currentLocale = app.request.locale == 'fr' ? 'fr' : 'en' %}
-<div class="join border border-base-300 rounded-full p-0.5 bg-base-200 font-mono text-xs">
-    <a href="{{ path('app_switch_locale', {'locale': 'en'}) }}" class="join-item btn btn-xs rounded-full border-0 {{ currentLocale == 'en' ? 'btn-primary text-primary-content font-semibold' : 'btn-ghost text-base-content/70' }}">EN</a>
-    <a href="{{ path('app_switch_locale', {'locale': 'fr'}) }}" class="join-item btn btn-xs rounded-full border-0 {{ currentLocale == 'fr' ? 'btn-primary text-primary-content font-semibold' : 'btn-ghost text-base-content/70' }}">FR</a>
+<div class="inline-flex items-center p-0.5 rounded-full bg-[#151A21] border border-[#3A4553] font-mono text-xs">
+    <a href="{{ path('app_switch_locale', {'locale': 'en'}) }}" class="px-2.5 py-1 rounded-full no-underline transition-colors {{ currentLocale == 'en' ? 'bg-[#7FA3FF] text-[#0B1020] font-semibold' : 'text-[#9BA5B3] hover:text-[#E8ECF1]' }}">EN</a>
+    <a href="{{ path('app_switch_locale', {'locale': 'fr'}) }}" class="px-2.5 py-1 rounded-full no-underline transition-colors {{ currentLocale == 'fr' ? 'bg-[#7FA3FF] text-[#0B1020] font-semibold' : 'text-[#9BA5B3] hover:text-[#E8ECF1]' }}">FR</a>
 </div>

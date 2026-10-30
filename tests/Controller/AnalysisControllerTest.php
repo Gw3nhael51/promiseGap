@@ -132,4 +132,83 @@ class AnalysisControllerTest extends WebTestCase
         $deletedAnalysis = $this->entityManager->find(Analysis::class, $analysisId);
         $this->assertNull($deletedAnalysis);
     }
+
+    /**
+     * Verifies bulk deletion of multiple selected analysis workspaces from /analyses
+     */
+    public function testBulkDeleteAnalyses(): void
+    {
+        $first = new Analysis();
+        $first->setTitle('Bulk Delete Workspace 1');
+        $first->setStatus(AnalysisStatus::PENDING);
+
+        $second = new Analysis();
+        $second->setTitle('Bulk Delete Workspace 2');
+        $second->setStatus(AnalysisStatus::COMPLETED);
+
+        $keep = new Analysis();
+        $keep->setTitle('Keep Workspace 3');
+        $keep->setStatus(AnalysisStatus::COMPLETED);
+
+        $this->entityManager->persist($first);
+        $this->entityManager->persist($second);
+        $this->entityManager->persist($keep);
+        $this->entityManager->flush();
+
+        $firstId = $first->getId();
+        $secondId = $second->getId();
+        $keepId = $keep->getId();
+
+        $crawler = $this->client->request('GET', '/analyses');
+        $this->assertResponseIsSuccessful();
+
+        $token = $crawler->filter('#bulk-delete-form input[name="_token"]')->attr('value');
+        $this->client->request('POST', '/analyses/bulk-delete', [
+            '_token' => $token,
+            'ids' => [(string) $firstId, (string) $secondId],
+        ]);
+
+        $this->assertResponseRedirects('/analyses');
+        $this->client->followRedirect();
+        $this->assertSelectorTextContains('body', '2 audit workspace(s) deleted successfully.');
+
+        $this->entityManager->clear();
+        $this->assertNull($this->entityManager->find(Analysis::class, $firstId));
+        $this->assertNull($this->entityManager->find(Analysis::class, $secondId));
+        $this->assertNotNull($this->entityManager->find(Analysis::class, $keepId));
+    }
+
+    /**
+     * Verifies pagination navigation and out-of-bounds page clamping on /analyses
+     */
+    public function testAnalysesPaginationAndBoundaryClamping(): void
+    {
+        for ($i = 1; $i <= 11; ++$i) {
+            $analysis = new Analysis();
+            $analysis->setTitle(sprintf('Paginated Admin Workspace %02d', $i));
+            $analysis->setStatus(AnalysisStatus::COMPLETED);
+            $this->entityManager->persist($analysis);
+        }
+        $this->entityManager->flush();
+
+        // Page 1 displays pagination bar
+        $this->client->request('GET', '/analyses?page=1');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('nav[aria-label="Pagination"]');
+        $this->assertSelectorTextContains('nav[aria-label="Pagination"]', 'Page 1 /');
+
+        // Page 2 renders remaining workspaces
+        $this->client->request('GET', '/analyses?page=2');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('nav[aria-label="Pagination"]', 'Page 2 /');
+
+        // Out-of-bounds page=0 and page=999 clamp safely without 500 or empty error
+        $this->client->request('GET', '/analyses?page=0');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('nav[aria-label="Pagination"]', 'Page 1 /');
+
+        $this->client->request('GET', '/analyses?page=999');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('nav[aria-label="Pagination"]');
+    }
 }
