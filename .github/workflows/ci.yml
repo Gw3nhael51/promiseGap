@@ -61,6 +61,9 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Audit Composer dependencies for known vulnerabilities
+        run: composer audit --no-interaction
+
       - name: Install AssetMapper importmap packages
         run: php bin/console importmap:install --env=test
 
