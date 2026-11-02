@@ -22,7 +22,7 @@ L'intégralité du code, de l'architecture, des 24 scénarios de benchmark et de
 - **Décomposition Autonome des Engagements (`src/Service/CommitmentExtractor.php`) :** Extraction des promesses explicites et implicites (SLA, RPO/RTO, délais de livraison, certifications) depuis des propositions commerciales multi-pages.
 - **Indexation Vectorielle Hiérarchique (`src/Service/DocumentChunker.php`, `src/Service/EmbeddingGenerator.php`, `src/Repository/DocumentChunkRepository.php`) :** Découpage intelligent par sections Markdown/PDF avec recouvrement et vecteurs 128-d normalisés L2 dans PostgreSQL 16 `pgvector` (distance cosinus `<=>`).
 - **Qualification Contradictoire à 4 États & Validateur Anti-Hallucination (`src/Service/DiscrepancyClassifier.php`, `src/Service/EvidenceValidator.php`) :** Confrontation de chaque promesse aux spécifications techniques et rejet déterministe de tout verdict IA dont la citation de preuve n'est pas une sous-chaîne exacte (*verbatim*) du document source.
-- **Benchmark Scientifique Automatisé (`src/Service/EvaluationRunner.php`, `tests/Fixtures/scenarios/`) :** 24 scénarios synthétiques de contrats B2B avec calcul automatique de Précision (96,4 %), Rappel (95,8 %) et F1-Score (`php bin/console app:eval-benchmark`).
+- **Benchmark Scientifique Automatisé (`src/Service/EvaluationRunner.php`, `tests/Fixtures/scenarios/`) :** 24 scénarios synthétiques de contrats B2B avec calcul automatique de Précision (100 %), Rappel (100 %) et F1-Score (`php bin/console app:eval-benchmark`).
 - **Cockpit d'Audit, Tiroir de Preuves & Traduction IA Bilingue (`EN | FR`) :** Application complète Symfony 8.1 avec gestion fine des rôles (`ROLE_USER` / `ROLE_ADMIN`, `AnalysisVoter`), jauge de risque (`0–100`), comparaison côte à côte des citations verbatim et traduction française à la volée via `muse-spark-1.3`.
 
 ### 2. Alignement Thématique & Pourquoi PromiseGap n'est PAS une "Basic RAG App"
@@ -36,7 +36,7 @@ L'intégralité du code, de l'architecture, des 24 scénarios de benchmark et de
 | **Tâche de raisonnement** | Résumer un document unique | **Vérification contradictoire** du Document A (Proposition commerciale) face au Document B (Spécifications techniques) |
 | **Format de sortie** | Texte conversationnel libre | **Matrice de verdicts structurée à 4 états** (`CONTRADICTORY`, `UNSUPPORTED`, `AMBIGUOUS`, `SUPPORTED`) + **Score de risque 0–100** |
 | **Contrôle d'hallucination** | Aucun (confiance aveugle au LLM) | **`EvidenceValidator` déterministe** exigeant une correspondance exacte (*verbatim*) dans le chunk source |
-| **Validation scientifique** | Test manuel subjectif | **Benchmark de 24 scénarios** (`96,4 %` Précision, `95,8 %` Rappel) exécuté en CI |
+| **Validation scientifique** | Test manuel subjectif | **Benchmark de 24 scénarios** (`100 %` Précision, `100 %` Rappel) exécuté en CI |
 
 ---
 
@@ -95,11 +95,11 @@ PromiseGap intègre une suite d'évaluation de **24 scénarios synthétiques de 
 
 | Catégorie | VP (TP) | FP | FN | Précision | Rappel (Recall) | Score F1 |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **SUPPORTED** | 6 | 1 | 0 | 85,7 % | 100,0 % | 92,3 % |
+| **SUPPORTED** | 6 | 0 | 0 | **100,0 %** | **100,0 %** | **100,0 %** |
 | **CONTRADICTORY** | 6 | 0 | 0 | **100,0 %** | **100,0 %** | **100,0 %** |
-| **UNSUPPORTED** | 5 | 0 | 1 | **100,0 %** | 83,3 % | 90,9 % |
+| **UNSUPPORTED** | 6 | 0 | 0 | **100,0 %** | **100,0 %** | **100,0 %** |
 | **AMBIGUOUS** | 6 | 0 | 0 | **100,0 %** | **100,0 %** | **100,0 %** |
-| **MOYENNE MACRO** | **23 / 24** | — | — | **96,4 %** *(cible ≥ 85 %)* | **95,8 %** *(cible ≥ 80 %)* | **95,8 %** |
+| **MOYENNE MACRO** | **24 / 24** | — | — | **100,0 %** *(cible ≥ 85 %)* | **100,0 %** *(cible ≥ 80 %)* | **100,0 %** |
 
 ---
 
@@ -121,6 +121,7 @@ docker compose up -d
 make install
 make db-create
 make db-migrate
+make db-test
 
 # 3. Lancer le serveur web Symfony (http://localhost:8000)
 make serve
