@@ -275,6 +275,9 @@ class MetaAiClient implements AiClientInterface
 
     /**
      * Produces deterministic commitment extraction JSON from a proposal text in offline mode
+     *
+     * @param string $userPrompt User prompt containing document text lines
+     * @return string Serialized JSON payload containing extracted commitments
      */
     private function simulateCommitmentExtraction(string $userPrompt): string
     {
@@ -294,7 +297,6 @@ class MetaAiClient implements AiClientInterface
                 continue;
             }
 
-            // Extraire : Repérer les phrases contenant un engagement commercial ou technique
             if (preg_match('/\b(guarantee\w*|sla|uptime|availability|99\.\d+%|response time|within \d+|shall|will provide|commit\w*|deliver\w*|support|rpo|rto|latency|backup\w*|encrypt\w*|iso|soc\s*2|gdpr|hipaa|penalt\w*|credit\w*|optimal|best[- ]effort\w*|seamless\w*|world[- ]class|real[- ]time|unlimited)\b/i', $trimmed) === 1) {
                 $cleanSentence = ltrim($trimmed, "-*• \t");
                 $commitments[] = [
@@ -323,6 +325,9 @@ class MetaAiClient implements AiClientInterface
 
     /**
      * Classifies a commitment category from keywords in offline simulation mode
+     *
+     * @param string $sentence Commercial commitment statement
+     * @return string Contractual category identifier (e.g. SLA, Security, Timeline)
      */
     private function guessCommitmentCategory(string $sentence): string
     {
@@ -339,6 +344,9 @@ class MetaAiClient implements AiClientInterface
 
     /**
      * Produces deterministic discrepancy qualification JSON from a commitment and retrieved chunks
+     *
+     * @param string $userPrompt User prompt containing commitment and retrieved specification chunks
+     * @return string Serialized JSON payload containing status, rationale and evidence
      */
     private function simulateDiscrepancyQualification(string $userPrompt): string
     {
@@ -356,7 +364,6 @@ class MetaAiClient implements AiClientInterface
             $chunks = [];
         }
 
-        // Détecter : Signaler d'emblée les promesses vagues dépourvues de métriques vérifiables
         $hasMetric = preg_match('/(\d+(\.\d+)?\s*(%|ms|s|sec|seconds|min|minutes|hours|hrs|days|weeks|months|gb|tb|mbps|req\/s|iso\s*\d+|soc\s*2|aes-\d+|tls\s*1\.\d)|\b(24\/7|24x7|zero[- ]data[- ]loss|daily|hourly|weekly|monthly|annual|soc\s*2|gdpr|hipaa|pci[- ]dss|fedramp|sso|saml|oidc|multi[- ]region|active[- ]active)\b)/i', $commitment) === 1;
         $isVague = preg_match('/\b(optimal|best[- ]in[- ]class|world[- ]class|seamless\w*|cutting[- ]edge|industry[- ]leading|effortless\w*|ultra[- ]fast|near[- ]instant\w*|as soon as possible|reasonable efforts|high[- ]speed|robust performance|flexible scalability|state[- ]of[- ]the[- ]art|maximum reliability|superior quality|next[- ]generation)\b/i', $commitment) === 1;
 
@@ -439,10 +446,13 @@ class MetaAiClient implements AiClientInterface
 
     /**
      * Checks whether a commitment and a specification passage contain conflicting metrics or negations
+     *
+     * @param string $commitment Commercial commitment statement
+     * @param string $specText Technical reference specification text excerpt
+     * @return string|null Contradiction rationale if in direct conflict, null otherwise
      */
     private function detectContradiction(string $commitment, string $specText): ?string
     {
-        // Comparer : Vérifier les pourcentages (ex: 99.99% vendu vs 99.5% spécifié)
         if (preg_match_all('/(\d+(?:\.\d+)?)\s*%/', $commitment, $cPct) >= 1
             && preg_match_all('/(\d+(?:\.\d+)?)\s*%/', $specText, $sPct) >= 1
         ) {
@@ -455,7 +465,6 @@ class MetaAiClient implements AiClientInterface
             }
         }
 
-        // Comparer : Vérifier les durées et délais numériques (minutes, heures, jours, ms, Go/To)
         $unitPattern = '/(\d+(?:\.\d+)?)\s*(ms|milliseconds?|seconds?|sec|minutes?|min|hours?|hrs?|days?|weeks?|months?|gb|tb|req\/s|rps|years?)\b/i';
         if (preg_match($unitPattern, $commitment, $cUnit) === 1
             && preg_match($unitPattern, $specText, $sUnit) === 1
@@ -473,7 +482,6 @@ class MetaAiClient implements AiClientInterface
             }
         }
 
-        // Comparer : Vérifier les oppositions directes (24/7 vs business hours, zero data loss vs RPO > 0, etc.)
         $cLower = strtolower($commitment);
         $sLower = strtolower($specText);
 
@@ -483,8 +491,17 @@ class MetaAiClient implements AiClientInterface
             return 'The proposal promises 24/7 coverage whereas the specification restricts support to standard business hours.';
         }
 
+        if (str_contains($cLower, 'synchronous')
+            && str_contains($sLower, 'asynchronous')
+        ) {
+            return 'The proposal commits to synchronous replication whereas the technical specification defines asynchronous replication.';
+        }
+
         if (str_contains($cLower, 'zero data loss')
-            && preg_match('/rpo\b[^.]*\b([1-9]\d*)\s*(minutes?|hours?|sec|seconds?)/i', $specText) === 1
+            && (
+                preg_match('/rpo\b[^.]*\b([1-9]\d*)\s*(minutes?|hours?|sec|seconds?)/i', $specText) === 1
+                || preg_match('/([1-9]\d*)\s*[- ]\s*(minutes?|hours?|sec|seconds?)\s*rpo/i', $specText) === 1
+            )
         ) {
             return 'The proposal claims zero data loss (RPO = 0) while the technical specification defines a non-zero Recovery Point Objective.';
         }
