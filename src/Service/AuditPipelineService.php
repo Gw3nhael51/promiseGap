@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Analysis;
+use App\Entity\Evidence;
 use App\Enum\AnalysisStatus;
 use App\Enum\DocumentType;
 use App\Enum\ExtractionStatus;
@@ -16,6 +17,12 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 #[Autoconfigure(public: true)]
 class AuditPipelineService
 {
+    private const string COLOR_RISK_HIGH = '#FF7B7B';
+    private const string COLOR_RISK_MEDIUM = '#F5B04A';
+    private const string COLOR_RISK_LOW = '#4ADE9A';
+    private const string COLOR_RISK_HIGH_BG = 'rgba(255,123,123,0.14)';
+    private const string COLOR_RISK_LOW_BG = 'rgba(74,222,154,0.14)';
+
     /**
      * @param CommitmentExtractor $commitmentExtractor Service extracting proposal commitments
      * @param VectorStoreService $vectorStoreService Service indexing and searching reference chunks
@@ -41,8 +48,25 @@ class AuditPipelineService
      */
     public function runIfReady(Analysis $analysis, string $reasoningMode = 'auto'): bool
     {
+        if (!$this->canRunPipeline($analysis)) {
+            return false;
+        }
+
+        $this->run($analysis, $reasoningMode);
+
+        return true;
+    }
+
+    /**
+     * Determines whether an analysis workspace is eligible for audit pipeline execution
+     *
+     * @param Analysis $analysis Target analysis workspace
+     * @return bool True if ready for execution
+     */
+    private function canRunPipeline(Analysis $analysis): bool
+    {
         $documents = $analysis->getDocuments();
-        if ($documents->isEmpty()) {
+        if ($documents->isEmpty() || !$analysis->getCommitments()->isEmpty()) {
             return false;
         }
 
@@ -51,12 +75,6 @@ class AuditPipelineService
                 return false;
             }
         }
-
-        if (!$analysis->getCommitments()->isEmpty()) {
-            return false;
-        }
-
-        $this->run($analysis, $reasoningMode);
 
         return true;
     }
@@ -112,23 +130,8 @@ class AuditPipelineService
             $claims[] = [
                 'id' => 'P' . $index++,
                 'st' => $short,
-                'label' => $isFr ? match ($status) {
-                    FindingStatus::CONTRADICTORY => 'Contradictoire',
-                    FindingStatus::UNSUPPORTED => 'Non supporté',
-                    FindingStatus::AMBIGUOUS => 'Ambigu',
-                    FindingStatus::SUPPORTED => 'Supporté',
-                } : $status->label(),
-                'sev' => $isFr ? match ($status) {
-                    FindingStatus::CONTRADICTORY => 'Critique',
-                    FindingStatus::UNSUPPORTED => 'Élevée',
-                    FindingStatus::AMBIGUOUS => 'Moyenne',
-                    FindingStatus::SUPPORTED => 'Faible',
-                } : match ($status) {
-                    FindingStatus::CONTRADICTORY => 'Critical',
-                    FindingStatus::UNSUPPORTED => 'High',
-                    FindingStatus::AMBIGUOUS => 'Medium',
-                    FindingStatus::SUPPORTED => 'Low',
-                },
+                'label' => $this->resolveFindingLabel($status, $isFr),
+                'sev' => $this->resolveFindingSeverity($status, $isFr),
                 'conf' => sprintf('%d%%', (int) round($commitment->getConfidenceScore() * 100)),
                 'sim' => sprintf('%.2f', $evidence !== null ? $evidence->getSimilarityScore() : 0.0),
                 'promise' => mb_substr((string) $commitment->getVerbatimText(), 0, 90),
@@ -140,9 +143,7 @@ class AuditPipelineService
                 'eb' => '',
                 'em' => $hasEv ? (string) $evidence->getQuote() : '',
                 'ea' => '',
-                'esrc' => $hasEv
-                    ? sprintf('%s · p.%d', $evidence->getSectionTitle() ?? ($isFr ? 'Specs Tech' : 'Tech Specs'), $evidence->getPageNumber() ?? 1)
-                    : ($isFr ? 'Aucune section correspondante dans les spécifications techniques' : 'No matching section in technical specifications'),
+                'esrc' => $this->buildEvidenceSource($evidence, $isFr),
                 'why' => (string) ($finding?->getRationale() ?? ''),
             ];
         }
@@ -156,17 +157,16 @@ class AuditPipelineService
 
         $proposalDoc = $analysis->getDocuments()->filter(static fn ($d) => $d->getDocumentType() === DocumentType::PROPOSAL)->first();
         $specDoc = $analysis->getDocuments()->filter(static fn ($d) => $d->getDocumentType() === DocumentType::TECHNICAL_SPEC)->first();
+        $riskBadge = $this->resolveRiskBadge($weightedRisk, $isFr);
 
         return [
             'deal' => [
                 'id' => 'analysis-' . $analysis->getId(),
                 'title' => (string) $analysis->getTitle(),
                 'tag' => $isFr ? 'AUDIT PERSONNALISÉ' : 'CUSTOM AUDIT',
-                'risk' => $isFr
-                    ? ($weightedRisk >= 60 ? 'Risque élevé' : ($weightedRisk >= 30 ? 'Risque modéré' : 'Risque faible'))
-                    : ($weightedRisk >= 60 ? 'High risk' : ($weightedRisk >= 30 ? 'Medium risk' : 'Low risk')),
-                'riskColor' => $weightedRisk >= 60 ? '#FF7B7B' : ($weightedRisk >= 30 ? '#F5B04A' : '#4ADE9A'),
-                'riskBg' => $weightedRisk >= 60 ? 'rgba(255,123,123,0.14)' : 'rgba(74,222,154,0.14)',
+                'risk' => $riskBadge['risk'],
+                'riskColor' => $riskBadge['riskColor'],
+                'riskBg' => $riskBadge['riskBg'],
                 'riskScore' => $weightedRisk,
                 'proposalName' => $proposalDoc ? (string) $proposalDoc->getOriginalFilename() : 'Proposal.pdf',
                 'specsName' => $specDoc ? (string) $specDoc->getOriginalFilename() : 'Technical_Specs.md',
@@ -174,6 +174,108 @@ class AuditPipelineService
             'stats' => $stats,
             'claims' => $claims,
         ];
+    }
+
+    /**
+     * Resolves localized status label for finding status
+     *
+     * @param FindingStatus $status Finding status enum
+     * @param bool $isFr True if the locale is French
+     * @return string Localized label
+     */
+    private function resolveFindingLabel(FindingStatus $status, bool $isFr): string
+    {
+        if (!$isFr) {
+            return $status->label();
+        }
+
+        return match ($status) {
+            FindingStatus::CONTRADICTORY => 'Contradictoire',
+            FindingStatus::UNSUPPORTED => 'Non supporté',
+            FindingStatus::AMBIGUOUS => 'Ambigu',
+            FindingStatus::SUPPORTED => 'Supporté',
+        };
+    }
+
+    /**
+     * Resolves localized severity label for finding status
+     *
+     * @param FindingStatus $status Finding status enum
+     * @param bool $isFr True if the locale is French
+     * @return string Localized severity string
+     */
+    private function resolveFindingSeverity(FindingStatus $status, bool $isFr): string
+    {
+        if ($isFr) {
+            return match ($status) {
+                FindingStatus::CONTRADICTORY => 'Critique',
+                FindingStatus::UNSUPPORTED => 'Élevée',
+                FindingStatus::AMBIGUOUS => 'Moyenne',
+                FindingStatus::SUPPORTED => 'Faible',
+            };
+        }
+
+        return match ($status) {
+            FindingStatus::CONTRADICTORY => 'Critical',
+            FindingStatus::UNSUPPORTED => 'High',
+            FindingStatus::AMBIGUOUS => 'Medium',
+            FindingStatus::SUPPORTED => 'Low',
+        };
+    }
+
+    /**
+     * Resolves human-readable label and UI colors for a given risk score
+     *
+     * @param int $riskScore Weighted risk score (0-100)
+     * @param bool $isFr True if the locale is French
+     * @return array{risk: string, riskColor: string, riskBg: string}
+     */
+    private function resolveRiskBadge(int $riskScore, bool $isFr): array
+    {
+        if ($riskScore >= 60) {
+            return [
+                'risk' => $isFr ? 'Risque élevé' : 'High risk',
+                'riskColor' => self::COLOR_RISK_HIGH,
+                'riskBg' => self::COLOR_RISK_HIGH_BG,
+            ];
+        }
+
+        if ($riskScore >= 30) {
+            return [
+                'risk' => $isFr ? 'Risque modéré' : 'Medium risk',
+                'riskColor' => self::COLOR_RISK_MEDIUM,
+                'riskBg' => self::COLOR_RISK_LOW_BG,
+            ];
+        }
+
+        return [
+            'risk' => $isFr ? 'Risque faible' : 'Low risk',
+            'riskColor' => self::COLOR_RISK_LOW,
+            'riskBg' => self::COLOR_RISK_LOW_BG,
+        ];
+    }
+
+    /**
+     * Builds the formatted source attribution string for an evidence entity
+     *
+     * @param ?Evidence $evidence Evidence entity or null
+     * @param bool $isFr True if the locale is French
+     * @return string Formatted source string
+     */
+    private function buildEvidenceSource(?Evidence $evidence, bool $isFr): string
+    {
+        if ($evidence === null || trim((string) $evidence->getQuote()) === '') {
+            return $isFr
+                ? 'Aucune section correspondante dans les spécifications techniques'
+                : 'No matching section in technical specifications';
+        }
+
+        $sectionTitle = $evidence->getSectionTitle();
+        if ($sectionTitle === null || trim($sectionTitle) === '') {
+            $sectionTitle = $isFr ? 'Specs Tech' : 'Tech Specs';
+        }
+
+        return sprintf('%s · p.%d', $sectionTitle, $evidence->getPageNumber() ?? 1);
     }
 
     /**
