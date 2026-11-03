@@ -65,31 +65,67 @@ PROMPT;
             return 'low';
         }
 
-        $topSimilarity = $retrievedChunks[0]->similarityScore;
-        $hasHighStakesClause = (bool) preg_match(
-            '/\b(99\.\d+|penalt|liabilit|indemn|zero\s+data\s+loss|synchron|rpo|rto|iso\s*27001|soc\s*2|gdpr|hipaa|turnkey|guarantee|sla)\b/i',
-            $commitmentText,
-        );
+        return $this->computeAdaptiveEffort($commitmentText, $retrievedChunks[0]->similarityScore);
+    }
 
-        if ($hasHighStakesClause) {
-            // Borderline semantic similarity on a high-stakes legal/SLA clause requires deep reasoning
-            if ($topSimilarity >= 0.35 && $topSimilarity <= 0.70) {
-                return 'high';
-            }
-
-            return 'medium';
+    /**
+     * Adaptively computes reasoning effort level from clause criticality and semantic similarity
+     *
+     * @param string $commitmentText Commitment text
+     * @param float $topSimilarity Similarity score of the most relevant chunk
+     * @return string Adaptive effort level ('low', 'medium', or 'high')
+     */
+    private function computeAdaptiveEffort(string $commitmentText, float $topSimilarity): string
+    {
+        if ($this->hasHighStakesClause($commitmentText)) {
+            return ($topSimilarity >= 0.35 && $topSimilarity <= 0.70) ? 'high' : 'medium';
         }
 
-        $hasQuantitativeMetric = (bool) preg_match(
-            '/\b\d+(\.\d+)?\s*(%|percent|ms|seconds?|minutes?|hours?|days?|weeks?|months?|gb|tb)\b/i',
-            $commitmentText,
-        );
-
-        if ($hasQuantitativeMetric) {
+        if ($this->hasQuantitativeMetric($commitmentText)) {
             return 'medium';
         }
 
         return 'low';
+    }
+
+    /**
+     * Checks if the commitment clause contains high-stakes legal, SLA, or compliance terms
+     *
+     * @param string $text Commitment text
+     * @return bool True if high stakes clause is detected
+     */
+    private function hasHighStakesClause(string $text): bool
+    {
+        $lower = strtolower($text);
+        if (
+            str_contains($lower, 'zero data loss')
+            || str_contains($lower, 'synchron')
+            || str_contains($lower, 'iso 27001')
+            || str_contains($lower, 'soc 2')
+        ) {
+            return true;
+        }
+
+        if (preg_match('/\b(99\.\d+|rpo|rto|sla|gdpr|hipaa)\b/i', $text) === 1) {
+            return true;
+        }
+
+        return (bool) preg_match('/\b(penalt\w*|liabilit\w*|indemn\w*|guarantee\w*|turnkey)\b/i', $text);
+    }
+
+    /**
+     * Checks if the commitment clause contains quantitative metrics or numerical constraints
+     *
+     * @param string $text Commitment text
+     * @return bool True if a quantitative metric is detected
+     */
+    private function hasQuantitativeMetric(string $text): bool
+    {
+        if (preg_match('/\b\d+(?:\.\d+)?\s*%/i', $text) === 1) {
+            return true;
+        }
+
+        return (bool) preg_match('/\b\d+\s*(percent|ms|sec\w*|min\w*|hour\w*|day\w*|week\w*|month\w*|gb|tb)\b/i', $text);
     }
 
     /**
