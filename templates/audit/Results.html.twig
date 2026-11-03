@@ -160,7 +160,7 @@
                         {% elseif c.st == 'amb' %}{% set fg = '#A99BFF' %}{% set bg = 'rgba(169,155,255,0.14)' %}
                         {% endif %}
 
-                        <div id="row-{{ c.id }}" class="claim-row" data-st="{{ c.st }}" data-id="{{ c.id }}" onclick="selectClaim(this.dataset.id)" style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 160px 84px 96px; gap: 16px; padding: 16px; border-bottom: 1px solid #2A323D; align-items: center; cursor: pointer; transition: background 0.15s; {% if loop.first %}background: #1B222B; box-shadow: inset 3px 0 0 {{ fg }};{% endif %}">
+                        <div id="row-{{ c.id }}" class="claim-row" data-st="{{ c.st }}" data-id="{{ c.id }}" role="button" tabindex="0" onclick="selectClaim(this.dataset.id)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectClaim(this.dataset.id);}" style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 160px 84px 96px; gap: 16px; padding: 16px; border-bottom: 1px solid #2A323D; align-items: center; cursor: pointer; transition: background 0.15s; {% if loop.first %}background: #1B222B; box-shadow: inset 3px 0 0 {{ fg }};{% endif %}">
                             <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #E8ECF1;">{{ c.id }}</span>
                             <div style="display: flex; flex-direction: column; gap: 2px;">
                                 <span style="font-size: 15px; font-weight: 500; color: #E8ECF1;">{{ c.promise }}</span>
