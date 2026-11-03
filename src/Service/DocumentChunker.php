@@ -65,9 +65,16 @@ class DocumentChunker
         $targetChars = max(120, ($maxTokens ?? $this->targetTokens) * self::CHARS_PER_TOKEN);
         $overlapChars = max(0, min((int) ($targetChars / 2), ($overlap ?? $this->overlapTokens) * self::CHARS_PER_TOKEN));
 
+        $config = [
+            'targetChars' => $targetChars,
+            'overlapChars' => $overlapChars,
+            'title' => $documentTitle,
+            'id' => $documentId,
+        ];
+
         $blocks = $this->parseBlocks($cleaned, $documentTitle);
 
-        return $this->assembleChunks($blocks, $documentTitle, $documentId, $targetChars, $overlapChars);
+        return $this->assembleChunks($blocks, $config);
     }
 
     /**
@@ -149,23 +156,17 @@ class DocumentChunker
      * Assembles content blocks into overlapping DocumentChunk instances
      *
      * @param array<int, array{section: string, page: int, text: string}> $blocks Structured content blocks
-     * @param string $documentTitle Document title
-     * @param ?int $documentId Optional Document ID
-     * @param int $targetChars Target characters per chunk
-     * @param int $overlapChars Characters of overlap between chunks
+     * @param array{targetChars: int, overlapChars: int, title: string, id: ?int} $config Chunking configuration
      * @return DocumentChunk[] Generated chunks
      */
-    private function assembleChunks(
-        array $blocks,
-        string $documentTitle,
-        ?int $documentId,
-        int $targetChars,
-        int $overlapChars,
-    ): array {
+    private function assembleChunks(array $blocks, array $config): array
+    {
         $chunks = [];
-        $accumText = '';
-        $accumSection = $documentTitle;
-        $accumPage = 1;
+        $accum = [
+            'text' => '',
+            'section' => $config['title'],
+            'page' => 1,
+        ];
 
         foreach ($blocks as $block) {
             $blockText = $block['text'];
@@ -173,35 +174,25 @@ class DocumentChunker
                 continue;
             }
 
-            if ($accumText !== '' && $block['section'] !== $accumSection) {
-                $this->pushChunk($chunks, $accumText, $accumSection, $accumPage, $documentTitle, $documentId);
-                $accumText = '';
+            if ($accum['text'] !== '' && $block['section'] !== $accum['section']) {
+                $this->pushChunk($chunks, $accum['text'], $accum['section'], $accum['page'], $config['title'], $config['id']);
+                $accum['text'] = '';
             }
 
-            if (mb_strlen($blockText) > $targetChars) {
-                if ($accumText !== '') {
-                    $this->pushChunk($chunks, $accumText, $accumSection, $accumPage, $documentTitle, $documentId);
-                    $accumText = '';
+            if (mb_strlen($blockText) > $config['targetChars']) {
+                if ($accum['text'] !== '') {
+                    $this->pushChunk($chunks, $accum['text'], $accum['section'], $accum['page'], $config['title'], $config['id']);
+                    $accum['text'] = '';
                 }
-                $this->appendSplitBlocks($chunks, $block, $documentTitle, $documentId, $targetChars, $overlapChars);
+                $this->appendSplitBlocks($chunks, $block, $config);
                 continue;
             }
 
-            $accumText = $this->accumulateBlock(
-                $chunks,
-                $block,
-                $accumText,
-                $accumSection,
-                $accumPage,
-                $documentTitle,
-                $documentId,
-                $targetChars,
-                $overlapChars,
-            );
+            $this->accumulateBlock($chunks, $block, $accum, $config);
         }
 
-        if ($accumText !== '') {
-            $this->pushChunk($chunks, $accumText, $accumSection, $accumPage, $documentTitle, $documentId);
+        if ($accum['text'] !== '') {
+            $this->pushChunk($chunks, $accum['text'], $accum['section'], $accum['page'], $config['title'], $config['id']);
         }
 
         return $chunks;
@@ -212,22 +203,16 @@ class DocumentChunker
      *
      * @param DocumentChunk[] $chunks Reference to accumulated chunks
      * @param array{section: string, page: int, text: string} $block Oversized content block
-     * @param string $documentTitle Document title
-     * @param ?int $documentId Document ID
-     * @param int $targetChars Target window size
-     * @param int $overlapChars Window overlap size
+     * @param array{targetChars: int, overlapChars: int, title: string, id: ?int} $config Chunking configuration
      * @return void
      */
     private function appendSplitBlocks(
         array &$chunks,
         array $block,
-        string $documentTitle,
-        ?int $documentId,
-        int $targetChars,
-        int $overlapChars,
+        array $config,
     ): void {
-        foreach ($this->splitLongBlock($block['text'], $targetChars, $overlapChars) as $piece) {
-            $this->pushChunk($chunks, $piece, $block['section'], $block['page'], $documentTitle, $documentId);
+        foreach ($this->splitLongBlock($block['text'], $config['targetChars'], $config['overlapChars']) as $piece) {
+            $this->pushChunk($chunks, $piece, $block['section'], $block['page'], $config['title'], $config['id']);
         }
     }
 
@@ -236,44 +221,34 @@ class DocumentChunker
      *
      * @param DocumentChunk[] $chunks Reference to accumulated chunks
      * @param array{section: string, page: int, text: string} $block Content block to merge
-     * @param string $accumText Currently accumulated chunk text
-     * @param string $accumSection Reference to active section title
-     * @param int $accumPage Reference to active page number
-     * @param string $documentTitle Document title
-     * @param ?int $documentId Document ID
-     * @param int $targetChars Target window size
-     * @param int $overlapChars Overlap size
-     * @return string Updated accumulator text
+     * @param array{text: string, section: string, page: int} $accum Accumulator state
+     * @param array{targetChars: int, overlapChars: int, title: string, id: ?int} $config Chunking configuration
+     * @return void
      */
     private function accumulateBlock(
         array &$chunks,
         array $block,
-        string $accumText,
-        string &$accumSection,
-        int &$accumPage,
-        string $documentTitle,
-        ?int $documentId,
-        int $targetChars,
-        int $overlapChars,
-    ): string {
-        $candidate = $accumText === '' ? $block['text'] : ($accumText . "\n\n" . $block['text']);
+        array &$accum,
+        array $config,
+    ): void {
+        $candidate = $accum['text'] === '' ? $block['text'] : ($accum['text'] . "\n\n" . $block['text']);
 
-        if (mb_strlen($candidate) <= $targetChars) {
-            if ($accumText === '') {
-                $accumSection = $block['section'];
-                $accumPage = $block['page'];
+        if (mb_strlen($candidate) <= $config['targetChars']) {
+            if ($accum['text'] === '') {
+                $accum['section'] = $block['section'];
+                $accum['page'] = $block['page'];
             }
+            $accum['text'] = $candidate;
 
-            return $candidate;
+            return;
         }
 
-        $this->pushChunk($chunks, $accumText, $accumSection, $accumPage, $documentTitle, $documentId);
+        $this->pushChunk($chunks, $accum['text'], $accum['section'], $accum['page'], $config['title'], $config['id']);
 
-        $tail = $overlapChars > 0 ? $this->extractOverlapTail($accumText, $overlapChars) : '';
-        $accumSection = $block['section'];
-        $accumPage = $block['page'];
-
-        return $tail !== '' ? ($tail . "\n" . $block['text']) : $block['text'];
+        $tail = $config['overlapChars'] > 0 ? $this->extractOverlapTail($accum['text'], $config['overlapChars']) : '';
+        $accum['section'] = $block['section'];
+        $accum['page'] = $block['page'];
+        $accum['text'] = $tail !== '' ? ($tail . "\n" . $block['text']) : $block['text'];
     }
 
     /**
