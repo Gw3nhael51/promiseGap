@@ -28,7 +28,6 @@ class RegistrationController extends AbstractController
             }
 
             $name = mb_substr(trim(strip_tags($request->getPayload()->getString('name'))), 0, 50);
-            $email = $request->getPayload()->getString('email');
 
             $this->addFlash('success', 'Account created successfully. Welcome to PromiseGap!');
 
