@@ -62,7 +62,21 @@ class EmbeddingGenerator
         $lower = strtolower($text);
         $tokens = preg_split('/[^a-z0-9.%\/-]+/', $lower, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
-        // Projeter : Activer les dimensions conceptuelles métier sur les 32 premières composantes
+        $this->applySemanticConcepts($lower, $vector);
+        $this->applyFeatureHashing($tokens, $vector);
+
+        return $this->normalize($vector);
+    }
+
+    /**
+     * Projects domain concept clusters onto the first vector dimensions
+     *
+     * @param string $lower Lowercase input text
+     * @param float[] $vector Reference to embedding vector
+     * @return void
+     */
+    private function applySemanticConcepts(string $lower, array &$vector): void
+    {
         foreach (self::SEMANTIC_CONCEPTS as $conceptIdx => $keywords) {
             foreach ($keywords as $keyword) {
                 if (str_contains($lower, $keyword)) {
@@ -71,9 +85,20 @@ class EmbeddingGenerator
                 }
             }
         }
+    }
 
-        // Hacher : Projeter les radicaux lexicaux et bigrammes par feature hashing signé
+    /**
+     * Applies signed feature hashing for lexical unigram stems and bigrams
+     *
+     * @param string[] $tokens Tokenized lexical words
+     * @param float[] $vector Reference to embedding vector
+     * @return void
+     */
+    private function applyFeatureHashing(array $tokens, array &$vector): void
+    {
         $stems = [];
+        $availableBuckets = max(1, $this->dimensions - 32);
+
         foreach ($tokens as $token) {
             $trimmed = trim($token, '.-/');
             if (strlen($trimmed) < 2 || isset(self::STOP_WORDS[$trimmed])) {
@@ -86,7 +111,7 @@ class EmbeddingGenerator
             $stems[] = $stem;
 
             $hash = crc32($stem);
-            $bucket = 32 + ($hash % max(1, $this->dimensions - 32));
+            $bucket = 32 + ($hash % $availableBuckets);
             $sign = (($hash >> 16) & 1) === 1 ? 1.0 : -1.0;
             $vector[$bucket] += $sign * 1.2;
         }
@@ -95,12 +120,10 @@ class EmbeddingGenerator
         for ($i = 0; $i < $count - 1; ++$i) {
             $bigram = $stems[$i] . '_' . $stems[$i + 1];
             $hash = crc32($bigram);
-            $bucket = 32 + ($hash % max(1, $this->dimensions - 32));
+            $bucket = 32 + ($hash % $availableBuckets);
             $sign = (($hash >> 16) & 1) === 1 ? 1.0 : -1.0;
             $vector[$bucket] += $sign * 0.6;
         }
-
-        return $this->normalize($vector);
     }
 
     /**
@@ -116,6 +139,9 @@ class EmbeddingGenerator
 
     /**
      * Applies lightweight suffix stripping so related words collide in the same vector bucket
+     *
+     * @param string $token Token to strip suffixes from
+     * @return string Stemmed token
      */
     private function stemToken(string $token): string
     {
