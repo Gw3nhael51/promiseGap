@@ -151,7 +151,6 @@
                         {% set isSelected = activeMode == m.key %}
                         <label
                             class="reasoning-pill"
-                            onclick="selectReasoningMode(this)"
                             style="cursor: pointer; padding: 6px 12px; border-radius: 7px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; transition: all 0.15s; {% if isSelected %}background: #7FA3FF; color: #0B1020;{% else %}background: transparent; color: #9BA5B3;{% endif %}"
                         >
                             <input type="radio" name="reasoning_mode" value="{{ m.key }}" {% if isSelected %}checked{% endif %} style="display: none;">
@@ -274,14 +273,19 @@
 </div>
 
 <script>
-function selectReasoningMode(selectedPill) {
-    document.querySelectorAll('.reasoning-pill').forEach(function (pill) {
-        pill.style.background = 'transparent';
-        pill.style.color = '#9BA5B3';
+document.querySelectorAll('#reasoning-selector input[type="radio"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+        document.querySelectorAll('.reasoning-pill').forEach(function (pill) {
+            pill.style.background = 'transparent';
+            pill.style.color = '#9BA5B3';
+        });
+        var parentPill = this.closest('.reasoning-pill');
+        if (parentPill) {
+            parentPill.style.background = '#7FA3FF';
+            parentPill.style.color = '#0B1020';
+        }
     });
-    selectedPill.style.background = '#7FA3FF';
-    selectedPill.style.color = '#0B1020';
-}
+});
 
 function handleProposalSelected(input) {
     if (input.files && input.files.length > 0) {
