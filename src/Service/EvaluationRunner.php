@@ -63,10 +63,7 @@ class EvaluationRunner
             FindingStatus::AMBIGUOUS->value,
         ];
 
-        $counts = [];
-        foreach ($categories as $cat) {
-            $counts[$cat] = ['tp' => 0, 'fp' => 0, 'fn' => 0];
-        }
+        $counts = array_fill_keys($categories, ['tp' => 0, 'fp' => 0, 'fn' => 0]);
 
         $evalAnalysis = new Analysis();
         $evalAnalysis->setTitle('Automated Evaluation Benchmark Run');
@@ -80,49 +77,13 @@ class EvaluationRunner
 
         try {
             foreach ($files as $file) {
-                $raw = file_get_contents($file);
-                if ($raw === false) {
+                $result = $this->evaluateScenarioFile($file, $analysisId);
+                if ($result === null) {
                     continue;
                 }
-                /** @var array<string, mixed> $scenario */
-                $scenario = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
 
-                $id = (string) ($scenario['id'] ?? basename($file, '.json'));
-                $commitment = (string) ($scenario['commitment'] ?? '');
-                $technicalSpec = (string) ($scenario['technicalSpec'] ?? '');
-                $expected = strtoupper((string) ($scenario['expectedStatus'] ?? 'AMBIGUOUS'));
-
-                // Indexer : Découper et indexer la spécification du scénario dans pgvector
-                $this->vectorStoreService->clearAnalysisIndex($analysisId);
-                $chunks = $this->documentChunker->chunkText($technicalSpec, $id . '_spec.md');
-                $this->vectorStoreService->indexChunks($analysisId, $chunks);
-
-                $retrieved = $this->vectorStoreService->searchSimilar($analysisId, $commitment, 3);
-                $qualification = $this->discrepancyClassifier->qualifyText($commitment, $retrieved);
-                $predicted = $qualification->status->value;
-
-                $isMatch = $predicted === $expected;
-                if ($isMatch) {
-                    ++$correct;
-                    ++$counts[$expected]['tp'];
-                } else {
-                    if (isset($counts[$predicted])) {
-                        ++$counts[$predicted]['fp'];
-                    }
-                    if (isset($counts[$expected])) {
-                        ++$counts[$expected]['fn'];
-                    }
-                }
-
-                $scenarioResults[] = [
-                    'id' => $id,
-                    'title' => (string) ($scenario['title'] ?? $id),
-                    'expected' => $expected,
-                    'predicted' => $predicted,
-                    'match' => $isMatch,
-                    'rationale' => $qualification->rationale,
-                    'topEvidence' => $qualification->evidences[0]->quote ?? null,
-                ];
+                $this->recordScenarioMetrics($result, $counts, $correct);
+                $scenarioResults[] = $result;
             }
         } finally {
             $this->vectorStoreService->clearAnalysisIndex($analysisId);
@@ -130,6 +91,101 @@ class EvaluationRunner
             $this->entityManager->flush();
         }
 
+        $metrics = $this->computeCategoryMetrics($counts, $categories);
+        $totalScenarios = count($scenarioResults);
+        $accuracy = $totalScenarios > 0 ? round($correct / $totalScenarios, 4) : 0.0;
+
+        return [
+            'totalScenarios' => $totalScenarios,
+            'correctPredictions' => $correct,
+            'accuracy' => $accuracy,
+            'macroPrecision' => $metrics['macroPrecision'],
+            'macroRecall' => $metrics['macroRecall'],
+            'macroF1' => $metrics['macroF1'],
+            'passesAcceptanceCriteria' => $metrics['macroPrecision'] >= self::MIN_PRECISION && $metrics['macroRecall'] >= self::MIN_RECALL,
+            'perCategory' => $metrics['perCategory'],
+            'scenarios' => $scenarioResults,
+        ];
+    }
+
+    /**
+     * Evaluates a single scenario fixture file against pgvector indexing and qualification
+     *
+     * @param string $file Path to scenario JSON file
+     * @param int $analysisId Temporary benchmark analysis ID
+     * @return ?array{id: string, title: string, expected: string, predicted: string, match: bool, rationale: string, topEvidence: ?string}
+     */
+    private function evaluateScenarioFile(string $file, int $analysisId): ?array
+    {
+        $raw = file_get_contents($file);
+        if ($raw === false) {
+            return null;
+        }
+
+        /** @var array<string, mixed> $scenario */
+        $scenario = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+
+        $id = (string) ($scenario['id'] ?? basename($file, '.json'));
+        $commitment = (string) ($scenario['commitment'] ?? '');
+        $technicalSpec = (string) ($scenario['technicalSpec'] ?? '');
+        $expected = strtoupper((string) ($scenario['expectedStatus'] ?? 'AMBIGUOUS'));
+
+        $this->vectorStoreService->clearAnalysisIndex($analysisId);
+        $chunks = $this->documentChunker->chunkText($technicalSpec, $id . '_spec.md');
+        $this->vectorStoreService->indexChunks($analysisId, $chunks);
+
+        $retrieved = $this->vectorStoreService->searchSimilar($analysisId, $commitment, 3);
+        $qualification = $this->discrepancyClassifier->qualifyText($commitment, $retrieved);
+        $predicted = $qualification->status->value;
+
+        return [
+            'id' => $id,
+            'title' => (string) ($scenario['title'] ?? $id),
+            'expected' => $expected,
+            'predicted' => $predicted,
+            'match' => $predicted === $expected,
+            'rationale' => $qualification->rationale,
+            'topEvidence' => $qualification->evidences[0]->quote ?? null,
+        ];
+    }
+
+    /**
+     * Updates true-positive, false-positive and false-negative metrics for a scenario prediction
+     *
+     * @param array{expected: string, predicted: string, match: bool} $scenarioResult Prediction result
+     * @param array<string, array{tp: int, fp: int, fn: int}> $counts Confusion counts per category
+     * @param int $correct Total correct predictions count
+     * @return void
+     */
+    private function recordScenarioMetrics(array $scenarioResult, array &$counts, int &$correct): void
+    {
+        $expected = $scenarioResult['expected'];
+        $predicted = $scenarioResult['predicted'];
+
+        if ($scenarioResult['match']) {
+            ++$correct;
+            ++$counts[$expected]['tp'];
+
+            return;
+        }
+
+        if (isset($counts[$predicted])) {
+            ++$counts[$predicted]['fp'];
+        }
+        if (isset($counts[$expected])) {
+            ++$counts[$expected]['fn'];
+        }
+    }
+
+    /**
+     * Computes per-category Precision, Recall, and F1 scores along with macro averages
+     *
+     * @param array<string, array{tp: int, fp: int, fn: int}> $counts Confusion counts per category
+     * @param string[] $categories Status category values
+     * @return array{perCategory: array<string, array{tp: int, fp: int, fn: int, precision: float, recall: float, f1: float}>, macroPrecision: float, macroRecall: float, macroF1: float}
+     */
+    private function computeCategoryMetrics(array $counts, array $categories): array
+    {
         $perCategory = [];
         $precisionSum = 0.0;
         $recallSum = 0.0;
@@ -158,23 +214,13 @@ class EvaluationRunner
             $f1Sum += $f1;
         }
 
-        $numCats = count($categories);
-        $totalScenarios = count($scenarioResults);
-        $macroPrecision = round($precisionSum / $numCats, 4);
-        $macroRecall = round($recallSum / $numCats, 4);
-        $macroF1 = round($f1Sum / $numCats, 4);
-        $accuracy = $totalScenarios > 0 ? round($correct / $totalScenarios, 4) : 0.0;
+        $numCats = max(1, count($categories));
 
         return [
-            'totalScenarios' => $totalScenarios,
-            'correctPredictions' => $correct,
-            'accuracy' => $accuracy,
-            'macroPrecision' => $macroPrecision,
-            'macroRecall' => $macroRecall,
-            'macroF1' => $macroF1,
-            'passesAcceptanceCriteria' => $macroPrecision >= self::MIN_PRECISION && $macroRecall >= self::MIN_RECALL,
             'perCategory' => $perCategory,
-            'scenarios' => $scenarioResults,
+            'macroPrecision' => round($precisionSum / $numCats, 4),
+            'macroRecall' => round($recallSum / $numCats, 4),
+            'macroF1' => round($f1Sum / $numCats, 4),
         ];
     }
 }

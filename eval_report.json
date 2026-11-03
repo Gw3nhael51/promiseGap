@@ -200,7 +200,7 @@
             "expected": "UNSUPPORTED",
             "predicted": "UNSUPPORTED",
             "match": true,
-            "rationale": "The commitment claims out-of-the-box bi-directional sync with SAP R/3 4.6C at no extra cost, but the retrieved technical specification contains no mention of SAP, synchronization, connectors, or pricing. The sole chunk addresses Linux kernel isolation and provides no technical basis for the claim.",
+            "rationale": "The commitment claims out-of-the-box bi-directional synchronization with on-premise SAP R/3 4.6C at no extra cost, but the retrieved technical specification provides no basis for SAP connectivity, synchronization, or pricing. The sole chunk addresses Linux kernel cgroups v2 isolation only.",
             "topEvidence": null
         },
         {
@@ -209,7 +209,7 @@
             "expected": "AMBIGUOUS",
             "predicted": "AMBIGUOUS",
             "match": true,
-            "rationale": "The commitment uses vague, subjective, non-measurable superlatives ('optimal, world-class, ultra-fast') and an absolute condition ('under all workload conditions') without quantifiable thresholds, SLAs, or verifiable acceptance criteria.",
+            "rationale": "Commitment uses vague, subjective, non-measurable superlatives ('optimal', 'world-class', 'ultra-fast') with no quantifiable thresholds, response-time targets, workload definitions, or verifiable acceptance criteria. Retrieved chunk provides only general design intent with no metrics.",
             "topEvidence": null
         },
         {
