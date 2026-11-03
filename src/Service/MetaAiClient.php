@@ -11,6 +11,7 @@ use Symfony\AI\Platform\Exception\BadRequestException;
 use Symfony\AI\Platform\Message\Content\Image;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
+use Symfony\AI\Platform\Platform;
 use Symfony\AI\Platform\TokenUsage\TokenUsageInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -77,7 +78,6 @@ class MetaAiClient implements AiClientInterface
     public function chat(string $systemPrompt, string $userPrompt, array $options = []): AiResponse
     {
         $model = (string) ($options['model'] ?? $this->model);
-        $temperature = (float) ($options['temperature'] ?? 0.1);
         $imagePath = isset($options['image_path']) && is_string($options['image_path'])
             ? $options['image_path']
             : null;
@@ -86,25 +86,26 @@ class MetaAiClient implements AiClientInterface
             return $this->simulateResponse($systemPrompt, $userPrompt, $model, $imagePath);
         }
 
-        $optionsPayload = [
-            'temperature' => $temperature,
-            'reasoning_effort' => (string) ($options['reasoning_effort'] ?? 'low'),
-        ];
+        $platform = $this->createPlatform();
+        $messages = $this->createMessageBag($systemPrompt, $userPrompt, $imagePath);
+        $optionsPayload = $this->buildOptionsPayload($options);
 
-        if (isset($options['response_format']) && is_array($options['response_format'])) {
-            $optionsPayload['response_format'] = $options['response_format'];
-        }
+        return $this->executeChatWithRetry($platform, $model, $messages, $optionsPayload, $systemPrompt . $userPrompt);
+    }
 
-        if (isset($options['max_tokens'])) {
-            $optionsPayload['max_tokens'] = (int) $options['max_tokens'];
-        }
-
+    /**
+     * Instantiates the Symfony AI generic platform for Meta Muse Spark
+     *
+     * @return Platform Configured platform instance
+     */
+    private function createPlatform(): Platform
+    {
         $baseUrl = rtrim($this->endpoint, '/');
         $completionsPath = (str_ends_with($baseUrl, '/v1') || str_ends_with($baseUrl, '/compat/v1'))
             ? '/chat/completions'
             : '/v1/chat/completions';
 
-        $platform = GenericPlatformFactory::createPlatform(
+        return GenericPlatformFactory::createPlatform(
             baseUrl: $baseUrl,
             apiKey: $this->apiKey,
             httpClient: $this->httpClient->withOptions(['timeout' => $this->timeout]),
@@ -113,16 +114,69 @@ class MetaAiClient implements AiClientInterface
             completionsPath: $completionsPath,
             name: 'meta-muse-spark',
         );
+    }
 
+    /**
+     * Builds message bag containing system prompt and user text/image payload
+     *
+     * @param string $systemPrompt System instructions
+     * @param string $userPrompt User text
+     * @param ?string $imagePath Optional local path to an image file
+     * @return MessageBag Assembled messages
+     */
+    private function createMessageBag(string $systemPrompt, string $userPrompt, ?string $imagePath): MessageBag
+    {
         $userMessage = ($imagePath !== null && is_file($imagePath))
             ? Message::ofUser($userPrompt, Image::fromFile($imagePath))
             : Message::ofUser($userPrompt);
 
-        $messages = new MessageBag(
+        return new MessageBag(
             Message::forSystem($systemPrompt),
             $userMessage,
         );
+    }
 
+    /**
+     * Prepares the options dictionary sent to the model client
+     *
+     * @param array<string, mixed> $options Input options
+     * @return array<string, mixed> Normalized options payload
+     */
+    private function buildOptionsPayload(array $options): array
+    {
+        $payload = [
+            'temperature' => (float) ($options['temperature'] ?? 0.1),
+            'reasoning_effort' => (string) ($options['reasoning_effort'] ?? 'low'),
+        ];
+
+        if (isset($options['response_format']) && is_array($options['response_format'])) {
+            $payload['response_format'] = $options['response_format'];
+        }
+
+        if (isset($options['max_tokens'])) {
+            $payload['max_tokens'] = (int) $options['max_tokens'];
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Executes the model invocation loop with exponential retry handling
+     *
+     * @param Platform $platform Configured AI platform
+     * @param string $model Model identifier
+     * @param MessageBag $messages Input messages
+     * @param array<string, mixed> $optionsPayload Options payload
+     * @param string $promptContext Full prompt text for token estimation fallback
+     * @return AiResponse Normalized completion response
+     */
+    private function executeChatWithRetry(
+        Platform $platform,
+        string $model,
+        MessageBag $messages,
+        array $optionsPayload,
+        string $promptContext,
+    ): AiResponse {
         $attempt = 0;
         $lastException = null;
 
@@ -131,25 +185,8 @@ class MetaAiClient implements AiClientInterface
 
             try {
                 $deferredResult = $platform->invoke($model, $messages, $optionsPayload);
-                $content = $deferredResult->asText();
 
-                $tokenUsage = $deferredResult->getMetadata()->get('token_usage');
-                $promptTokens = $tokenUsage instanceof TokenUsageInterface && $tokenUsage->getPromptTokens() !== null
-                    ? $tokenUsage->getPromptTokens()
-                    : $this->estimateTokens($systemPrompt . $userPrompt);
-                $completionTokens = $tokenUsage instanceof TokenUsageInterface && $tokenUsage->getCompletionTokens() !== null
-                    ? $tokenUsage->getCompletionTokens()
-                    : $this->estimateTokens($content);
-                $resolvedModel = $tokenUsage instanceof TokenUsageInterface && $tokenUsage->getModel() !== null
-                    ? $tokenUsage->getModel()
-                    : $model;
-
-                return new AiResponse(
-                    content: $content,
-                    model: $resolvedModel,
-                    promptTokens: $promptTokens,
-                    completionTokens: $completionTokens,
-                );
+                return $this->buildAiResponse($deferredResult, $model, $promptContext);
             } catch (AuthenticationException|BadRequestException $exception) {
                 throw new \InvalidArgumentException(sprintf('Meta API rejected the request: %s', $exception->getMessage()), 0, $exception);
             } catch (\Throwable $exception) {
@@ -166,6 +203,39 @@ class MetaAiClient implements AiClientInterface
             sprintf('Meta AI request failed after %d attempts: %s', $attempt, $lastException?->getMessage() ?? 'unknown error'),
             0,
             $lastException,
+        );
+    }
+
+    /**
+     * Extracts text content and token telemetry from a deferred result
+     *
+     * @param mixed $deferredResult Platform invoke result
+     * @param string $fallbackModel Target model identifier
+     * @param string $promptContext Combined prompt context
+     * @return AiResponse Normalized response
+     */
+    private function buildAiResponse(mixed $deferredResult, string $fallbackModel, string $promptContext): AiResponse
+    {
+        $content = $deferredResult->asText();
+        $tokenUsage = $deferredResult->getMetadata()->get('token_usage');
+
+        $promptTokens = $tokenUsage instanceof TokenUsageInterface && $tokenUsage->getPromptTokens() !== null
+            ? $tokenUsage->getPromptTokens()
+            : $this->estimateTokens($promptContext);
+
+        $completionTokens = $tokenUsage instanceof TokenUsageInterface && $tokenUsage->getCompletionTokens() !== null
+            ? $tokenUsage->getCompletionTokens()
+            : $this->estimateTokens($content);
+
+        $resolvedModel = $tokenUsage instanceof TokenUsageInterface && $tokenUsage->getModel() !== null
+            ? $tokenUsage->getModel()
+            : $fallbackModel;
+
+        return new AiResponse(
+            content: $content,
+            model: $resolvedModel,
+            promptTokens: $promptTokens,
+            completionTokens: $completionTokens,
         );
     }
 
@@ -299,7 +369,7 @@ class MetaAiClient implements AiClientInterface
                 continue;
             }
 
-            if (preg_match('/\b(guarantee\w*|sla|uptime|availability|99\.\d+%|response time|within \d+|shall|will provide|commit\w*|deliver\w*|support|rpo|rto|latency|backup\w*|encrypt\w*|iso|soc\s*2|gdpr|hipaa|penalt\w*|credit\w*|optimal|best[- ]effort\w*|seamless\w*|world[- ]class|real[- ]time|unlimited)\b/i', $trimmed) === 1) {
+            if ($this->isCommitmentCandidate($trimmed)) {
                 $cleanSentence = ltrim($trimmed, "-*• \t");
                 $commitments[] = [
                     'verbatimText' => $cleanSentence,
@@ -323,6 +393,35 @@ class MetaAiClient implements AiClientInterface
         }
 
         return json_encode(['commitments' => $commitments], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * Checks if a proposal line qualifies as a commercial commitment statement
+     *
+     * @param string $text Proposal line text
+     * @return bool True if line contains contractual commitment keywords
+     */
+    private function isCommitmentCandidate(string $text): bool
+    {
+        $lower = strtolower($text);
+        $staticKeywords = [
+            'sla', 'uptime', 'availability', 'support', 'rpo', 'rto',
+            'latency', 'backup', 'encrypt', 'iso', 'soc 2', 'gdpr',
+            'hipaa', 'optimal', 'seamless', 'real-time', 'real time',
+            'unlimited', 'shall', 'will provide',
+        ];
+
+        foreach ($staticKeywords as $keyword) {
+            if (str_contains($lower, $keyword)) {
+                return true;
+            }
+        }
+
+        if (preg_match('/\b(guarantee\w*|commit\w*|deliver\w*|penalt\w*|credit\w*)\b/i', $text) === 1) {
+            return true;
+        }
+
+        return (bool) preg_match('/\b(99\.\d+%|within \d+|response time)\b/i', $text);
     }
 
     /**
@@ -352,98 +451,194 @@ class MetaAiClient implements AiClientInterface
      */
     private function simulateDiscrepancyQualification(string $userPrompt): string
     {
-        $commitment = '';
+        $commitment = $this->extractPromptCommitment($userPrompt);
+        $chunks = $this->extractPromptChunks($userPrompt);
+
+        $qualification = $this->computeSimulatedQualification($commitment, $chunks);
+
+        return json_encode($qualification, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * Extracts commitment string from prompt body
+     *
+     * @param string $userPrompt Prompt content
+     * @return string Extracted commitment text
+     */
+    private function extractPromptCommitment(string $userPrompt): string
+    {
         if (preg_match('/COMMITMENT:\s*(.+?)(?:\n\n|\nRETRIEVED_CHUNKS:)/is', $userPrompt, $m) === 1) {
-            $commitment = trim($m[1]);
+            return trim($m[1]);
         }
 
-        $chunksJson = '[]';
+        return '';
+    }
+
+    /**
+     * Extracts retrieved chunks array from prompt body
+     *
+     * @param string $userPrompt Prompt content
+     * @return array<int, array<string, mixed>> Extracted chunks array
+     */
+    private function extractPromptChunks(string $userPrompt): array
+    {
         if (preg_match('/RETRIEVED_CHUNKS:\s*(\[.*\])\s*$/is', $userPrompt, $m) === 1) {
-            $chunksJson = $m[1];
-        }
-        $chunks = json_decode($chunksJson, true);
-        if (!is_array($chunks)) {
-            $chunks = [];
+            $decoded = json_decode($m[1], true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
         }
 
-        $hasMetric = preg_match('/(\d+(\.\d+)?\s*(%|ms|s|sec|seconds|min|minutes|hours|hrs|days|weeks|months|gb|tb|mbps|req\/s|iso\s*\d+|soc\s*2|aes-\d+|tls\s*1\.\d)|\b(24\/7|24x7|zero[- ]data[- ]loss|daily|hourly|weekly|monthly|annual|soc\s*2|gdpr|hipaa|pci[- ]dss|fedramp|sso|saml|oidc|multi[- ]region|active[- ]active)\b)/i', $commitment) === 1;
-        $isVague = preg_match('/\b(optimal|best[- ]in[- ]class|world[- ]class|seamless\w*|cutting[- ]edge|industry[- ]leading|effortless\w*|ultra[- ]fast|near[- ]instant\w*|as soon as possible|reasonable efforts|high[- ]speed|robust performance|flexible scalability|state[- ]of[- ]the[- ]art|maximum reliability|superior quality|next[- ]generation)\b/i', $commitment) === 1;
+        return [];
+    }
 
-        if ($isVague && !$hasMetric) {
+    /**
+     * Computes the structured qualification array for simulated offline mode
+     *
+     * @param string $commitment Commercial commitment statement
+     * @param array<int, array<string, mixed>> $chunks Retrieved specification chunks
+     * @return array{status: string, rationale: string, evidence: array<int, array<string, mixed>>}
+     */
+    private function computeSimulatedQualification(string $commitment, array $chunks): array
+    {
+        if ($this->isVagueCommitment($commitment) && !$this->hasSimulationMetric($commitment)) {
             $topChunk = $chunks[0] ?? null;
-            return json_encode([
+
+            return [
                 'status' => 'AMBIGUOUS',
                 'rationale' => 'The commitment relies on subjective or non-measurable phrasing without concrete acceptance criteria in the technical specifications.',
-                'evidence' => $topChunk !== null ? [[
-                    'documentId' => $topChunk['documentId'] ?? null,
-                    'quote' => $topChunk['text'] ?? '',
-                    'sectionTitle' => $topChunk['sectionTitle'] ?? self::DEFAULT_SECTION_TITLE,
-                    'pageNumber' => $topChunk['pageNumber'] ?? 1,
-                    'similarityScore' => $topChunk['similarityScore'] ?? 0.5,
-                ]] : [],
-            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+                'evidence' => $topChunk !== null ? [$this->formatChunkEvidence($topChunk, 0.5)] : [],
+            ];
         }
 
-        if ($chunks === []) {
-            return json_encode([
+        if ($chunks === [] || (float) ($chunks[0]['similarityScore'] ?? 0.0) < 0.18 || trim((string) ($chunks[0]['text'] ?? '')) === '') {
+            return [
                 'status' => 'UNSUPPORTED',
-                'rationale' => 'No matching section or technical basis was found in the reference specifications for this commercial commitment.',
+                'rationale' => $chunks === []
+                    ? 'No matching section or technical basis was found in the reference specifications for this commercial commitment.'
+                    : 'The technical reference documents do not contain any provision covering this commitment.',
                 'evidence' => [],
-            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+            ];
         }
 
         $topChunk = $chunks[0];
         $chunkText = (string) ($topChunk['text'] ?? '');
         $similarity = (float) ($topChunk['similarityScore'] ?? 0.0);
 
-        if ($similarity < 0.18 || trim($chunkText) === '') {
-            return json_encode([
-                'status' => 'UNSUPPORTED',
-                'rationale' => 'The technical reference documents do not contain any provision covering this commitment.',
-                'evidence' => [],
-            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
-        }
+        return $this->evaluateChunkAlignment($commitment, $topChunk, $chunkText, $similarity);
+    }
 
+    /**
+     * Evaluates whether a chunk contradicts, leaves ambiguous, or supports a commitment
+     *
+     * @param string $commitment Commercial commitment statement
+     * @param array<string, mixed> $topChunk Top retrieved chunk
+     * @param string $chunkText Verbatim chunk text
+     * @param float $similarity Similarity score
+     * @return array{status: string, rationale: string, evidence: array<int, array<string, mixed>>}
+     */
+    private function evaluateChunkAlignment(
+        string $commitment,
+        array $topChunk,
+        string $chunkText,
+        float $similarity,
+    ): array {
         $contradiction = $this->detectContradiction($commitment, $chunkText);
         if ($contradiction !== null) {
-            return json_encode([
+            return [
                 'status' => 'CONTRADICTORY',
                 'rationale' => $contradiction,
-                'evidence' => [[
-                    'documentId' => $topChunk['documentId'] ?? null,
-                    'quote' => $chunkText,
-                    'sectionTitle' => $topChunk['sectionTitle'] ?? self::DEFAULT_SECTION_TITLE,
-                    'pageNumber' => $topChunk['pageNumber'] ?? 1,
-                    'similarityScore' => $similarity,
-                ]],
-            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+                'evidence' => [$this->formatChunkEvidence($topChunk, $similarity)],
+            ];
         }
 
         if (preg_match('/\b(tbd|to be determined|subject to change|not yet finalized|optional add-on|best effort)\b/i', $chunkText) === 1) {
-            return json_encode([
+            return [
                 'status' => 'AMBIGUOUS',
                 'rationale' => 'The technical specification leaves the target metric open, optional, or non-binding.',
-                'evidence' => [[
-                    'documentId' => $topChunk['documentId'] ?? null,
-                    'quote' => $chunkText,
-                    'sectionTitle' => $topChunk['sectionTitle'] ?? self::DEFAULT_SECTION_TITLE,
-                    'pageNumber' => $topChunk['pageNumber'] ?? 1,
-                    'similarityScore' => $similarity,
-                ]],
-            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+                'evidence' => [$this->formatChunkEvidence($topChunk, $similarity)],
+            ];
         }
 
-        return json_encode([
+        return [
             'status' => 'SUPPORTED',
             'rationale' => 'The commercial commitment is directly backed by the technical specification with aligned parameters.',
-            'evidence' => [[
-                'documentId' => $topChunk['documentId'] ?? null,
-                'quote' => $chunkText,
-                'sectionTitle' => $topChunk['sectionTitle'] ?? self::DEFAULT_SECTION_TITLE,
-                'pageNumber' => $topChunk['pageNumber'] ?? 1,
-                'similarityScore' => $similarity,
-            ]],
-        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+            'evidence' => [$this->formatChunkEvidence($topChunk, $similarity)],
+        ];
+    }
+
+    /**
+     * Formats a raw chunk into an evidence array item
+     *
+     * @param array<string, mixed> $chunk Raw chunk dictionary
+     * @param float $similarity Similarity score
+     * @return array<string, mixed> Formatted evidence dictionary
+     */
+    private function formatChunkEvidence(array $chunk, float $similarity): array
+    {
+        return [
+            'documentId' => $chunk['documentId'] ?? null,
+            'quote' => $chunk['text'] ?? '',
+            'sectionTitle' => $chunk['sectionTitle'] ?? self::DEFAULT_SECTION_TITLE,
+            'pageNumber' => $chunk['pageNumber'] ?? 1,
+            'similarityScore' => $similarity,
+        ];
+    }
+
+    /**
+     * Checks if a commitment mentions numerical units, standards, or quantitative metrics
+     *
+     * @param string $commitment Commitment text
+     * @return bool True if a metric was detected
+     */
+    private function hasSimulationMetric(string $commitment): bool
+    {
+        $lower = strtolower($commitment);
+        $keywords = [
+            '24/7', '24x7', 'zero data loss', 'zero-data-loss', 'daily',
+            'hourly', 'weekly', 'monthly', 'annual', 'soc 2', 'gdpr',
+            'hipaa', 'pci-dss', 'fedramp', 'sso', 'saml', 'oidc',
+            'multi-region', 'active-active',
+        ];
+
+        foreach ($keywords as $kw) {
+            if (str_contains($lower, $kw)) {
+                return true;
+            }
+        }
+
+        if (preg_match('/\b(iso\s*\d+|soc\s*2|aes-\d+|tls\s*1\.\d)/i', $commitment) === 1) {
+            return true;
+        }
+
+        return (bool) preg_match('/\b\d+(?:\.\d+)?\s*(%|ms|s|sec|min|hour|hr|day|week|month|gb|tb|mbps|req\/s)/i', $commitment);
+    }
+
+    /**
+     * Checks if a commitment relies on vague, subjective, or non-measurable superlative phrasing
+     *
+     * @param string $commitment Commitment text
+     * @return bool True if vague phrasing was detected
+     */
+    private function isVagueCommitment(string $commitment): bool
+    {
+        $lower = strtolower($commitment);
+        $vaguePhrases = [
+            'optimal', 'best-in-class', 'world-class', 'seamless',
+            'cutting-edge', 'industry-leading', 'effortless', 'ultra-fast',
+            'near-instant', 'as soon as possible', 'reasonable efforts',
+            'high-speed', 'robust performance', 'flexible scalability',
+            'state-of-the-art', 'maximum reliability', 'superior quality',
+            'next-generation',
+        ];
+
+        foreach ($vaguePhrases as $phrase) {
+            if (str_contains($lower, $phrase)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -454,6 +649,23 @@ class MetaAiClient implements AiClientInterface
      * @return string|null Contradiction rationale if in direct conflict, null otherwise
      */
     private function detectContradiction(string $commitment, string $specText): ?string
+    {
+        $metricConflict = $this->detectMetricContradiction($commitment, $specText);
+        if ($metricConflict !== null) {
+            return $metricConflict;
+        }
+
+        return $this->detectSemanticContradiction($commitment, $specText);
+    }
+
+    /**
+     * Detects numeric percentage or unit-based value conflicts between commitment and spec
+     *
+     * @param string $commitment Commercial commitment statement
+     * @param string $specText Technical specification text
+     * @return ?string Contradiction rationale or null
+     */
+    private function detectMetricContradiction(string $commitment, string $specText): ?string
     {
         if (preg_match_all('/(\d+(?:\.\d+)?)\s*%/', $commitment, $cPct) >= 1
             && preg_match_all('/(\d+(?:\.\d+)?)\s*%/', $specText, $sPct) >= 1
@@ -466,7 +678,7 @@ class MetaAiClient implements AiClientInterface
             );
         }
 
-        $unitPattern = '/(\d+(?:\.\d+)?)\s*(ms|milliseconds?|seconds?|sec|minutes?|min|hours?|hrs?|days?|weeks?|months?|gb|tb|req\/s|rps|years?)\b/i';
+        $unitPattern = '/(\d+(?:\.\d+)?)\s*(ms|millisecond|sec|second|min|minute|hour|hr|day|week|month|year|gb|tb|req\/s|rps)s?\b/i';
         if (preg_match($unitPattern, $commitment, $cUnit) === 1
             && preg_match($unitPattern, $specText, $sUnit) === 1
         ) {
@@ -483,6 +695,18 @@ class MetaAiClient implements AiClientInterface
             }
         }
 
+        return null;
+    }
+
+    /**
+     * Detects semantic, operational, or tenancy discrepancies between commitment and spec
+     *
+     * @param string $commitment Commercial commitment statement
+     * @param string $specText Technical specification text
+     * @return ?string Contradiction rationale or null
+     */
+    private function detectSemanticContradiction(string $commitment, string $specText): ?string
+    {
         $cLower = strtolower($commitment);
         $sLower = strtolower($specText);
 
@@ -492,12 +716,28 @@ class MetaAiClient implements AiClientInterface
             return 'The proposal promises 24/7 coverage whereas the specification restricts support to standard business hours.';
         }
 
-        if (str_contains($cLower, 'synchronous')
-            && str_contains($sLower, 'asynchronous')
-        ) {
+        if (str_contains($cLower, 'synchronous') && str_contains($sLower, 'asynchronous')) {
             return 'The proposal commits to synchronous replication whereas the technical specification defines asynchronous replication.';
         }
 
+        return $this->detectArchitectureContradiction($commitment, $specText, $cLower, $sLower);
+    }
+
+    /**
+     * Detects RPO, multi-tenancy, or explicit feature exclusion contradictions
+     *
+     * @param string $commitment Commercial commitment statement
+     * @param string $specText Technical specification text
+     * @param string $cLower Lowercase commitment
+     * @param string $sLower Lowercase spec text
+     * @return ?string Contradiction rationale or null
+     */
+    private function detectArchitectureContradiction(
+        string $commitment,
+        string $specText,
+        string $cLower,
+        string $sLower,
+    ): ?string {
         if (str_contains($cLower, 'zero data loss')
             && (
                 preg_match('/rpo\b[^.]*\b([1-9]\d*)\s*(minutes?|hours?|sec|seconds?)/i', $specText) === 1
@@ -513,6 +753,18 @@ class MetaAiClient implements AiClientInterface
             return 'The proposal promises dedicated or single-tenant isolation whereas the technical architecture uses shared multi-tenant infrastructure.';
         }
 
+        return $this->detectExclusionContradiction($commitment, $specText);
+    }
+
+    /**
+     * Detects explicit feature exclusion or unsupported claim in specification
+     *
+     * @param string $commitment Commercial commitment statement
+     * @param string $specText Technical specification text
+     * @return ?string Contradiction rationale or null
+     */
+    private function detectExclusionContradiction(string $commitment, string $specText): ?string
+    {
         if (preg_match('/\b(not supported|excluded|out of scope|no longer provided|does not include|not included|disabled)\b/i', $specText) === 1
             && preg_match('/\b(not supported|excluded|out of scope|does not include)\b/i', $commitment) !== 1
         ) {
