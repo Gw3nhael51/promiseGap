@@ -20,6 +20,14 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 )]
 final class EvalBenchmarkCommand extends Command
 {
+    private const string PERCENT_FORMAT = '%.1f%%';
+
+    /**
+     * Initializes the benchmark command with evaluation runner and project directory
+     *
+     * @param EvaluationRunner $evaluationRunner Ground-truth scenario evaluation engine
+     * @param string $projectDir Project root directory path
+     */
     public function __construct(
         private EvaluationRunner $evaluationRunner,
         #[Autowire('%kernel.project_dir%')]
@@ -28,6 +36,11 @@ final class EvalBenchmarkCommand extends Command
         parent::__construct();
     }
 
+    /**
+     * Configures the command options and description
+     *
+     * @return void
+     */
     protected function configure(): void
     {
         $this->addOption(
@@ -39,6 +52,13 @@ final class EvalBenchmarkCommand extends Command
         );
     }
 
+    /**
+     * Executes the benchmark suite across all scenarios and prints metrics table
+     *
+     * @param InputInterface $input Console input interface
+     * @param OutputInterface $output Console output interface
+     * @return int Command exit code (SUCCESS or FAILURE)
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -53,9 +73,9 @@ final class EvalBenchmarkCommand extends Command
                 (string) $metrics['tp'],
                 (string) $metrics['fp'],
                 (string) $metrics['fn'],
-                sprintf('%.1f%%', $metrics['precision'] * 100),
-                sprintf('%.1f%%', $metrics['recall'] * 100),
-                sprintf('%.1f%%', $metrics['f1'] * 100),
+                sprintf(self::PERCENT_FORMAT, $metrics['precision'] * 100),
+                sprintf(self::PERCENT_FORMAT, $metrics['recall'] * 100),
+                sprintf(self::PERCENT_FORMAT, $metrics['f1'] * 100),
             ];
         }
 
@@ -64,9 +84,9 @@ final class EvalBenchmarkCommand extends Command
             '-',
             '-',
             '-',
-            sprintf('%.1f%%', $report['macroPrecision'] * 100),
-            sprintf('%.1f%%', $report['macroRecall'] * 100),
-            sprintf('%.1f%%', $report['macroF1'] * 100),
+            sprintf(self::PERCENT_FORMAT, $report['macroPrecision'] * 100),
+            sprintf(self::PERCENT_FORMAT, $report['macroRecall'] * 100),
+            sprintf(self::PERCENT_FORMAT, $report['macroF1'] * 100),
         ];
 
         $io->section(sprintf('Category Metrics (%d Ground-Truth Scenarios)', $report['totalScenarios']));
