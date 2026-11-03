@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\DTO\AiResponse;
+use App\Exception\MetaAiException;
 use Psr\Log\LoggerInterface;
 use Symfony\AI\Platform\Bridge\Generic\Factory as GenericPlatformFactory;
 use Symfony\AI\Platform\Exception\AuthenticationException;
@@ -19,6 +20,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 class MetaAiClient implements AiClientInterface
 {
+    private const string DEFAULT_SECTION_TITLE = 'Technical Specification';
     /**
      * @param HttpClientInterface $httpClient Symfony HTTP client for API calls
      * @param LoggerInterface $logger Application logger
@@ -160,7 +162,7 @@ class MetaAiClient implements AiClientInterface
             }
         }
 
-        throw new \RuntimeException(
+        throw new MetaAiException(
             sprintf('Meta AI request failed after %d attempts: %s', $attempt, $lastException?->getMessage() ?? 'unknown error'),
             0,
             $lastException,
@@ -206,14 +208,14 @@ class MetaAiClient implements AiClientInterface
 
         $decoded = json_decode($cleaned, true);
         if (!is_array($decoded) || json_last_error() !== JSON_ERROR_NONE) {
-            throw new \RuntimeException('Model response is not valid JSON: ' . json_last_error_msg());
+            throw new MetaAiException('Model response is not valid JSON: ' . json_last_error_msg());
         }
 
         $required = $jsonSchema['required'] ?? [];
         if (is_array($required)) {
             foreach ($required as $requiredKey) {
                 if (!array_key_exists((string) $requiredKey, $decoded)) {
-                    throw new \RuntimeException(sprintf('Model JSON response is missing required key "%s".', $requiredKey));
+                    throw new MetaAiException(sprintf('Model JSON response is missing required key "%s".', $requiredKey));
                 }
             }
         }
@@ -375,7 +377,7 @@ class MetaAiClient implements AiClientInterface
                 'evidence' => $topChunk !== null ? [[
                     'documentId' => $topChunk['documentId'] ?? null,
                     'quote' => $topChunk['text'] ?? '',
-                    'sectionTitle' => $topChunk['sectionTitle'] ?? 'Technical Specification',
+                    'sectionTitle' => $topChunk['sectionTitle'] ?? self::DEFAULT_SECTION_TITLE,
                     'pageNumber' => $topChunk['pageNumber'] ?? 1,
                     'similarityScore' => $topChunk['similarityScore'] ?? 0.5,
                 ]] : [],
@@ -410,7 +412,7 @@ class MetaAiClient implements AiClientInterface
                 'evidence' => [[
                     'documentId' => $topChunk['documentId'] ?? null,
                     'quote' => $chunkText,
-                    'sectionTitle' => $topChunk['sectionTitle'] ?? 'Technical Specification',
+                    'sectionTitle' => $topChunk['sectionTitle'] ?? self::DEFAULT_SECTION_TITLE,
                     'pageNumber' => $topChunk['pageNumber'] ?? 1,
                     'similarityScore' => $similarity,
                 ]],
@@ -424,7 +426,7 @@ class MetaAiClient implements AiClientInterface
                 'evidence' => [[
                     'documentId' => $topChunk['documentId'] ?? null,
                     'quote' => $chunkText,
-                    'sectionTitle' => $topChunk['sectionTitle'] ?? 'Technical Specification',
+                    'sectionTitle' => $topChunk['sectionTitle'] ?? self::DEFAULT_SECTION_TITLE,
                     'pageNumber' => $topChunk['pageNumber'] ?? 1,
                     'similarityScore' => $similarity,
                 ]],
@@ -437,7 +439,7 @@ class MetaAiClient implements AiClientInterface
             'evidence' => [[
                 'documentId' => $topChunk['documentId'] ?? null,
                 'quote' => $chunkText,
-                'sectionTitle' => $topChunk['sectionTitle'] ?? 'Technical Specification',
+                'sectionTitle' => $topChunk['sectionTitle'] ?? self::DEFAULT_SECTION_TITLE,
                 'pageNumber' => $topChunk['pageNumber'] ?? 1,
                 'similarityScore' => $similarity,
             ]],
@@ -455,14 +457,13 @@ class MetaAiClient implements AiClientInterface
     {
         if (preg_match_all('/(\d+(?:\.\d+)?)\s*%/', $commitment, $cPct) >= 1
             && preg_match_all('/(\d+(?:\.\d+)?)\s*%/', $specText, $sPct) >= 1
+            && (float) $cPct[1][0] !== (float) $sPct[1][0]
         ) {
-            if ((float) $cPct[1][0] !== (float) $sPct[1][0]) {
-                return sprintf(
-                    'The commercial proposal promises %s%% whereas the technical specification states %s%%.',
-                    $cPct[1][0],
-                    $sPct[1][0],
-                );
-            }
+            return sprintf(
+                'The commercial proposal promises %s%% whereas the technical specification states %s%%.',
+                $cPct[1][0],
+                $sPct[1][0],
+            );
         }
 
         $unitPattern = '/(\d+(?:\.\d+)?)\s*(ms|milliseconds?|seconds?|sec|minutes?|min|hours?|hrs?|days?|weeks?|months?|gb|tb|req\/s|rps|years?)\b/i';
