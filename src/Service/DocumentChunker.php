@@ -65,39 +65,40 @@ class DocumentChunker
         $targetChars = max(120, ($maxTokens ?? $this->targetTokens) * self::CHARS_PER_TOKEN);
         $overlapChars = max(0, min((int) ($targetChars / 2), ($overlap ?? $this->overlapTokens) * self::CHARS_PER_TOKEN));
 
+        $blocks = $this->parseBlocks($cleaned, $documentTitle);
+
+        return $this->assembleChunks($blocks, $documentTitle, $documentId, $targetChars, $overlapChars);
+    }
+
+    /**
+     * Parses sanitized text into structured content blocks with page numbers and section hierarchy
+     *
+     * @param string $cleaned Sanitized markdown or text
+     * @param string $documentTitle Document title used as default section
+     * @return array<int, array{section: string, page: int, text: string}> Parsed content blocks
+     */
+    private function parseBlocks(string $cleaned, string $documentTitle): array
+    {
         $lines = preg_split('/\R/', $cleaned) ?: [];
         $currentPage = 1;
         $headingStack = [];
         $currentSection = $documentTitle;
 
-        /** @var array<int, array{section: string, page: int, text: string}> $blocks */
         $blocks = [];
         $buffer = [];
         $bufferPage = 1;
-
-        $flushBuffer = function () use (&$buffer, &$blocks, &$currentSection, &$bufferPage): void {
-            $joined = trim(implode("\n", $buffer));
-            if ($joined !== '') {
-                $blocks[] = [
-                    'section' => $currentSection,
-                    'page' => $bufferPage,
-                    'text' => $this->cleanFormattingArtifacts($joined),
-                ];
-            }
-            $buffer = [];
-        };
 
         foreach ($lines as $line) {
             $trimmed = trim($line);
 
             if (preg_match('/^\[Page\s+(\d+)\]$/i', $trimmed, $pageMatch) === 1) {
-                $flushBuffer();
+                $this->flushBlockBuffer($buffer, $blocks, $currentSection, $bufferPage);
                 $currentPage = (int) $pageMatch[1];
                 continue;
             }
 
             if (preg_match('/^(#{1,4})\s+(.+)$/', $trimmed, $headingMatch) === 1) {
-                $flushBuffer();
+                $this->flushBlockBuffer($buffer, $blocks, $currentSection, $bufferPage);
                 $level = strlen($headingMatch[1]);
                 $title = trim($headingMatch[2], " #*`");
                 $headingStack = array_slice($headingStack, 0, $level - 1);
@@ -107,7 +108,7 @@ class DocumentChunker
             }
 
             if ($trimmed === '') {
-                $flushBuffer();
+                $this->flushBlockBuffer($buffer, $blocks, $currentSection, $bufferPage);
                 continue;
             }
 
@@ -116,30 +117,55 @@ class DocumentChunker
             }
             $buffer[] = $trimmed;
         }
-        $flushBuffer();
 
+        $this->flushBlockBuffer($buffer, $blocks, $currentSection, $bufferPage);
+
+        return $blocks;
+    }
+
+    /**
+     * Flushes buffered lines into a content block if non-empty
+     *
+     * @param array<int, string> $buffer Reference to buffer lines
+     * @param array<int, array{section: string, page: int, text: string}> $blocks Reference to parsed blocks
+     * @param string $currentSection Current active section title
+     * @param int $bufferPage Page number of first buffered line
+     * @return void
+     */
+    private function flushBlockBuffer(array &$buffer, array &$blocks, string $currentSection, int $bufferPage): void
+    {
+        $joined = trim(implode("\n", $buffer));
+        if ($joined !== '') {
+            $blocks[] = [
+                'section' => $currentSection,
+                'page' => $bufferPage,
+                'text' => $this->cleanFormattingArtifacts($joined),
+            ];
+        }
+        $buffer = [];
+    }
+
+    /**
+     * Assembles content blocks into overlapping DocumentChunk instances
+     *
+     * @param array<int, array{section: string, page: int, text: string}> $blocks Structured content blocks
+     * @param string $documentTitle Document title
+     * @param ?int $documentId Optional Document ID
+     * @param int $targetChars Target characters per chunk
+     * @param int $overlapChars Characters of overlap between chunks
+     * @return DocumentChunk[] Generated chunks
+     */
+    private function assembleChunks(
+        array $blocks,
+        string $documentTitle,
+        ?int $documentId,
+        int $targetChars,
+        int $overlapChars,
+    ): array {
         $chunks = [];
-        $chunkIndex = 0;
         $accumText = '';
         $accumSection = $documentTitle;
         $accumPage = 1;
-
-        $emitChunk = function (string $text, string $section, int $page) use (&$chunks, &$chunkIndex, $documentTitle, $documentId): void {
-            $normalized = trim($text);
-            if ($normalized === '') {
-                return;
-            }
-            $tokens = max(1, (int) ceil(mb_strlen($normalized) / self::CHARS_PER_TOKEN));
-            $chunks[] = new DocumentChunk(
-                text: $normalized,
-                sectionTitle: $section,
-                documentTitle: $documentTitle,
-                pageNumber: $page,
-                chunkIndex: $chunkIndex++,
-                tokenEstimate: $tokens,
-                documentId: $documentId,
-            );
-        };
 
         foreach ($blocks as $block) {
             $blockText = $block['text'];
@@ -148,42 +174,142 @@ class DocumentChunker
             }
 
             if ($accumText !== '' && $block['section'] !== $accumSection) {
-                $emitChunk($accumText, $accumSection, $accumPage);
+                $this->pushChunk($chunks, $accumText, $accumSection, $accumPage, $documentTitle, $documentId);
                 $accumText = '';
             }
 
             if (mb_strlen($blockText) > $targetChars) {
                 if ($accumText !== '') {
-                    $emitChunk($accumText, $accumSection, $accumPage);
+                    $this->pushChunk($chunks, $accumText, $accumSection, $accumPage, $documentTitle, $documentId);
                     $accumText = '';
                 }
-                foreach ($this->splitLongBlock($blockText, $targetChars, $overlapChars) as $piece) {
-                    $emitChunk($piece, $block['section'], $block['page']);
-                }
+                $this->appendSplitBlocks($chunks, $block, $documentTitle, $documentId, $targetChars, $overlapChars);
                 continue;
             }
 
-            $candidate = $accumText === '' ? $blockText : ($accumText . "\n\n" . $blockText);
-            if (mb_strlen($candidate) <= $targetChars) {
-                if ($accumText === '') {
-                    $accumSection = $block['section'];
-                    $accumPage = $block['page'];
-                }
-                $accumText = $candidate;
-            } else {
-                $emitChunk($accumText, $accumSection, $accumPage);
-                $tail = $overlapChars > 0 ? $this->extractOverlapTail($accumText, $overlapChars) : '';
-                $accumSection = $block['section'];
-                $accumPage = $block['page'];
-                $accumText = $tail !== '' ? ($tail . "\n" . $blockText) : $blockText;
-            }
+            $accumText = $this->accumulateBlock(
+                $chunks,
+                $block,
+                $accumText,
+                $accumSection,
+                $accumPage,
+                $documentTitle,
+                $documentId,
+                $targetChars,
+                $overlapChars,
+            );
         }
 
         if ($accumText !== '') {
-            $emitChunk($accumText, $accumSection, $accumPage);
+            $this->pushChunk($chunks, $accumText, $accumSection, $accumPage, $documentTitle, $documentId);
         }
 
         return $chunks;
+    }
+
+    /**
+     * Splits an oversized block and appends each slice as a chunk
+     *
+     * @param DocumentChunk[] $chunks Reference to accumulated chunks
+     * @param array{section: string, page: int, text: string} $block Oversized content block
+     * @param string $documentTitle Document title
+     * @param ?int $documentId Document ID
+     * @param int $targetChars Target window size
+     * @param int $overlapChars Window overlap size
+     * @return void
+     */
+    private function appendSplitBlocks(
+        array &$chunks,
+        array $block,
+        string $documentTitle,
+        ?int $documentId,
+        int $targetChars,
+        int $overlapChars,
+    ): void {
+        foreach ($this->splitLongBlock($block['text'], $targetChars, $overlapChars) as $piece) {
+            $this->pushChunk($chunks, $piece, $block['section'], $block['page'], $documentTitle, $documentId);
+        }
+    }
+
+    /**
+     * Merges a regular block into the accumulator or emits a chunk when target size is exceeded
+     *
+     * @param DocumentChunk[] $chunks Reference to accumulated chunks
+     * @param array{section: string, page: int, text: string} $block Content block to merge
+     * @param string $accumText Currently accumulated chunk text
+     * @param string $accumSection Reference to active section title
+     * @param int $accumPage Reference to active page number
+     * @param string $documentTitle Document title
+     * @param ?int $documentId Document ID
+     * @param int $targetChars Target window size
+     * @param int $overlapChars Overlap size
+     * @return string Updated accumulator text
+     */
+    private function accumulateBlock(
+        array &$chunks,
+        array $block,
+        string $accumText,
+        string &$accumSection,
+        int &$accumPage,
+        string $documentTitle,
+        ?int $documentId,
+        int $targetChars,
+        int $overlapChars,
+    ): string {
+        $candidate = $accumText === '' ? $block['text'] : ($accumText . "\n\n" . $block['text']);
+
+        if (mb_strlen($candidate) <= $targetChars) {
+            if ($accumText === '') {
+                $accumSection = $block['section'];
+                $accumPage = $block['page'];
+            }
+
+            return $candidate;
+        }
+
+        $this->pushChunk($chunks, $accumText, $accumSection, $accumPage, $documentTitle, $documentId);
+
+        $tail = $overlapChars > 0 ? $this->extractOverlapTail($accumText, $overlapChars) : '';
+        $accumSection = $block['section'];
+        $accumPage = $block['page'];
+
+        return $tail !== '' ? ($tail . "\n" . $block['text']) : $block['text'];
+    }
+
+    /**
+     * Creates and appends a new DocumentChunk to the collection if text is non-empty
+     *
+     * @param DocumentChunk[] $chunks Reference to accumulated chunks
+     * @param string $text Chunk body text
+     * @param string $section Section heading
+     * @param int $page Source page number
+     * @param string $documentTitle Document title
+     * @param ?int $documentId Document ID
+     * @return void
+     */
+    private function pushChunk(
+        array &$chunks,
+        string $text,
+        string $section,
+        int $page,
+        string $documentTitle,
+        ?int $documentId,
+    ): void {
+        $normalized = trim($text);
+        if ($normalized === '') {
+            return;
+        }
+
+        $tokens = max(1, (int) ceil(mb_strlen($normalized) / self::CHARS_PER_TOKEN));
+        $chunks[] = new DocumentChunk(
+            text: $normalized,
+            sectionTitle: $section,
+            documentTitle: $documentTitle,
+            pageNumber: $page,
+            chunkIndex: count($chunks),
+            tokenEstimate: $tokens,
+            documentId: $documentId,
+        );
     }
 
     /**
