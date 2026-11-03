@@ -125,7 +125,11 @@ PROMPT;
             return true;
         }
 
-        return (bool) preg_match('/\b\d+\s*(percent|ms|sec\w*|min\w*|hour\w*|day\w*|week\w*|month\w*|gb|tb)\b/i', $text);
+        if (preg_match('/\b\d+\s*(ms|gb|tb|percent)\b/i', $text) === 1) {
+            return true;
+        }
+
+        return (bool) preg_match('/\b\d+\s*(sec|min|hour|day|week|month)/i', $text);
     }
 
     /**
