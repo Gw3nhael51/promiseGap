@@ -14,6 +14,10 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  */
 class AnalysisControllerTest extends WebTestCase
 {
+    private const string ROUTE_ANALYSES = '/analyses';
+    private const string ROUTE_ANALYSIS_NEW = '/analysis/new';
+    private const string SELECTOR_PAGINATION = 'nav[aria-label="Pagination"]';
+
     private KernelBrowser $client;
     private EntityManagerInterface $entityManager;
 
@@ -37,7 +41,7 @@ class AnalysisControllerTest extends WebTestCase
      */
     public function testIndexDisplaysAnalysesList(): void
     {
-        $this->client->request('GET', '/analyses');
+        $this->client->request('GET', self::ROUTE_ANALYSES);
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Commercial Commitment Audits');
@@ -48,7 +52,7 @@ class AnalysisControllerTest extends WebTestCase
      */
     public function testNewPageDisplaysCreationForm(): void
     {
-        $crawler = $this->client->request('GET', '/analysis/new');
+        $crawler = $this->client->request('GET', self::ROUTE_ANALYSIS_NEW);
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorExists('form[name="analysis"]');
@@ -61,7 +65,7 @@ class AnalysisControllerTest extends WebTestCase
      */
     public function testCreateAnalysisWithoutProposalIsRejected(): void
     {
-        $this->client->request('GET', '/analysis/new');
+        $this->client->request('GET', self::ROUTE_ANALYSIS_NEW);
 
         $this->client->submitForm('Run Audit', [
             'analysis[title]' => 'Enterprise SaaS Audit Q4',
@@ -85,7 +89,7 @@ class AnalysisControllerTest extends WebTestCase
         $proposalFile = new UploadedFile($proposalPath, 'commercial_offer.pdf', 'application/pdf', null, true);
         $specFile = new UploadedFile($specPath, 'architecture_spec.md', 'text/markdown', null, true);
 
-        $this->client->request('GET', '/analysis/new');
+        $this->client->request('GET', self::ROUTE_ANALYSIS_NEW);
 
         $this->client->submitForm('Run Audit', [
             'analysis[title]' => 'Multi Document Audit Test',
@@ -94,7 +98,7 @@ class AnalysisControllerTest extends WebTestCase
         ]);
 
         $this->assertResponseRedirects();
-        $crawler = $this->client->followRedirect();
+        $this->client->followRedirect();
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Multi Document Audit Test');
@@ -125,7 +129,7 @@ class AnalysisControllerTest extends WebTestCase
         $form = $crawler->filter('form[action$="/delete"]')->form();
         $this->client->submit($form);
 
-        $this->assertResponseRedirects('/analyses');
+        $this->assertResponseRedirects(self::ROUTE_ANALYSES);
         $this->client->followRedirect();
 
         $this->entityManager->clear();
@@ -159,7 +163,7 @@ class AnalysisControllerTest extends WebTestCase
         $secondId = $second->getId();
         $keepId = $keep->getId();
 
-        $crawler = $this->client->request('GET', '/analyses');
+        $crawler = $this->client->request('GET', self::ROUTE_ANALYSES);
         $this->assertResponseIsSuccessful();
 
         $token = $crawler->filter('#bulk-delete-form input[name="_token"]')->attr('value');
@@ -168,7 +172,7 @@ class AnalysisControllerTest extends WebTestCase
             'ids' => [(string) $firstId, (string) $secondId],
         ]);
 
-        $this->assertResponseRedirects('/analyses');
+        $this->assertResponseRedirects(self::ROUTE_ANALYSES);
         $this->client->followRedirect();
         $this->assertSelectorTextContains('body', '2 audit workspace(s) deleted successfully.');
 
@@ -192,23 +196,23 @@ class AnalysisControllerTest extends WebTestCase
         $this->entityManager->flush();
 
         // Page 1 displays pagination bar
-        $this->client->request('GET', '/analyses?page=1');
+        $this->client->request('GET', self::ROUTE_ANALYSES . '?page=1');
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('nav[aria-label="Pagination"]');
-        $this->assertSelectorTextContains('nav[aria-label="Pagination"]', 'Page 1 /');
+        $this->assertSelectorExists(self::SELECTOR_PAGINATION);
+        $this->assertSelectorTextContains(self::SELECTOR_PAGINATION, 'Page 1 /');
 
         // Page 2 renders remaining workspaces
-        $this->client->request('GET', '/analyses?page=2');
+        $this->client->request('GET', self::ROUTE_ANALYSES . '?page=2');
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('nav[aria-label="Pagination"]', 'Page 2 /');
+        $this->assertSelectorTextContains(self::SELECTOR_PAGINATION, 'Page 2 /');
 
         // Out-of-bounds page=0 and page=999 clamp safely without 500 or empty error
-        $this->client->request('GET', '/analyses?page=0');
+        $this->client->request('GET', self::ROUTE_ANALYSES . '?page=0');
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('nav[aria-label="Pagination"]', 'Page 1 /');
+        $this->assertSelectorTextContains(self::SELECTOR_PAGINATION, 'Page 1 /');
 
-        $this->client->request('GET', '/analyses?page=999');
+        $this->client->request('GET', self::ROUTE_ANALYSES . '?page=999');
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('nav[aria-label="Pagination"]');
+        $this->assertSelectorExists(self::SELECTOR_PAGINATION);
     }
 }
