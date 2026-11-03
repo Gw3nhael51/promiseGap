@@ -56,7 +56,7 @@ class ImageExtractor
                 'temperature' => 0.0,
             ]);
         } catch (\Throwable $exception) {
-            throw new TextExtractionException('Failed to extract text from the document image via Muse Spark Vision.', $exception);
+            throw new TextExtractionException('Failed to extract text from the document image via Muse Spark Vision.', previous: $exception);
         }
 
         $text = TextSanitizer::clean($response->content);
