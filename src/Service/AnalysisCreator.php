@@ -49,9 +49,13 @@ class AnalysisCreator
         string $ownerIdentifier,
         AnalysisStatus $status = AnalysisStatus::PENDING,
     ): void {
-        $proposalList = is_array($proposalFiles)
-            ? array_values(array_filter($proposalFiles))
-            : ($proposalFiles !== null ? [$proposalFiles] : []);
+        if (is_array($proposalFiles)) {
+            $proposalList = array_values(array_filter($proposalFiles));
+        } elseif ($proposalFiles !== null) {
+            $proposalList = [$proposalFiles];
+        } else {
+            $proposalList = [];
+        }
 
         if (count($proposalList) > self::MAX_TECHNICAL_SPEC_FILES) {
             throw new \InvalidArgumentException(sprintf('You can upload at most %d commercial proposal files.', self::MAX_TECHNICAL_SPEC_FILES));
@@ -77,7 +81,6 @@ class AnalysisCreator
             $this->entityManager->persist($analysis);
             $this->entityManager->flush();
         } catch (\Throwable $exception) {
-            // Nettoyer : Supprimer les fichiers déjà déplacés sur le disque
             foreach ($analysis->getDocuments() as $document) {
                 $this->documentUploader->remove($document);
             }
@@ -85,7 +88,6 @@ class AnalysisCreator
             throw $exception;
         }
 
-        // Déclencher : Lancer l'extraction du texte de chaque document une fois l'analyse enregistrée
         foreach ($analysis->getDocuments() as $document) {
             $this->messageBus->dispatch(new ExtractDocumentText($document->getId()));
         }
