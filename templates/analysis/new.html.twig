@@ -68,18 +68,18 @@
                     <div class="form-control">
                         {{ form_label(form.proposalFile, null, {'label_attr': {'class': 'label font-medium text-[#E8ECF1]'}}) }}
                         {{ form_widget(form.proposalFile) }}
-                        <label class="label">
+                        <div class="label">
                             <span class="label-text-alt text-[#9BA5B3]">Document containing vendor promises (PDF, Markdown, or PNG/JPG/WEBP scan via Muse Spark Vision, max 10 MB)</span>
-                        </label>
+                        </div>
                         {{ form_errors(form.proposalFile) }}
                     </div>
 
                     <div class="form-control">
                         {{ form_label(form.technicalSpecFiles, null, {'label_attr': {'class': 'label font-medium text-[#E8ECF1]'}}) }}
                         {{ form_widget(form.technicalSpecFiles) }}
-                        <label class="label">
+                        <div class="label">
                             <span class="label-text-alt text-[#9BA5B3]">Technical reference specifications (PDF, Markdown, or PNG/JPG/WEBP diagram/scan via Muse Spark Vision, max 10 MB each)</span>
-                        </label>
+                        </div>
                         {{ form_errors(form.technicalSpecFiles) }}
                     </div>
 
