@@ -304,26 +304,10 @@ class AuditPipelineService
                 ['reasoning_effort' => 'low'],
             );
 
-            $byId = [];
-            foreach ($data['translations'] ?? [] as $tr) {
-                if (is_array($tr) && isset($tr['id'])) {
-                    $byId[(string) $tr['id']] = $tr;
-                }
-            }
+            $byId = $this->indexTranslations($data['translations'] ?? []);
 
             foreach ($claims as &$claim) {
-                $tr = $byId[$claim['id']] ?? null;
-                if ($tr !== null) {
-                    $pmFr = trim((string) ($tr['pm'] ?? $claim['pm']));
-                    $claim['pm'] = $pmFr !== '' ? $pmFr : $claim['pm'];
-                    $claim['promise'] = mb_substr($claim['pm'], 0, 90);
-                    if ($claim['hasEv'] && !empty($tr['em'])) {
-                        $claim['em'] = trim((string) $tr['em']);
-                    }
-                    if (!empty($tr['why'])) {
-                        $claim['why'] = trim((string) $tr['why']);
-                    }
-                }
+                $this->applyTranslationToClaim($claim, $byId[$claim['id']] ?? null);
             }
             unset($claim);
         } catch (\Throwable) {
@@ -331,5 +315,51 @@ class AuditPipelineService
         }
 
         return $claims;
+    }
+
+    /**
+     * Indexes raw translation objects by their claim identifier
+     *
+     * @param array<mixed> $translations Raw translation items
+     * @return array<string, array<string, mixed>> Indexed translations by id
+     */
+    private function indexTranslations(array $translations): array
+    {
+        $byId = [];
+        foreach ($translations as $tr) {
+            if (is_array($tr) && isset($tr['id'])) {
+                $byId[(string) $tr['id']] = $tr;
+            }
+        }
+
+        return $byId;
+    }
+
+    /**
+     * Merges a French translation into a claim structure
+     *
+     * @param array<string, mixed> $claim Target claim array to update
+     * @param ?array<string, mixed> $tr Localized translation data
+     * @return void
+     */
+    private function applyTranslationToClaim(array &$claim, ?array $tr): void
+    {
+        if ($tr === null) {
+            return;
+        }
+
+        $pmFr = trim((string) ($tr['pm'] ?? ''));
+        if ($pmFr !== '') {
+            $claim['pm'] = $pmFr;
+            $claim['promise'] = mb_substr($pmFr, 0, 90);
+        }
+
+        if ($claim['hasEv'] && !empty($tr['em'])) {
+            $claim['em'] = trim((string) $tr['em']);
+        }
+
+        if (!empty($tr['why'])) {
+            $claim['why'] = trim((string) $tr['why']);
+        }
     }
 }
