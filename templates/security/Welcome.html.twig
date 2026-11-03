@@ -63,25 +63,25 @@
                     <span style="font-size: 14px; font-weight: 500;">What best describes your role?</span>
                     <div id="role-cards" style="display: flex; flex-wrap: wrap; gap: 12px;">
 
-                        <label class="role-card" onclick="selectRoleCard(this)" style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #1B222B; border: 2px solid #7FA3FF; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
+                        <label class="role-card" style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #1B222B; border: 2px solid #7FA3FF; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
                             <input type="radio" name="role" value="legal" checked style="display: none;">
                             <span style="font-size: 16px; font-weight: 600;">Legal Counsel / Compliance</span>
                             <span style="font-size: 13px; color: #9BA5B3;">Focus on SLAs, liability, and unsupported clauses.</span>
                         </label>
 
-                        <label class="role-card" onclick="selectRoleCard(this)" style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
+                        <label class="role-card" style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
                             <input type="radio" name="role" value="cto" style="display: none;">
                             <span style="font-size: 16px; font-weight: 600;">CTO / VP Engineering</span>
                             <span style="font-size: 13px; color: #9BA5B3;">Check architectural promises vs technical realities.</span>
                         </label>
 
-                        <label class="role-card" onclick="selectRoleCard(this)" style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
+                        <label class="role-card" style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
                             <input type="radio" name="role" value="procurement" style="display: none;">
                             <span style="font-size: 16px; font-weight: 600;">Procurement / Buyer</span>
                             <span style="font-size: 13px; color: #9BA5B3;">Identify negotiation leverage and contradictory timelines.</span>
                         </label>
 
-                        <label class="role-card" onclick="selectRoleCard(this)" style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
+                        <label class="role-card" style="flex: 1 1 280px; box-sizing: border-box; min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 16px; background: #151A21; border: 2px solid #2A323D; border-radius: 12px; color: #E8ECF1; cursor: pointer;">
                             <input type="radio" name="role" value="sales" style="display: none;">
                             <span style="font-size: 16px; font-weight: 600;">Sales Engineering / Pre-sales</span>
                             <span style="font-size: 13px; color: #9BA5B3;">Prevent overselling before quotes reach customers.</span>
@@ -103,13 +103,18 @@
 </div>
 
 <script>
-function selectRoleCard(selectedLabel) {
-    document.querySelectorAll('.role-card').forEach(function (card) {
-        card.style.border = '2px solid #2A323D';
-        card.style.background = '#151A21';
+document.querySelectorAll('#role-cards input[type="radio"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+        document.querySelectorAll('.role-card').forEach(function (card) {
+            card.style.border = '2px solid #2A323D';
+            card.style.background = '#151A21';
+        });
+        var parentCard = this.closest('.role-card');
+        if (parentCard) {
+            parentCard.style.border = '2px solid #7FA3FF';
+            parentCard.style.background = '#1B222B';
+        }
     });
-    selectedLabel.style.border = '2px solid #7FA3FF';
-    selectedLabel.style.background = '#1B222B';
-}
+});
 </script>
 {% endblock %}
