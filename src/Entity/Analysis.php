@@ -240,10 +240,8 @@ class Analysis
      */
     public function removeDocument(Document $document): static
     {
-        if ($this->documents->removeElement($document)) {
-            if ($document->getAnalysis() === $this) {
-                $document->setAnalysis(null);
-            }
+        if ($this->documents->removeElement($document) && $document->getAnalysis() === $this) {
+            $document->setAnalysis(null);
         }
 
         return $this;
@@ -283,10 +281,8 @@ class Analysis
      */
     public function removeCommitment(Commitment $commitment): static
     {
-        if ($this->commitments->removeElement($commitment)) {
-            if ($commitment->getAnalysis() === $this) {
-                $commitment->setAnalysis(null);
-            }
+        if ($this->commitments->removeElement($commitment) && $commitment->getAnalysis() === $this) {
+            $commitment->setAnalysis(null);
         }
 
         return $this;

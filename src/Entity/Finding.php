@@ -211,10 +211,8 @@ class Finding
      */
     public function removeEvidence(Evidence $evidence): static
     {
-        if ($this->evidences->removeElement($evidence)) {
-            if ($evidence->getFinding() === $this) {
-                $evidence->setFinding(null);
-            }
+        if ($this->evidences->removeElement($evidence) && $evidence->getFinding() === $this) {
+            $evidence->setFinding(null);
         }
 
         return $this;
