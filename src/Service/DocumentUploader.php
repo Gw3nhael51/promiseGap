@@ -15,15 +15,21 @@ use Symfony\Component\String\Slugger\SluggerInterface;
  */
 class DocumentUploader
 {
-    private const int MAX_FILE_SIZE = 10485760; // 10 MB
+    private const int MAX_FILE_SIZE = 10485760;
+
+    private const string MIME_TEXT_PLAIN = 'text/plain';
+    private const string MIME_TEXT_MARKDOWN = 'text/markdown';
+    private const string MIME_TEXT_X_MARKDOWN = 'text/x-markdown';
+    private const string MIME_IMAGE_JPEG = 'image/jpeg';
+    private const string ERROR_UNSUPPORTED_FORMAT = 'Unsupported file format. Allowed formats: PDF and Markdown.';
 
     private const array ALLOWED_MIME_TYPES = [
         'application/pdf',
-        'text/plain',
-        'text/markdown',
-        'text/x-markdown',
+        self::MIME_TEXT_PLAIN,
+        self::MIME_TEXT_MARKDOWN,
+        self::MIME_TEXT_X_MARKDOWN,
         'image/png',
-        'image/jpeg',
+        self::MIME_IMAGE_JPEG,
         'image/webp',
     ];
 
@@ -40,12 +46,12 @@ class DocumentUploader
 
     private const array EXTENSION_MIME_TYPES = [
         'pdf' => ['application/pdf'],
-        'md' => ['text/plain', 'text/markdown', 'text/x-markdown'],
-        'markdown' => ['text/plain', 'text/markdown', 'text/x-markdown'],
-        'txt' => ['text/plain'],
+        'md' => [self::MIME_TEXT_PLAIN, self::MIME_TEXT_MARKDOWN, self::MIME_TEXT_X_MARKDOWN],
+        'markdown' => [self::MIME_TEXT_PLAIN, self::MIME_TEXT_MARKDOWN, self::MIME_TEXT_X_MARKDOWN],
+        'txt' => [self::MIME_TEXT_PLAIN],
         'png' => ['image/png'],
-        'jpg' => ['image/jpeg'],
-        'jpeg' => ['image/jpeg'],
+        'jpg' => [self::MIME_IMAGE_JPEG],
+        'jpeg' => [self::MIME_IMAGE_JPEG],
         'webp' => ['image/webp'],
     ];
 
@@ -91,15 +97,15 @@ class DocumentUploader
             || !in_array($mimeType, self::ALLOWED_MIME_TYPES, true)
             || !in_array($mimeType, self::EXTENSION_MIME_TYPES[$clientExtension], true)
         ) {
-            throw new \InvalidArgumentException('Unsupported file format. Allowed formats: PDF and Markdown.');
+            throw new \InvalidArgumentException(self::ERROR_UNSUPPORTED_FORMAT);
         }
 
         if ($clientExtension === 'pdf' && !$this->hasPdfSignature($file)) {
-            throw new \InvalidArgumentException('Unsupported file format. Allowed formats: PDF and Markdown.');
+            throw new \InvalidArgumentException(self::ERROR_UNSUPPORTED_FORMAT);
         }
 
         if (in_array($clientExtension, ['png', 'jpg', 'jpeg', 'webp'], true) && !$this->hasImageSignature($file, $clientExtension)) {
-            throw new \InvalidArgumentException('Unsupported file format. Allowed formats: PDF and Markdown.');
+            throw new \InvalidArgumentException(self::ERROR_UNSUPPORTED_FORMAT);
         }
 
         $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
