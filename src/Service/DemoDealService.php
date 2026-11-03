@@ -12,6 +12,11 @@ use Symfony\Component\Lock\LockFactory;
  */
 class DemoDealService
 {
+    private const string COLOR_RISK_HIGH_FG = '#FF7B7B';
+    private const string COLOR_RISK_HIGH_BG = 'rgba(255,123,123,0.14)';
+    private const string SEVERITY_HIGH_FR = 'Élevée';
+    private const string STATUS_UNSUPPORTED_FR = 'Non supporté';
+
     /**
      * Initializes the demo deal service with entity manager dependency
      *
@@ -38,8 +43,8 @@ class DemoDealService
                     'title' => 'Contrat d’hébergement Cloud',
                     'tag' => 'HÉBERGEMENT CLOUD',
                     'risk' => 'Risque élevé',
-                    'riskColor' => '#FF7B7B',
-                    'riskBg' => 'rgba(255,123,123,0.14)',
+                    'riskColor' => self::COLOR_RISK_HIGH_FG,
+                    'riskBg' => self::COLOR_RISK_HIGH_BG,
                     'riskScore' => 78,
                     'description' => '8 promesses. La proposition vend 99,99 % de disponibilité alors que la spec cible 99,5 %.',
                     'proposalName' => 'Proposition_v3.pdf',
@@ -52,8 +57,8 @@ class DemoDealService
                     'title' => 'Intégration Core Banking',
                     'tag' => 'FINTECH / PAIEMENT',
                     'risk' => 'Risque élevé',
-                    'riskColor' => '#FF7B7B',
-                    'riskBg' => 'rgba(255,123,123,0.14)',
+                    'riskColor' => self::COLOR_RISK_HIGH_FG,
+                    'riskBg' => self::COLOR_RISK_HIGH_BG,
                     'riskScore' => 84,
                     'description' => '6 promesses. La proposition annonce un règlement temps réel sans frais ; l’architecture prévoit un batch J+1.',
                     'proposalName' => 'PropositionCommerciale_v2.pdf',
@@ -84,8 +89,8 @@ class DemoDealService
                 'title' => 'Cloud hosting contract',
                 'tag' => 'CLOUD HOSTING',
                 'risk' => 'High risk',
-                'riskColor' => '#FF7B7B',
-                'riskBg' => 'rgba(255,123,123,0.14)',
+                'riskColor' => self::COLOR_RISK_HIGH_FG,
+                'riskBg' => self::COLOR_RISK_HIGH_BG,
                 'riskScore' => 78,
                 'description' => '8 promises. The proposal sells 99.99% availability while the specs target 99.5%.',
                 'proposalName' => 'Proposal_v3.pdf',
@@ -98,8 +103,8 @@ class DemoDealService
                 'title' => 'Core banking integration',
                 'tag' => 'FINTECH / PAYMENT',
                 'risk' => 'High risk',
-                'riskColor' => '#FF7B7B',
-                'riskBg' => 'rgba(255,123,123,0.14)',
+                'riskColor' => self::COLOR_RISK_HIGH_FG,
+                'riskBg' => self::COLOR_RISK_HIGH_BG,
                 'riskScore' => 84,
                 'description' => '6 promises. The proposal claims real-time settlement with zero fees; the architecture doc specifies T+1 batch processing.',
                 'proposalName' => 'SalesProposal_v2.pdf',
@@ -165,7 +170,7 @@ class DemoDealService
                         'id' => 'P2',
                         'st' => 'con',
                         'label' => 'Contradictoire',
-                        'sev' => 'Élevée',
+                        'sev' => self::SEVERITY_HIGH_FR,
                         'conf' => '91%',
                         'sim' => '0.89',
                         'promise' => 'Livraison clé en main en 3 mois',
@@ -183,8 +188,8 @@ class DemoDealService
                     [
                         'id' => 'P3',
                         'st' => 'uns',
-                        'label' => 'Non supporté',
-                        'sev' => 'Élevée',
+                        'label' => self::STATUS_UNSUPPORTED_FR,
+                        'sev' => self::SEVERITY_HIGH_FR,
                         'conf' => '88%',
                         'sim' => '0.41',
                         'promise' => 'Sauvegarde temps réel de toutes les données',
@@ -218,8 +223,8 @@ class DemoDealService
                     [
                         'id' => 'P5',
                         'st' => 'uns',
-                        'label' => 'Non supporté',
-                        'sev' => 'Élevée',
+                        'label' => self::STATUS_UNSUPPORTED_FR,
+                        'sev' => self::SEVERITY_HIGH_FR,
                         'conf' => '85%',
                         'sim' => '0.38',
                         'promise' => 'Support 24/7, réponse en 15 minutes',
@@ -272,7 +277,7 @@ class DemoDealService
                     [
                         'id' => 'P8',
                         'st' => 'uns',
-                        'label' => 'Non supporté',
+                        'label' => self::STATUS_UNSUPPORTED_FR,
                         'sev' => 'Moyenne',
                         'conf' => '79%',
                         'sim' => '0.47',
@@ -456,7 +461,6 @@ class DemoDealService
         $deals = $this->getCatalog();
         $deal = $deals[$dealKey] ?? $deals['cloud-hosting'];
 
-        // Verrouiller : Empêcher la création concurrente de doublons
         $lock = $this->lockFactory->createLock('demo-analysis-'.$deal['id']);
         $lock->acquire(true);
 
