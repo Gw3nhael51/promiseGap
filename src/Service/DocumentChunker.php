@@ -93,7 +93,6 @@ class DocumentChunker
             if (preg_match('/^\[Page\s+(\d+)\]$/i', $trimmed, $pageMatch) === 1) {
                 $flushBuffer();
                 $currentPage = (int) $pageMatch[1];
-                $bufferPage = $currentPage;
                 continue;
             }
 
@@ -104,13 +103,11 @@ class DocumentChunker
                 $headingStack = array_slice($headingStack, 0, $level - 1);
                 $headingStack[$level - 1] = $title;
                 $currentSection = implode(' > ', array_filter($headingStack));
-                $bufferPage = $currentPage;
                 continue;
             }
 
             if ($trimmed === '') {
                 $flushBuffer();
-                $bufferPage = $currentPage;
                 continue;
             }
 
@@ -121,7 +118,6 @@ class DocumentChunker
         }
         $flushBuffer();
 
-        // Assembler : Regrouper ou découper les blocs selon la taille cible en tokens avec recouvrement
         $chunks = [];
         $chunkIndex = 0;
         $accumText = '';
@@ -151,7 +147,6 @@ class DocumentChunker
                 continue;
             }
 
-            // Séparer : Couper immédiatement un paragraphe si la section change
             if ($accumText !== '' && $block['section'] !== $accumSection) {
                 $emitChunk($accumText, $accumSection, $accumPage);
                 $accumText = '';
@@ -193,6 +188,9 @@ class DocumentChunker
 
     /**
      * Cleans redundant markdown decorations and whitespace inside a paragraph
+     *
+     * @param string $text Raw paragraph text
+     * @return string Sanitized paragraph text
      */
     private function cleanFormattingArtifacts(string $text): string
     {
@@ -206,7 +204,10 @@ class DocumentChunker
     /**
      * Splits an oversized paragraph into overlapping windows at word boundaries
      *
-     * @return string[]
+     * @param string $text Long text block to partition
+     * @param int $targetChars Target window character length
+     * @param int $overlapChars Character overlap between consecutive windows
+     * @return string[] Array of chunked text slices
      */
     private function splitLongBlock(string $text, int $targetChars, int $overlapChars): array
     {
@@ -229,6 +230,10 @@ class DocumentChunker
 
     /**
      * Extracts the trailing substring of a chunk for overlap context
+     *
+     * @param string $text Candidate chunk text
+     * @param int $overlapChars Number of trailing characters to retain
+     * @return string Overlap context tail string
      */
     private function extractOverlapTail(string $text, int $overlapChars): string
     {
