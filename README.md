@@ -169,7 +169,7 @@ Ready-to-upload sample documents are included in [`docs/samples/`](docs/samples/
 
 ## 🧪 CLI Commands, Testing & CI/CD
 
-Every push and pull request on `main` and `dev` runs the GitHub Actions CI pipeline ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) against a live `pgvector/pgvector:pg16` service container:
+Every push and pull request on `prod`, `recette`, and `dev` runs the GitHub Actions CI pipeline ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) against a live `pgvector/pgvector:pg16` service container:
 
 ```bash
 # Verify Meta Muse Spark (muse-spark-1.3) connectivity, structured JSON schema & credit budget telemetry

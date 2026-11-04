@@ -169,7 +169,7 @@ Deux PDF multi-pages prêts à l'emploi sont fournis dans [`docs/samples/`](docs
 
 ## 🧪 Commandes CLI, Tests & CI/CD
 
-Chaque push et pull request sur `main` et `dev` déclenche automatiquement la pipeline GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) avec un conteneur `pgvector/pgvector:pg16` :
+Chaque push et pull request sur `prod`, `recette` et `dev` déclenche automatiquement la pipeline GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) avec un conteneur `pgvector/pgvector:pg16` :
 
 ```bash
 # Tester la connectivité Meta Muse Spark (muse-spark-1.3), le schéma JSON et le budget de crédits
