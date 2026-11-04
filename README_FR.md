@@ -114,6 +114,10 @@ PromiseGap intègre une suite d'évaluation de **24 scénarios synthétiques de 
 ### Démarrage en 1 Commande avec Docker & Make
 
 ```bash
+# Cloner le dépôt et entrer dans le dossier
+git clone https://github.com/Gw3nhael51/promiseGap.git
+cd promiseGap
+
 # 1. Configuration complète en une seule commande (Docker, dépendances, migrations)
 make setup
 
@@ -123,6 +127,17 @@ make serve
 # 3. (Optionnel) Lancer le worker Messenger pour l'extraction asynchrone
 make worker
 ```
+
+> [!TIP]
+> **Si `make` n'est pas disponible, lancez directement :**
+> ```bash
+> docker compose up -d
+> composer install
+> php bin/console doctrine:database:create --if-not-exists
+> php bin/console doctrine:migrations:migrate -n
+> php bin/console cache:clear
+> symfony serve -d  # ou: php -S 127.0.0.1:8000 -t public
+> ```
 
 > [!IMPORTANT]
 > **Identifiants de Démo Préconfigurés (`http://localhost:8000/login`) :**

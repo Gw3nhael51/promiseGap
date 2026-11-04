@@ -72,8 +72,13 @@ lint: ## Run container, twig, and yaml linters
 test: ## Run test suite via PHPUnit
 	php bin/phpunit
 
-serve: ## Start Symfony local web server
-	symfony serve -d
+serve: ## Start local web server (Symfony CLI with fallback to built-in PHP server)
+	@if command -v symfony > /dev/null 2>&1; then \
+		symfony serve -d; \
+	else \
+		echo "Starting PHP built-in server at http://127.0.0.1:8000..."; \
+		php -S 127.0.0.1:8000 -t public; \
+	fi
 
 worker: ## Consume async messages (document text extraction)
 	php bin/console messenger:consume async -vv
