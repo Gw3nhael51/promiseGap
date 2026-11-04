@@ -114,6 +114,10 @@ PromiseGap includes a curated ground-truth benchmark suite of **24 synthetic B2B
 ### 1-Command Setup via Docker & Make
 
 ```bash
+# Clone repository and enter project directory
+git clone https://github.com/Gw3nhael51/promiseGap.git
+cd promiseGap
+
 # 1. Complete setup in one command (starts Docker, installs dependencies, migrates DB)
 make setup
 
@@ -123,6 +127,17 @@ make serve
 # 3. (Optional) Start the async Messenger worker for background PDF extraction
 make worker
 ```
+
+> [!TIP]
+> **No `make` installed? Run standard commands directly:**
+> ```bash
+> docker compose up -d
+> composer install
+> php bin/console doctrine:database:create --if-not-exists
+> php bin/console doctrine:migrations:migrate -n
+> php bin/console cache:clear
+> symfony serve -d  # or: php -S 127.0.0.1:8000 -t public
+> ```
 
 > [!IMPORTANT]
 > **Pre-Configured Demo Credentials (`http://localhost:8000/login`):**
