@@ -1,7 +1,10 @@
 
+name: promisegap
+
 services:
 ###> doctrine/doctrine-bundle ###
   database:
+    container_name: promisegap-database
     image: pgvector/pgvector:pg16
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-app}
@@ -21,4 +24,5 @@ services:
 volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:
+    name: promisegap_database_data
 ###< doctrine/doctrine-bundle ###
