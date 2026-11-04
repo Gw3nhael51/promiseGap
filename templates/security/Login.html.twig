@@ -48,7 +48,7 @@
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <label for="email" style="font-size: 14px; font-weight: 500;">Work email</label>
-                    <input id="email" type="email" name="_username" value="{{ last_username|default('auditor@promisegap.ai') }}" autocomplete="email" placeholder="auditor@promisegap.ai" required style="box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 16px;">
+                    <input id="email" type="email" name="_username" value="{{ last_username|default('admin@promisegap.ai') }}" autocomplete="email" placeholder="admin@promisegap.ai" required style="box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 16px;">
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -56,7 +56,7 @@
                         <label for="password" style="font-size: 14px; font-weight: 500;">Password</label>
                         <a href="{{ path('app_forgot_password') }}" style="font-size: 14px; text-decoration: none;">Forgot password?</a>
                     </div>
-                    <input id="password" type="password" name="_password" value="password123" autocomplete="current-password" placeholder="password123" required style="box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 16px;">
+                    <input id="password" type="password" name="_password" value="admin123" autocomplete="current-password" placeholder="admin123" required style="box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 16px;">
                 </div>
 
                 <label style="display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; color: #B7C0CC; cursor: pointer;">
