@@ -111,22 +111,16 @@ PromiseGap intègre une suite d'évaluation de **24 scénarios synthétiques de 
 - **Docker & Docker Compose** (PostgreSQL 16 + `pgvector` et Mailpit)
 - **`poppler-utils`** (`pdftotext` pour l'extraction PDF page par page)
 
-### Démarrage avec Docker & Make
+### Démarrage en 1 Commande avec Docker & Make
 
 ```bash
-# 1. Démarrer PostgreSQL 16 (avec pgvector) et Mailpit
-docker compose up -d
+# 1. Configuration complète en une seule commande (Docker, dépendances, migrations)
+make setup
 
-# 2. Installer les dépendances, créer la base et appliquer les migrations
-make install
-make db-create
-make db-migrate
-make db-test
-
-# 3. Lancer le serveur web Symfony (http://localhost:8000)
+# 2. Lancer le serveur web Symfony (http://localhost:8000)
 make serve
 
-# 4. (Optionnel) Lancer le worker Messenger pour l'extraction asynchrone
+# 3. (Optionnel) Lancer le worker Messenger pour l'extraction asynchrone
 make worker
 ```
 
