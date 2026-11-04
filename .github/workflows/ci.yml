@@ -3,12 +3,14 @@ name: CI
 on:
   push:
     branches:
-      - main
       - dev
+      - recette
+      - prod
   pull_request:
     branches:
-      - main
       - dev
+      - recette
+      - prod
 
 jobs:
   quality-and-tests:
