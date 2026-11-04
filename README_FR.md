@@ -130,6 +130,12 @@ make serve
 make worker
 ```
 
+> [!IMPORTANT]
+> **Identifiants de Démo Préconfigurés (`http://localhost:8000/login`) :**
+> - **Compte Auditeur (`ROLE_USER`) :** `auditor@promisegap.ai` / `password123` *(accès au `/cockpit`)*
+> - **Compte Administrateur (`ROLE_ADMIN`) :** `admin@promisegap.ai` / `admin123` *(accès à la console `/analyses`)*
+> - **Démo sans connexion :** Vous pouvez aussi tester immédiatement l'application sans identifiant sur [`http://localhost:8000/demo`](http://localhost:8000/demo).
+
 ### Configuration de l'API Meta Muse Spark
 Par défaut, PromiseGap fonctionne en **mode simulation déterministe local** lorsque `META_AI_API_KEY` est vide, permettant d'exécuter tous les tests et la CI sans consommer de crédits. Pour activer les appels réels à Meta Muse Spark (`muse-spark-1.3`), créez un fichier `.env.local` :
 

@@ -130,6 +130,12 @@ make serve
 make worker
 ```
 
+> [!IMPORTANT]
+> **Pre-Configured Demo Credentials (`http://localhost:8000/login`):**
+> - **Auditor Account (`ROLE_USER`):** `auditor@promisegap.ai` / `password123` *(accesses `/cockpit`)*
+> - **Admin Account (`ROLE_ADMIN`):** `admin@promisegap.ai` / `admin123` *(accesses `/analyses` Admin Console)*
+> - **Zero-Login Demo:** You can also explore the live engine without signing in at [`http://localhost:8000/demo`](http://localhost:8000/demo).
+
 ### Configuring Meta Muse Spark API Key
 By default, PromiseGap runs in **deterministic offline simulation mode** when `META_AI_API_KEY` is empty, allowing full testing and CI execution with zero API cost. To enable live Meta Muse Spark (`muse-spark-1.3`) calls, create `.env.local`:
 
