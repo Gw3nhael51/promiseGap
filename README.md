@@ -9,6 +9,8 @@
 [![Meta Muse Spark](https://img.shields.io/badge/Meta_AI-muse--spark--1.3-0668E1?logo=meta&logoColor=white)](https://dev.meta.ai/docs/overview)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+🎥 **Demo Video (3-minute Walkthrough):** [https://youtu.be/CSI6MLL57XY](https://youtu.be/CSI6MLL57XY)
+
 🌐 **Languages:** **English** | [Français (README_FR.md)](README_FR.md)
 
 ---
