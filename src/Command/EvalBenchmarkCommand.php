@@ -16,7 +16,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 #[AsCommand(
     name: 'app:eval-benchmark',
-    description: 'Runs the RAG evaluation benchmark suite and verifies Precision >= 85% and Recall >= 80%',
+    description: 'Runs the contract discrepancy evaluation benchmark suite and verifies Precision >= 85% and Recall >= 80%',
 )]
 final class EvalBenchmarkCommand extends Command
 {
@@ -62,7 +62,7 @@ final class EvalBenchmarkCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('PromiseGap — Automated RAG Discrepancy Benchmark Suite');
+        $io->title('PromiseGap — Automated Contract Discrepancy Benchmark Suite');
 
         $report = $this->evaluationRunner->runSuite();
 
