@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
@@ -23,6 +24,10 @@ class ResetPasswordController extends AbstractController
     {
         $isSent = false;
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('forgot_password', $request->getPayload()->getString('_token'))) {
+                throw new AccessDeniedHttpException('Invalid CSRF token.');
+            }
+
             $isSent = true;
         }
 
@@ -42,6 +47,10 @@ class ResetPasswordController extends AbstractController
     {
         $isSuccess = false;
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('reset_password', $request->getPayload()->getString('_token'))) {
+                throw new AccessDeniedHttpException('Invalid CSRF token.');
+            }
+
             $isSuccess = true;
         }
 

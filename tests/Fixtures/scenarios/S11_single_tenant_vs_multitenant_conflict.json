@@ -1,0 +1,10 @@
+{
+    "id": "S11_single_tenant_vs_multitenant_conflict",
+    "title": "Dedicated Single-Tenant Promise vs Shared Multi-Tenant Spec",
+    "category": "SECURITY",
+    "commitment": "Customer workloads run on dedicated single-tenant isolated physical servers.",
+    "proposal": "# Isolation\nCustomer workloads run on dedicated single-tenant isolated physical servers.",
+    "technicalSpec": "# Compute Architecture\n## 5.1 Tenancy Model\nAll customer workloads are hosted on a shared multi-tenant Kubernetes cluster with logical namespace separation.",
+    "expectedStatus": "CONTRADICTORY",
+    "expectedEvidenceSubstring": "multi-tenant"
+}

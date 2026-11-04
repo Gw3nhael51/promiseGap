@@ -1,0 +1,10 @@
+{
+    "id": "S20_seamless_nextgen_scalability_vague",
+    "title": "Vague Seamless Next-Generation Scalability Clause",
+    "category": "SLA",
+    "commitment": "Our cutting-edge architecture delivers seamless, effortless next-generation scalability for future growth.",
+    "proposal": "# Scalability\nOur cutting-edge architecture delivers seamless, effortless next-generation scalability for future growth.",
+    "technicalSpec": "# Architecture Overview\n## 2.1 Scaling\nStateless worker services can be scaled horizontally on demand.",
+    "expectedStatus": "AMBIGUOUS",
+    "expectedEvidenceSubstring": ""
+}

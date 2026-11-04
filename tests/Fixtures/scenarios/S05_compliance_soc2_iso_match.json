@@ -1,0 +1,10 @@
+{
+    "id": "S05_compliance_soc2_iso_match",
+    "title": "SOC 2 Type II and ISO 27001 Certification Alignment",
+    "category": "SECURITY",
+    "commitment": "The platform is audited annually for SOC 2 Type II and ISO 27001 compliance.",
+    "proposal": "# Governance\nThe platform is audited annually for SOC 2 Type II and ISO 27001 compliance.",
+    "technicalSpec": "# Compliance & Certifications\n## 5.1 Annual Audits\nIndependent third-party auditors certify the platform annually under SOC 2 Type II and ISO 27001 standards.",
+    "expectedStatus": "SUPPORTED",
+    "expectedEvidenceSubstring": "SOC 2 Type II and ISO 27001"
+}

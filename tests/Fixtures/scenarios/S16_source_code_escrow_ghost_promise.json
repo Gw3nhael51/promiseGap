@@ -1,0 +1,10 @@
+{
+    "id": "S16_source_code_escrow_ghost_promise",
+    "title": "Bespoke Source Code Escrow Ghost Promise",
+    "category": "GENERAL",
+    "commitment": "Full platform source code and build toolchains are deposited weekly in a tri-party Iron Mountain escrow account.",
+    "proposal": "# Continuity Escrow\nFull platform source code and build toolchains are deposited weekly in a tri-party Iron Mountain escrow account.",
+    "technicalSpec": "# Network Firewall Rules\n## 3.1 Ingress Ports\nInbound traffic is restricted to TCP port 443 through the managed load balancer.",
+    "expectedStatus": "UNSUPPORTED",
+    "expectedEvidenceSubstring": ""
+}

@@ -1,0 +1,3 @@
+parameters:
+    app.ai_store.dimensions: 128
+    app.ai_store.top_k: 4

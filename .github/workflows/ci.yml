@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  quality-and-tests:
+    name: Symfony Lint, PHPUnit & RAG Benchmark
+    runs-on: ubuntu-latest
+
+    services:
+      database:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: '!ChangeMe!'
+          POSTGRES_DB: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U app -d app"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      APP_ENV: test
+      DATABASE_URL: 'postgresql://app:!ChangeMe!@127.0.0.1:5432/app?serverVersion=16&charset=utf8'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install system dependencies (poppler-utils for PDF extraction)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, iconv, intl, mbstring, pdo_pgsql, pgsql, xml, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v6
+        with:
+          path: ~/.composer/cache/files
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Audit Composer dependencies for known vulnerabilities
+        run: composer audit --no-interaction
+
+      - name: Install AssetMapper importmap packages
+        run: php bin/console importmap:install --env=test
+
+      - name: Lint Symfony container, Twig templates, and YAML config
+        run: |
+          php bin/console lint:container --env=test
+          php bin/console lint:twig templates/ --env=test
+          php bin/console lint:yaml config/ --parse-tags --env=test
+
+      - name: Setup test database and run Doctrine migrations (pgvector)
+        run: |
+          php bin/console doctrine:database:create --env=test --if-not-exists
+          php bin/console doctrine:migrations:migrate --env=test --no-interaction
+
+      - name: Run PHPUnit test suite
+        run: php bin/phpunit
+
+      - name: Run 24-scenario RAG evaluation benchmark
+        run: php bin/console app:eval-benchmark --env=test

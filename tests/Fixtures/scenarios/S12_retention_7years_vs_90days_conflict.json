@@ -1,0 +1,10 @@
+{
+    "id": "S12_retention_7years_vs_90days_conflict",
+    "title": "7 Years Audit Log Retention vs 90 Days Spec Limit",
+    "category": "SECURITY",
+    "commitment": "Audit trail logs are retained online for 7 years to satisfy financial regulations.",
+    "proposal": "# Auditability\nAudit trail logs are retained online for 7 years to satisfy financial regulations.",
+    "technicalSpec": "# Telemetry & Logging\n## 6.1 Log Storage\nAudit trail logs are retained online for 90 days before automatic purge.",
+    "expectedStatus": "CONTRADICTORY",
+    "expectedEvidenceSubstring": "90 days"
+}

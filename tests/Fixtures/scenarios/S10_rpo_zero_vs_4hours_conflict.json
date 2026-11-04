@@ -1,0 +1,10 @@
+{
+    "id": "S10_rpo_zero_vs_4hours_conflict",
+    "title": "Zero Data Loss Promise vs 4 Hours RPO Spec",
+    "category": "SLA",
+    "commitment": "Our synchronous backup architecture guarantees zero data loss in the event of a regional outage.",
+    "proposal": "# Resilience\nOur synchronous backup architecture guarantees zero data loss in the event of a regional outage.",
+    "technicalSpec": "# Disaster Recovery Spec\n## 4.1 Backup Snapshots\nDatabase snapshots run every 4 hours, resulting in a Recovery Point Objective (RPO) of 4 hours.",
+    "expectedStatus": "CONTRADICTORY",
+    "expectedEvidenceSubstring": "RPO"
+}

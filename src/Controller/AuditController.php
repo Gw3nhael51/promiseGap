@@ -3,56 +3,130 @@
 namespace App\Controller;
 
 use App\Entity\Analysis;
-use App\Repository\AnalysisRepository;
+use App\Enum\ExtractionStatus;
+use App\Security\AnalysisVoter;
+use App\Service\AuditPipelineService;
 use App\Service\DemoDealService;
+use App\Service\TextExtractionService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Controller handling live audit progress and evidence-backed results visualization
+ * Controller managing the audit execution progress and discrepancy results views
  */
 class AuditController extends AbstractController
 {
     /**
-     * Displays the live execution progress of contract claim extraction and proof confrontation
+     * Renders the step-by-step live audit progress view and ensures pending documents are processed
      *
-     * @param int $id Analysis workspace identifier
-     * @param AnalysisRepository $analysisRepository Repository to locate analysis records
+     * @param Analysis $analysis Analysis workspace resolved from the route
      * @param DemoDealService $demoDealService Service providing demo data fallback
-     * @return Response HTTP response rendering the progress view
+     * @param TextExtractionService $textExtractionService Document text extraction service
+     * @param AuditPipelineService $auditPipelineService End-to-end RAG audit pipeline service
+     * @param EntityManagerInterface $entityManager Doctrine entity manager
+     * @param Request $request Current HTTP request
+     * @return Response HTTP response rendering the progress template
      */
-    #[Route('/audit/{id}/progress', name: 'app_audit_progress', methods: ['GET'])]
-    public function progress(int $id, AnalysisRepository $analysisRepository, DemoDealService $demoDealService): Response
-    {
-        $analysis = $analysisRepository->find($id) ?? $demoDealService->getOrCreateDemoAnalysis();
-        $demoData = $demoDealService->getCloudHostingDealData();
+    #[Route('/audit/{id}/progress', name: 'app_audit_progress', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted(AnalysisVoter::VIEW, subject: 'analysis')]
+    public function progress(
+        Analysis $analysis,
+        DemoDealService $demoDealService,
+        TextExtractionService $textExtractionService,
+        AuditPipelineService $auditPipelineService,
+        EntityManagerInterface $entityManager,
+        Request $request,
+    ): Response {
+        $reasoningMode = (string) $request->getSession()->get('_reasoning_mode', 'auto');
+        $this->ensureAnalysisProcessed($analysis, $textExtractionService, $auditPipelineService, $entityManager, $reasoningMode);
+        $locale = $request->getLocale();
+
+        $demoData = $analysis->getCommitments()->isEmpty()
+            ? $demoDealService->getCloudHostingDealData($locale)
+            : $auditPipelineService->buildResultsViewData($analysis, $locale);
 
         return $this->render('audit/Audit.html.twig', [
             'analysis' => $analysis,
             'demoData' => $demoData,
+            'reasoningMode' => $reasoningMode,
         ]);
     }
 
     /**
-     * Displays the interactive audit results dashboard with risk gauge, counters, and proof drawer
+     * Renders the discrepancy findings table and source evidence slide-over drawer
      *
-     * @param int $id Analysis workspace identifier
-     * @param AnalysisRepository $analysisRepository Repository to locate analysis records
+     * @param Analysis $analysis Analysis workspace resolved from the route
      * @param DemoDealService $demoDealService Service providing demo claims and evidence
-     * @return Response HTTP response rendering the results view
+     * @param TextExtractionService $textExtractionService Document text extraction service
+     * @param AuditPipelineService $auditPipelineService End-to-end RAG audit pipeline service
+     * @param EntityManagerInterface $entityManager Doctrine entity manager
+     * @param Request $request Current HTTP request
+     * @return Response HTTP response rendering the results dashboard
      */
-    #[Route('/audit/{id}/results', name: 'app_audit_results', methods: ['GET'])]
-    public function results(int $id, AnalysisRepository $analysisRepository, DemoDealService $demoDealService): Response
-    {
-        $analysis = $analysisRepository->find($id) ?? $demoDealService->getOrCreateDemoAnalysis();
-        $demoData = $demoDealService->getCloudHostingDealData();
+    #[Route('/audit/{id}/results', name: 'app_audit_results', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted(AnalysisVoter::VIEW, subject: 'analysis')]
+    public function results(
+        Analysis $analysis,
+        DemoDealService $demoDealService,
+        TextExtractionService $textExtractionService,
+        AuditPipelineService $auditPipelineService,
+        EntityManagerInterface $entityManager,
+        Request $request,
+    ): Response {
+        $reasoningMode = (string) $request->getSession()->get('_reasoning_mode', 'auto');
+        $this->ensureAnalysisProcessed($analysis, $textExtractionService, $auditPipelineService, $entityManager, $reasoningMode);
+        $locale = $request->getLocale();
+
+        $demoData = $analysis->getCommitments()->isEmpty()
+            ? $demoDealService->getCloudHostingDealData($locale)
+            : $auditPipelineService->buildResultsViewData($analysis, $locale);
 
         return $this->render('audit/Results.html.twig', [
             'analysis' => $analysis,
             'deal' => $demoData['deal'],
             'stats' => $demoData['stats'],
             'claims' => $demoData['claims'],
+            'reasoningMode' => $reasoningMode,
         ]);
+    }
+
+    /**
+     * Processes any pending documents synchronously when no background worker has consumed them yet
+     *
+     * @param Analysis $analysis Analysis workspace to process
+     * @param TextExtractionService $textExtractionService Document text extraction service
+     * @param AuditPipelineService $auditPipelineService End-to-end RAG audit pipeline service
+     * @param EntityManagerInterface $entityManager Doctrine entity manager
+     * @param string $reasoningMode Selected reasoning mode ('auto', 'low', 'medium', 'high')
+     * @return void
+     */
+    private function ensureAnalysisProcessed(
+        Analysis $analysis,
+        TextExtractionService $textExtractionService,
+        AuditPipelineService $auditPipelineService,
+        EntityManagerInterface $entityManager,
+        string $reasoningMode = 'auto',
+    ): void {
+        if ($analysis->getDocuments()->isEmpty()) {
+            return;
+        }
+
+        $extractedAny = false;
+        foreach ($analysis->getDocuments() as $document) {
+            if ($document->getExtractionStatus() === ExtractionStatus::PENDING) {
+                $textExtractionService->process($document);
+                $extractedAny = true;
+            }
+        }
+
+        if ($extractedAny) {
+            $entityManager->flush();
+        }
+
+        $auditPipelineService->runIfReady($analysis, $reasoningMode);
     }
 }

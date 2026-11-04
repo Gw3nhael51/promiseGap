@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
@@ -21,9 +22,25 @@ class WelcomeController extends AbstractController
     #[Route('/welcome', name: 'app_welcome', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
     {
-        $name = $request->query->get('name', 'there');
+        $name = mb_substr(trim(strip_tags($request->query->getString('name', 'there'))), 0, 50) ?: 'there';
 
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('welcome', $request->getPayload()->getString('_token'))) {
+                throw new AccessDeniedHttpException('Invalid CSRF token.');
+            }
+
+            $workspace = mb_substr(trim(strip_tags($request->getPayload()->getString('workspace', 'Enterprise Deal Audit Lab'))), 0, 80);
+            $role = $request->getPayload()->getString('role', 'legal');
+            $allowedRoles = [
+                'legal' => 'Legal Counsel / Compliance',
+                'cto' => 'CTO / VP Engineering',
+                'procurement' => 'Procurement / Buyer',
+                'sales' => 'Sales Engineering / Pre-sales',
+            ];
+
+            $request->getSession()->set('_workspace_name', $workspace !== '' ? $workspace : 'Enterprise Deal Audit Lab');
+            $request->getSession()->set('_workspace_role', $allowedRoles[$role] ?? $allowedRoles['legal']);
+
             return $this->redirectToRoute('app_cockpit');
         }
 

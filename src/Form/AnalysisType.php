@@ -10,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -48,35 +49,48 @@ class AnalysisType extends AbstractType
                 ],
             ])
             ->add('proposalFile', FileType::class, [
-                'label' => 'Commercial Proposal (PDF or Markdown)',
-                'mapped' => false,
-                'required' => false,
-                'attr' => [
-                    'class' => 'file-input file-input-bordered w-full',
-                    'accept' => '.pdf,.md,.markdown,.txt',
-                ],
-                'constraints' => [
-                    new File(
-                        maxSize: '10M',
-                        mimeTypes: [
-                            'application/pdf',
-                            'text/plain',
-                            'text/markdown',
-                            'text/x-markdown',
-                        ],
-                        maxSizeMessage: 'File size cannot exceed 10 MB.',
-                        mimeTypesMessage: 'Unsupported format. Allowed formats: PDF or Markdown.',
-                    ),
-                ],
-            ])
-            ->add('technicalSpecFiles', FileType::class, [
-                'label' => 'Technical Reference Specs (PDF or Markdown)',
+                'label' => 'Commercial Proposal (PDF, Markdown, or Image)',
                 'mapped' => false,
                 'multiple' => true,
                 'required' => false,
                 'attr' => [
                     'class' => 'file-input file-input-bordered w-full',
-                    'accept' => '.pdf,.md,.markdown,.txt',
+                    'accept' => '.pdf,.md,.markdown,.txt,.png,.jpg,.jpeg,.webp',
+                    'multiple' => 'multiple',
+                ],
+                'constraints' => [
+                    new Count(
+                        min: 1,
+                        minMessage: 'Please upload the commercial proposal.',
+                    ),
+                    new All(
+                        constraints: [
+                            new File(
+                                maxSize: '10M',
+                                mimeTypes: [
+                                    'application/pdf',
+                                    'text/plain',
+                                    'text/markdown',
+                                    'text/x-markdown',
+                                    'image/png',
+                                    'image/jpeg',
+                                    'image/webp',
+                                ],
+                                maxSizeMessage: 'File size cannot exceed 10 MB.',
+                                mimeTypesMessage: 'Unsupported format. Allowed formats: PDF, Markdown, PNG, JPG, or WEBP.',
+                            ),
+                        ],
+                    ),
+                ],
+            ])
+            ->add('technicalSpecFiles', FileType::class, [
+                'label' => 'Technical Reference Specs (PDF, Markdown, or Image)',
+                'mapped' => false,
+                'multiple' => true,
+                'required' => false,
+                'attr' => [
+                    'class' => 'file-input file-input-bordered w-full',
+                    'accept' => '.pdf,.md,.markdown,.txt,.png,.jpg,.jpeg,.webp',
                     'multiple' => 'multiple',
                 ],
                 'constraints' => [
@@ -89,9 +103,12 @@ class AnalysisType extends AbstractType
                                     'text/plain',
                                     'text/markdown',
                                     'text/x-markdown',
+                                    'image/png',
+                                    'image/jpeg',
+                                    'image/webp',
                                 ],
                                 maxSizeMessage: 'Each file cannot exceed 10 MB.',
-                                mimeTypesMessage: 'Unsupported format. Allowed formats: PDF or Markdown.',
+                                mimeTypesMessage: 'Unsupported format. Allowed formats: PDF, Markdown, PNG, JPG, or WEBP.',
                             ),
                         ],
                     ),

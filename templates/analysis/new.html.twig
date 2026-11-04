@@ -7,48 +7,84 @@
     @param Analysis analysis Analysis entity currently being created
 #}
 
+{% set is_fr = app.request.locale == 'fr' %}
+
 {% block title %}PromiseGap | New Audit Workspace{% endblock %}
 
-{% block body %}
-<div class="max-w-3xl mx-auto">
-    <div class="mb-6">
-        <a href="{{ path('app_analysis_index') }}" class="btn btn-ghost btn-sm mb-2">← Back to Audits</a>
-        <h1 class="text-3xl font-bold">New Audit Workspace</h1>
-        <p class="text-base-content/70">Set an audit title and upload documents to cross-examine.</p>
+{% block header %}
+<header class="navbar bg-[#0E1116] border-b border-[#2A323D] px-4 lg:px-8 sticky top-0 z-50">
+    <div class="navbar-start gap-3">
+        <a href="{{ path('app_landing') }}" class="flex items-center gap-3 text-[#E8ECF1] hover:text-white no-underline">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="2" y="5" width="14" height="14" rx="3" stroke="#7FA3FF" stroke-width="2"/>
+                <rect x="12" y="9" width="14" height="14" rx="3" stroke="#B7C0CC" stroke-width="2"/>
+            </svg>
+            <span class="text-lg font-bold tracking-tight">PromiseGap</span>
+        </a>
     </div>
+    <div class="navbar-end gap-3">
+        {% include '_locale_switcher.html.twig' %}
+        <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_analysis_index' : 'app_cockpit') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#2A323D] bg-[#151A21] hover:border-[#4A5565] text-xs font-medium text-[#E8ECF1] no-underline transition-colors">
+            ← {{ is_fr ? 'Retour aux audits' : 'Back to Audits' }}
+        </a>
+        {% if app.user %}
+            <div class="hidden sm:inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-[#151A21] border border-[#3A4553]">
+                <span class="w-2 h-2 rounded-full bg-[#4ADE9A]"></span>
+                <span class="text-xs text-[#E8ECF1]">{{ app.user.userIdentifier }}</span>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <span class="px-2 py-0.5 rounded-full bg-[#F5B04A]/15 text-[#F5B04A] border border-[#F5B04A]/30 font-mono text-[11px] font-semibold">ADMIN</span>
+                {% else %}
+                    <span class="px-2 py-0.5 rounded-full bg-[#7FA3FF]/15 text-[#7FA3FF] border border-[#7FA3FF]/30 font-mono text-[11px] font-semibold">USER</span>
+                {% endif %}
+            </div>
+            <a href="{{ logout_path() }}" class="text-xs font-medium text-[#FF7B7B] hover:text-[#ff9999] px-2 py-1 no-underline">{{ is_fr ? 'Déconnexion' : 'Sign out' }}</a>
+        {% endif %}
+    </div>
+</header>
+{% endblock %}
 
-    <div class="card bg-base-200 shadow-md">
-        <div class="card-body">
+{% block body %}
+<div class="container mx-auto px-4 lg:px-8 py-8">
+    <div class="max-w-3xl mx-auto space-y-6">
+        <div class="space-y-2">
+            <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_analysis_index' : 'app_cockpit') }}" class="inline-flex items-center gap-1 text-xs font-medium text-[#9BA5B3] hover:text-[#E8ECF1] no-underline">← Back to Audits</a>
+            <h1 class="text-3xl font-bold text-[#E8ECF1] tracking-tight">New Audit Workspace</h1>
+            <p class="text-sm text-[#9BA5B3]">Set an audit title and upload documents to cross-examine.</p>
+        </div>
+
+        <div class="rounded-2xl bg-[#151A21] border border-[#2A323D] p-6 sm:p-8 shadow-md">
             {{ form_start(form) }}
                 <div class="space-y-6">
+                    {{ form_errors(form) }}
+
                     <div class="form-control">
-                        {{ form_label(form.title, null, {'label_attr': {'class': 'label font-medium'}}) }}
+                        {{ form_label(form.title, null, {'label_attr': {'class': 'label font-medium text-[#E8ECF1]'}}) }}
                         {{ form_widget(form.title) }}
                         {{ form_errors(form.title) }}
                     </div>
 
-                    <div class="divider">Documents to Cross-Examine</div>
+                    <div class="divider text-xs text-[#9BA5B3]">Documents to Cross-Examine</div>
 
                     <div class="form-control">
-                        {{ form_label(form.proposalFile, null, {'label_attr': {'class': 'label font-medium'}}) }}
+                        {{ form_label(form.proposalFile, null, {'label_attr': {'class': 'label font-medium text-[#E8ECF1]'}}) }}
                         {{ form_widget(form.proposalFile) }}
-                        <label class="label">
-                            <span class="label-text-alt text-base-content/60">Document containing vendor promises (PDF or Markdown, max 10 MB)</span>
-                        </label>
+                        <div class="label">
+                            <span class="label-text-alt text-[#9BA5B3]">Document containing vendor promises (PDF, Markdown, or PNG/JPG/WEBP scan via Muse Spark Vision, max 10 MB)</span>
+                        </div>
                         {{ form_errors(form.proposalFile) }}
                     </div>
 
                     <div class="form-control">
-                        {{ form_label(form.technicalSpecFiles, null, {'label_attr': {'class': 'label font-medium'}}) }}
+                        {{ form_label(form.technicalSpecFiles, null, {'label_attr': {'class': 'label font-medium text-[#E8ECF1]'}}) }}
                         {{ form_widget(form.technicalSpecFiles) }}
-                        <label class="label">
-                            <span class="label-text-alt text-base-content/60">Technical reference specifications (PDF or Markdown, max 10 MB each)</span>
-                        </label>
+                        <div class="label">
+                            <span class="label-text-alt text-[#9BA5B3]">Technical reference specifications (PDF, Markdown, or PNG/JPG/WEBP diagram/scan via Muse Spark Vision, max 10 MB each)</span>
+                        </div>
                         {{ form_errors(form.technicalSpecFiles) }}
                     </div>
 
                     <div class="pt-4 flex justify-end gap-3">
-                        <a href="{{ path('app_analysis_index') }}" class="btn btn-ghost">Cancel</a>
+                        <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_analysis_index' : 'app_cockpit') }}" class="btn btn-ghost">Cancel</a>
                         {{ form_widget(form.submit) }}
                     </div>
                 </div>

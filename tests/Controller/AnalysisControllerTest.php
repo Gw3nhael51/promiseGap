@@ -14,6 +14,10 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  */
 class AnalysisControllerTest extends WebTestCase
 {
+    private const string ROUTE_ANALYSES = '/analyses';
+    private const string ROUTE_ANALYSIS_NEW = '/analysis/new';
+    private const string SELECTOR_PAGINATION = 'nav[aria-label="Pagination"]';
+
     private KernelBrowser $client;
     private EntityManagerInterface $entityManager;
 
@@ -37,7 +41,7 @@ class AnalysisControllerTest extends WebTestCase
      */
     public function testIndexDisplaysAnalysesList(): void
     {
-        $this->client->request('GET', '/analyses');
+        $this->client->request('GET', self::ROUTE_ANALYSES);
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Commercial Commitment Audits');
@@ -48,30 +52,27 @@ class AnalysisControllerTest extends WebTestCase
      */
     public function testNewPageDisplaysCreationForm(): void
     {
-        $crawler = $this->client->request('GET', '/analysis/new');
+        $crawler = $this->client->request('GET', self::ROUTE_ANALYSIS_NEW);
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorExists('form[name="analysis"]');
         $this->assertCount(1, $crawler->filter('input[name="analysis[title]"]'));
-        $this->assertCount(1, $crawler->filter('input[name="analysis[proposalFile]"]'));
+        $this->assertCount(1, $crawler->filter('input[name="analysis[proposalFile][]"]'));
     }
 
     /**
-     * Verifies creation of an analysis workspace without any uploaded documents
+     * Verifies that creating an analysis without the commercial proposal is rejected
      */
-    public function testCreateAnalysisWithoutFiles(): void
+    public function testCreateAnalysisWithoutProposalIsRejected(): void
     {
-        $this->client->request('GET', '/analysis/new');
+        $this->client->request('GET', self::ROUTE_ANALYSIS_NEW);
 
         $this->client->submitForm('Run Audit', [
             'analysis[title]' => 'Enterprise SaaS Audit Q4',
         ]);
 
-        $this->assertResponseRedirects();
-        $crawler = $this->client->followRedirect();
-
-        $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('h1', 'Enterprise SaaS Audit Q4');
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSelectorTextContains('body', 'Please upload the commercial proposal.');
     }
 
     /**
@@ -88,16 +89,16 @@ class AnalysisControllerTest extends WebTestCase
         $proposalFile = new UploadedFile($proposalPath, 'commercial_offer.pdf', 'application/pdf', null, true);
         $specFile = new UploadedFile($specPath, 'architecture_spec.md', 'text/markdown', null, true);
 
-        $this->client->request('GET', '/analysis/new');
+        $this->client->request('GET', self::ROUTE_ANALYSIS_NEW);
 
         $this->client->submitForm('Run Audit', [
             'analysis[title]' => 'Multi Document Audit Test',
-            'analysis[proposalFile]' => $proposalFile,
+            'analysis[proposalFile]' => [$proposalFile],
             'analysis[technicalSpecFiles]' => [$specFile],
         ]);
 
         $this->assertResponseRedirects();
-        $crawler = $this->client->followRedirect();
+        $this->client->followRedirect();
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Multi Document Audit Test');
@@ -128,11 +129,90 @@ class AnalysisControllerTest extends WebTestCase
         $form = $crawler->filter('form[action$="/delete"]')->form();
         $this->client->submit($form);
 
-        $this->assertResponseRedirects('/analyses');
+        $this->assertResponseRedirects(self::ROUTE_ANALYSES);
         $this->client->followRedirect();
 
         $this->entityManager->clear();
         $deletedAnalysis = $this->entityManager->find(Analysis::class, $analysisId);
         $this->assertNull($deletedAnalysis);
+    }
+
+    /**
+     * Verifies bulk deletion of multiple selected analysis workspaces from /analyses
+     */
+    public function testBulkDeleteAnalyses(): void
+    {
+        $first = new Analysis();
+        $first->setTitle('Bulk Delete Workspace 1');
+        $first->setStatus(AnalysisStatus::PENDING);
+
+        $second = new Analysis();
+        $second->setTitle('Bulk Delete Workspace 2');
+        $second->setStatus(AnalysisStatus::COMPLETED);
+
+        $keep = new Analysis();
+        $keep->setTitle('Keep Workspace 3');
+        $keep->setStatus(AnalysisStatus::COMPLETED);
+
+        $this->entityManager->persist($first);
+        $this->entityManager->persist($second);
+        $this->entityManager->persist($keep);
+        $this->entityManager->flush();
+
+        $firstId = $first->getId();
+        $secondId = $second->getId();
+        $keepId = $keep->getId();
+
+        $crawler = $this->client->request('GET', self::ROUTE_ANALYSES);
+        $this->assertResponseIsSuccessful();
+
+        $token = $crawler->filter('#bulk-delete-form input[name="_token"]')->attr('value');
+        $this->client->request('POST', '/analyses/bulk-delete', [
+            '_token' => $token,
+            'ids' => [(string) $firstId, (string) $secondId],
+        ]);
+
+        $this->assertResponseRedirects(self::ROUTE_ANALYSES);
+        $this->client->followRedirect();
+        $this->assertSelectorTextContains('body', '2 audit workspace(s) deleted successfully.');
+
+        $this->entityManager->clear();
+        $this->assertNull($this->entityManager->find(Analysis::class, $firstId));
+        $this->assertNull($this->entityManager->find(Analysis::class, $secondId));
+        $this->assertNotNull($this->entityManager->find(Analysis::class, $keepId));
+    }
+
+    /**
+     * Verifies pagination navigation and out-of-bounds page clamping on /analyses
+     */
+    public function testAnalysesPaginationAndBoundaryClamping(): void
+    {
+        for ($i = 1; $i <= 11; ++$i) {
+            $analysis = new Analysis();
+            $analysis->setTitle(sprintf('Paginated Admin Workspace %02d', $i));
+            $analysis->setStatus(AnalysisStatus::COMPLETED);
+            $this->entityManager->persist($analysis);
+        }
+        $this->entityManager->flush();
+
+        // Page 1 displays pagination bar
+        $this->client->request('GET', self::ROUTE_ANALYSES . '?page=1');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists(self::SELECTOR_PAGINATION);
+        $this->assertSelectorTextContains(self::SELECTOR_PAGINATION, 'Page 1 /');
+
+        // Page 2 renders remaining workspaces
+        $this->client->request('GET', self::ROUTE_ANALYSES . '?page=2');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains(self::SELECTOR_PAGINATION, 'Page 2 /');
+
+        // Out-of-bounds page=0 and page=999 clamp safely without 500 or empty error
+        $this->client->request('GET', self::ROUTE_ANALYSES . '?page=0');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains(self::SELECTOR_PAGINATION, 'Page 1 /');
+
+        $this->client->request('GET', self::ROUTE_ANALYSES . '?page=999');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists(self::SELECTOR_PAGINATION);
     }
 }
