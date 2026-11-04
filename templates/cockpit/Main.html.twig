@@ -21,11 +21,16 @@
             </svg>
             <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">PromiseGap</span>
         </a>
+        {% set isFr = app.request.locale == 'fr' %}
         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px; font-size: 14px;">
-            <a href="#past-audits" style="text-decoration: none; color: #9BA5B3;">Past audits</a>
-            <a href="{{ path('app_demo') }}" style="text-decoration: none; color: #9BA5B3;">Deals</a>
+            {% include '_locale_switcher.html.twig' %}
+            <a href="#past-audits" style="text-decoration: none; color: #9BA5B3;">{{ isFr ? 'Audits récents' : 'Past audits' }}</a>
+            <a href="{{ path('app_demo') }}" style="text-decoration: none; color: #9BA5B3;">{{ isFr ? 'Contrats démo' : 'Deals' }}</a>
 
             {% if app.user %}
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_analysis_index') }}" style="text-decoration: none; color: #9BA5B3;">{{ isFr ? 'Tous les audits' : 'All Audits' }}</a>
+                {% endif %}
                 <div style="display: flex; align-items: center; gap: 10px; padding: 4px 12px; background: #151A21; border: 1px solid #3A4553; border-radius: 999px;">
                     <span style="font-size: 13px; color: #E8ECF1;">{{ app.user.userIdentifier }}</span>
                     {% if is_granted('ROLE_ADMIN') %}
@@ -34,9 +39,9 @@
                         <span style="padding: 2px 8px; border-radius: 999px; background: rgba(127,163,255,0.2); color: #7FA3FF; font-size: 11px; font-weight: 600;">USER</span>
                     {% endif %}
                 </div>
-                <a href="{{ path('app_logout') }}" style="color: #FF7B7B; text-decoration: none; font-size: 13px;">Sign out</a>
+                <a href="{{ logout_path() }}" style="color: #FF7B7B; text-decoration: none; font-size: 13px;">{{ isFr ? 'Déconnexion' : 'Sign out' }}</a>
             {% else %}
-                <a href="{{ path('app_login') }}" style="color: #E8ECF1; text-decoration: none;">Sign in</a>
+                <a href="{{ path('app_login') }}" style="color: #E8ECF1; text-decoration: none;">{{ isFr ? 'Connexion' : 'Sign in' }}</a>
             {% endif %}
 
             <span style="padding: 6px 12px; border: 1px solid #2A323D; border-radius: 999px; color: #B7C0CC; font-size: 13px;">Meta AI Hackathon</span>
@@ -48,16 +53,16 @@
 
         <!-- Title Header -->
         <div style="display: flex; flex-direction: column; gap: 16px; max-width: 760px;">
-            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.08em; color: #7FA3FF;">EVIDENCE-BACKED CONTRACT AUDIT</span>
-            <h1 style="margin: 0; font-size: 52px; line-height: 1.08; letter-spacing: -0.02em; font-weight: 700;">What was sold versus what is written.</h1>
-            <p style="margin: 0; font-size: 18px; line-height: 1.55; color: #9BA5B3;">Drop a commercial proposal and its technical specs. PromiseGap extracts every commitment and shows, with the exact quote, which ones the documentation actually supports.</p>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.08em; color: #7FA3FF;">{{ isFr ? 'AUDIT DE CONTRATS ORIENTÉ PREUVES' : 'EVIDENCE-BACKED CONTRACT AUDIT' }}</span>
+            <h1 style="margin: 0; font-size: 52px; line-height: 1.08; letter-spacing: -0.02em; font-weight: 700;">{{ isFr ? 'Ce qui a été vendu face à ce qui est écrit.' : 'What was sold versus what is written.' }}</h1>
+            <p style="margin: 0; font-size: 18px; line-height: 1.55; color: #9BA5B3;">{{ isFr ? 'Déposez une proposition commerciale et ses spécifications techniques. PromiseGap extrait chaque engagement et montre, citation exacte à l’appui, lesquels sont réellement tenus.' : 'Drop a commercial proposal and its technical specs. PromiseGap extracts every commitment and shows, with the exact quote, which ones the documentation actually supports.' }}</p>
         </div>
 
         {{ form_start(form, {'attr': {'id': 'cockpit-form'}}) }}
             <!-- Hidden or styled Title input -->
             <div style="margin-bottom: 24px; max-width: 500px;">
-                <label for="{{ form.title.vars.id }}" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #B7C0CC;">Audit Title</label>
-                {{ form_widget(form.title, {'attr': {'value': 'Cloud hosting contract audit', 'style': 'box-sizing: border-box; width: 100%; min-height: 44px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 15px;'}}) }}
+                <label for="{{ form.title.vars.id }}" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #B7C0CC;">{{ isFr ? 'Titre de l’audit' : 'Audit Title' }}</label>
+                {{ form_widget(form.title, {'attr': {'value': isFr ? 'Audit contrat hébergement Cloud' : 'Cloud hosting contract audit', 'style': 'box-sizing: border-box; width: 100%; min-height: 44px; padding: 0 14px; background: #151A21; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 15px;'}}) }}
                 {{ form_errors(form.title) }}
             </div>
 
@@ -71,18 +76,22 @@
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7FA3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>
                             </svg>
-                            <span style="font-size: 20px; font-weight: 600;">Commercial Proposal</span>
+                            <span style="font-size: 20px; font-weight: 600;">{{ isFr ? 'Proposition Commerciale' : 'Commercial Proposal' }}</span>
                         </div>
-                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #7FA3FF; letter-spacing: 0.06em;">WHAT WAS SOLD</span>
+                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #7FA3FF; letter-spacing: 0.06em;">{{ isFr ? 'CE QUI A ÉTÉ VENDU' : 'WHAT WAS SOLD' }}</span>
                     </div>
 
                     <label for="{{ form.proposalFile.vars.id }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; border: 2px dashed #3A4553; border-radius: 12px; text-align: center; cursor: pointer; transition: border-color 0.2s;">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9BA5B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-                        <span id="proposal-text" style="font-size: 16px;">Drag and drop the proposal here</span>
-                        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 10px; font: inherit; font-size: 15px;">Browse files</span>
-                        <span style="font-size: 13px; color: #9BA5B3;">PDF or Markdown, up to 20 MB</span>
+                        <span id="proposal-text" style="font-size: 16px;">{{ isFr ? 'Glissez-déposez la proposition ici' : 'Drag and drop the proposal here' }}</span>
+                        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 10px; font: inherit; font-size: 15px;">{{ isFr ? 'Parcourir' : 'Browse files' }}</span>
+                        <span style="font-size: 13px; color: #9BA5B3;">{{ isFr ? 'PDF, Markdown ou Photo/Scan (PNG, JPG, WEBP — Muse Spark Vision)' : 'PDF, Markdown, or Photo/Scan (PNG, JPG, WEBP — Muse Spark Vision)' }}</span>
                         {{ form_widget(form.proposalFile, {'attr': {'style': 'display: none;', 'onchange': 'handleProposalSelected(this)'}}) }}
                     </label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #9BA5B3;">
+                        <span>{{ isFr ? 'Besoin d’un fichier test ?' : 'Need a test file?' }}</span>
+                        <a href="/samples/commercial_proposal.pdf" download="commercial_proposal.pdf" style="color: #7FA3FF; text-decoration: none; font-weight: 500;">⬇ {{ isFr ? 'Télécharger proposal.pdf' : 'Download sample proposal.pdf' }}</a>
+                    </div>
                     {{ form_errors(form.proposalFile) }}
                 </div>
 
@@ -96,39 +105,77 @@
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B7C0CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M9 8h7M9 12h5"/>
                             </svg>
-                            <span style="font-size: 20px; font-weight: 600;">Technical Specs</span>
+                            <span style="font-size: 20px; font-weight: 600;">{{ isFr ? 'Spécifications Techniques' : 'Technical Specs' }}</span>
                         </div>
-                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #B7C0CC; letter-spacing: 0.06em;">WHAT IS WRITTEN</span>
+                        <span style="font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #B7C0CC; letter-spacing: 0.06em;">{{ isFr ? 'CE QUI EST ÉCRIT' : 'WHAT IS WRITTEN' }}</span>
                     </div>
 
                     <label for="{{ form.technicalSpecFiles.vars.id }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; border: 2px dashed #3A4553; border-radius: 12px; text-align: center; cursor: pointer; transition: border-color 0.2s;">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9BA5B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-                        <span id="specs-text" style="font-size: 16px;">Drag and drop the architecture docs here</span>
-                        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 10px; font: inherit; font-size: 15px;">Browse files</span>
-                        <span style="font-size: 13px; color: #9BA5B3;">PDF or Markdown, up to 20 MB</span>
+                        <span id="specs-text" style="font-size: 16px;">{{ isFr ? 'Glissez-déposez les specs d’architecture ici' : 'Drag and drop the architecture docs here' }}</span>
+                        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; background: transparent; color: #E8ECF1; border: 1px solid #4A5565; border-radius: 10px; font: inherit; font-size: 15px;">{{ isFr ? 'Parcourir' : 'Browse files' }}</span>
+                        <span style="font-size: 13px; color: #9BA5B3;">{{ isFr ? 'PDF, Markdown ou Photo/Schéma (PNG, JPG, WEBP — Muse Spark Vision)' : 'PDF, Markdown, or Photo/Diagram (PNG, JPG, WEBP — Muse Spark Vision)' }}</span>
                         {{ form_widget(form.technicalSpecFiles, {'attr': {'style': 'display: none;', 'onchange': 'handleSpecsSelected(this)'}}) }}
                     </label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #9BA5B3;">
+                        <span>{{ isFr ? 'Besoin d’un fichier test ?' : 'Need a test file?' }}</span>
+                        <a href="/samples/technical_specifications.pdf" download="technical_specifications.pdf" style="color: #B7C0CC; text-decoration: none; font-weight: 500;">⬇ {{ isFr ? 'Télécharger specs.pdf' : 'Download sample specs.pdf' }}</a>
+                    </div>
                     {{ form_errors(form.technicalSpecFiles) }}
                 </div>
 
             </div>
 
+            <!-- Muse Spark Reasoning Effort Selector -->
+            {% set activeMode = reasoningMode|default('auto') %}
+            <div style="margin-top: 24px; padding: 16px 20px; border-radius: 14px; background: #151A21; border: 1px solid #2A323D; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <span class="font-mono" style="font-size: 11px; letter-spacing: 0.06em; color: #7FA3FF;">
+                        META MUSE SPARK (muse-spark-1.3) · {{ isFr ? 'NIVEAU DE RÉFLEXION IA' : 'REASONING EFFORT' }}
+                    </span>
+                    <span style="font-size: 13px; color: #9BA5B3;">
+                        {{ isFr
+                            ? 'En mode Auto, le modèle adapte automatiquement sa réflexion (Low / Medium / High) selon la criticité juridique et la similarité de chaque clause.'
+                            : 'In Auto mode, the model dynamically escalates reasoning (Low / Medium / High) based on clause criticality and semantic similarity.' }}
+                    </span>
+                </div>
+
+                <div id="reasoning-selector" style="display: inline-flex; flex-wrap: wrap; gap: 6px; padding: 4px; background: #0E1116; border: 1px solid #2A323D; border-radius: 10px;">
+                    {% set modes = [
+                        {'key': 'auto', 'labelEn': 'Auto (Adaptive)', 'labelFr': 'Auto (Adaptatif)'},
+                        {'key': 'low', 'labelEn': 'Fast (Low)', 'labelFr': 'Rapide (Low)'},
+                        {'key': 'medium', 'labelEn': 'Balanced (Medium)', 'labelFr': 'Équilibré (Medium)'},
+                        {'key': 'high', 'labelEn': 'Precise (High)', 'labelFr': 'Précis (High)'}
+                    ] %}
+                    {% for m in modes %}
+                        {% set isSelected = activeMode == m.key %}
+                        <label
+                            class="reasoning-pill"
+                            style="cursor: pointer; padding: 6px 12px; border-radius: 7px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; transition: all 0.15s; {% if isSelected %}background: #7FA3FF; color: #0B1020;{% else %}background: transparent; color: #9BA5B3;{% endif %}"
+                        >
+                            <input type="radio" name="reasoning_mode" value="{{ m.key }}" {% if isSelected %}checked{% endif %} style="display: none;">
+                            {{ isFr ? m.labelFr : m.labelEn }}
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+
             <!-- Actions Bar -->
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 32px;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 24px;">
                 <a href="{{ path('app_cockpit_demo') }}" style="display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 28px; background: #7FA3FF; color: #0B1020; border-radius: 12px; font-size: 17px; font-weight: 600; text-decoration: none;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>
-                    Load Demo Deal
+                    {{ isFr ? 'Charger le contrat démo' : 'Load Demo Deal' }}
                 </a>
 
                 {{ form_widget(form.submit, {
                     'id': 'run-audit-btn',
-                    'label': 'Run Audit',
+                    'label': isFr ? 'Lancer l’audit' : 'Run Audit',
                     'attr': {
                         'style': 'min-height: 52px; padding: 0 28px; background: transparent; color: #E8ECF1; border: 1px solid #7FA3FF; border-radius: 12px; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer; transition: all 0.2s;'
                     }
                 }) }}
 
-                <span style="font-size: 14px; color: #9BA5B3;">You can audit uploaded files or instantly load the ready-made demo deal.</span>
+                <span style="font-size: 14px; color: #9BA5B3;">{{ isFr ? 'Auditez vos propres fichiers ou chargez instantanément le contrat démo.' : 'You can audit uploaded files or instantly load the ready-made demo deal.' }}</span>
             </div>
         {{ form_end(form) }}
 
@@ -158,28 +205,66 @@
         </div>
 
         <!-- Past Audits Section -->
+        {% set totalRecorded = pagination.totalItems|default(pastAudits|length) %}
         <div id="past-audits" style="display: flex; flex-direction: column; gap: 16px; padding-top: 32px; border-top: 1px solid #2A323D;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 18px; font-weight: 600;">Recent Audits</span>
-                <span style="font-size: 13px; color: #9BA5B3;">{{ pastAudits|length }} audit workspace(s) recorded</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <span style="font-size: 18px; font-weight: 600;">{{ isFr ? 'Audits récents' : 'Recent Audits' }}</span>
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <span style="font-size: 13px; color: #9BA5B3;">{{ totalRecorded }} {{ isFr ? 'espace(s) d’audit enregistré(s)' : 'audit workspace(s) recorded' }}</span>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_analysis_index') }}" style="font-size: 13px; color: #7FA3FF; text-decoration: none;">{{ isFr ? 'Console Admin (Tous les audits) →' : 'Admin Console (All Audits) →' }}</a>
+                    {% endif %}
+                </div>
             </div>
             {% if pastAudits is empty %}
-                <p style="color: #9BA5B3; font-size: 14px; margin: 0;">No past audit yet. Run your first audit or load the demo deal above.</p>
+                <p style="color: #9BA5B3; font-size: 14px; margin: 0;">{{ isFr ? 'Aucun audit récent. Lancez votre premier audit ou chargez un contrat démo ci-dessus.' : 'No past audit yet. Run your first audit or load the demo deal above.' }}</p>
             {% else %}
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     {% for audit in pastAudits %}
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #151A21; border: 1px solid #2A323D; border-radius: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 14px 20px; background: #151A21; border: 1px solid #2A323D; border-radius: 12px;">
                             <div style="display: flex; flex-direction: column; gap: 4px;">
                                 <span style="font-weight: 600;">{{ audit.title }}</span>
-                                <span style="font-size: 13px; color: #9BA5B3;">Created on {{ audit.createdAt|date('M d, Y \\a\\t H:i') }} • {{ audit.documents|length }} document(s)</span>
+                                <span style="font-size: 13px; color: #9BA5B3;">{{ isFr ? 'Créé le' : 'Created on' }} {{ audit.createdAt|date('M d, Y \\a\\t H:i') }} • {{ audit.documents|length }} document(s) • {{ audit.commitments|length }} {{ isFr ? 'promesse(s)' : 'commitment(s)' }}</span>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
                                 <span style="padding: 4px 10px; border-radius: 999px; background: rgba(127,163,255,0.15); color: #7FA3FF; font-size: 12px; font-weight: 600;">{{ audit.status.value }}</span>
-                                <a href="{{ path('app_audit_results', {'id': audit.id}) }}" style="display: inline-flex; align-items: center; padding: 6px 14px; border: 1px solid #4A5565; border-radius: 8px; font-size: 13px; color: #E8ECF1; text-decoration: none;">View Results</a>
+                                <a href="{{ path('app_audit_results', {'id': audit.id}) }}" style="display: inline-flex; align-items: center; padding: 6px 14px; border: 1px solid #4A5565; border-radius: 8px; font-size: 13px; color: #E8ECF1; text-decoration: none;">{{ isFr ? 'Voir résultats' : 'View Results' }}</a>
+                                <a href="{{ path('app_analysis_show', {'id': audit.id}) }}" style="display: inline-flex; align-items: center; padding: 6px 12px; border: 1px solid #2A323D; border-radius: 8px; font-size: 13px; color: #9BA5B3; text-decoration: none;">{{ isFr ? 'Détails' : 'Details' }}</a>
+                                {% if is_granted('ANALYSIS_DELETE', audit) %}
+                                    <form method="post" action="{{ path('app_analysis_delete', {'id': audit.id}) }}" onsubmit="return confirm('{{ isFr ? 'Supprimer cet espace d’audit ?' : 'Are you sure you want to delete this audit workspace?' }}');" style="margin: 0;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ audit.id) }}">
+                                        <button type="submit" style="padding: 6px 12px; border: 1px solid rgba(255,123,123,0.35); background: rgba(255,123,123,0.08); color: #FF7B7B; border-radius: 8px; font: inherit; font-size: 12px; cursor: pointer;">{{ isFr ? 'Supprimer' : 'Delete' }}</button>
+                                    </form>
+                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}
                 </div>
+
+                {% if pagination is defined and pagination.totalPages > 1 %}
+                    <nav aria-label="Pagination" style="display: flex; align-items: center; justify-content: space-between; padding-top: 8px;">
+                        <span class="font-mono" style="font-size: 12px; color: #9BA5B3;">
+                            Page {{ pagination.currentPage }} / {{ pagination.totalPages }}
+                        </span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            {% if pagination.hasPrev %}
+                                <a href="{{ path('app_cockpit', {'page': pagination.currentPage - 1}) }}#past-audits" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #3A4553; background: #151A21; color: #E8ECF1; font-size: 12px; text-decoration: none;">
+                                    ← {{ isFr ? 'Précédent' : 'Previous' }}
+                                </a>
+                            {% endif %}
+                            {% for p in 1..pagination.totalPages %}
+                                <a href="{{ path('app_cockpit', {'page': p}) }}#past-audits" class="font-mono" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; text-decoration: none; {% if p == pagination.currentPage %}background: #7FA3FF; color: #0B1020; font-weight: 600;{% else %}border: 1px solid #2A323D; background: #151A21; color: #9BA5B3;{% endif %}">
+                                    {{ p }}
+                                </a>
+                            {% endfor %}
+                            {% if pagination.hasNext %}
+                                <a href="{{ path('app_cockpit', {'page': pagination.currentPage + 1}) }}#past-audits" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #3A4553; background: #151A21; color: #E8ECF1; font-size: 12px; text-decoration: none;">
+                                    {{ isFr ? 'Suivant' : 'Next' }} →
+                                </a>
+                            {% endif %}
+                        </div>
+                    </nav>
+                {% endif %}
             {% endif %}
         </div>
 
@@ -188,16 +273,34 @@
 </div>
 
 <script>
+document.querySelectorAll('#reasoning-selector input[type="radio"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+        document.querySelectorAll('.reasoning-pill').forEach(function (pill) {
+            pill.style.background = 'transparent';
+            pill.style.color = '#9BA5B3';
+        });
+        var parentPill = this.closest('.reasoning-pill');
+        if (parentPill) {
+            parentPill.style.background = '#7FA3FF';
+            parentPill.style.color = '#0B1020';
+        }
+    });
+});
+
 function handleProposalSelected(input) {
-    if (input.files && input.files[0]) {
-        document.getElementById('proposal-text').textContent = '📄 ' + input.files[0].name;
+    if (input.files && input.files.length > 0) {
+        document.getElementById('proposal-text').textContent = input.files.length === 1
+            ? '📄 ' + input.files[0].name
+            : '📄 ' + input.files.length + ' file(s) selected';
         document.getElementById('proposal-card').style.borderColor = '#7FA3FF';
     }
 }
 
 function handleSpecsSelected(input) {
     if (input.files && input.files.length > 0) {
-        document.getElementById('specs-text').textContent = '📘 ' + input.files.length + ' file(s) selected';
+        document.getElementById('specs-text').textContent = input.files.length === 1
+            ? '📘 ' + input.files[0].name
+            : '📘 ' + input.files.length + ' file(s) selected';
         document.getElementById('specs-card').style.borderColor = '#B7C0CC';
     }
 }

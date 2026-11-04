@@ -1,0 +1,10 @@
+{
+    "id": "S18_custom_sap_erp_connector_ghost_promise",
+    "title": "Bi-Directional Real-Time SAP R/3 Connector Ghost Promise",
+    "category": "DELIVERY",
+    "commitment": "Out-of-the-box bi-directional synchronization with on-premise SAP R/3 4.6C is included at no extra cost.",
+    "proposal": "# ERP Connectors\nOut-of-the-box bi-directional synchronization with on-premise SAP R/3 4.6C is included at no extra cost.",
+    "technicalSpec": "# Container Runtime\n## 5.1 Linux Kernel\nWorker nodes run on hardened Linux kernels with cgroups v2 isolation.",
+    "expectedStatus": "UNSUPPORTED",
+    "expectedEvidenceSubstring": ""
+}

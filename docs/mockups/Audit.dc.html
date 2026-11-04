@@ -1,125 +1,230 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<title>PromiseGap Audit in progress</title>
-<script src="./support.js"></script>
+    <meta charset="utf-8">
+    <title>PromiseGap Audit in progress</title>
+    <script src="./support.js"></script>
 </head>
+
 <body>
-<x-dc>
-<helmet>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-body{margin:0}
-a{color:#7FA3FF}a:hover{color:#A9C0FF}
-</style>
-</helmet>
-<div style="min-height: 900px; box-sizing: border-box; background: #0E1116; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+    <x-dc>
+        <helmet>
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link
+                href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+                rel="stylesheet">
+            <style>
+                body {
+                    margin: 0
+                }
 
-<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 32px; border-bottom: 1px solid #2A323D">
-<div style="display: flex; align-items: center; gap: 12px">
-<svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="5" width="14" height="14" rx="3" stroke="#7FA3FF" stroke-width="2"/><rect x="12" y="9" width="14" height="14" rx="3" stroke="#B7C0CC" stroke-width="2"/></svg>
-<span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em">PromiseGap</span>
-</div>
-<span style="padding: 6px 12px; border: 1px solid #2A323D; border-radius: 999px; color: #B7C0CC; font-size: 13px">Demo deal · Cloud hosting contract</span>
-</div>
+                a {
+                    color: #7FA3FF
+                }
 
-<div style="flex: 1; width: 100%; max-width: 1100px; margin: 0 auto; box-sizing: border-box; padding: 48px 32px; display: flex; flex-direction: column; gap: 32px">
+                a:hover {
+                    color: #A9C0FF
+                }
+            </style>
+        </helmet>
+        <div
+            style="min-height: 900px; box-sizing: border-box; background: #0E1116; color: #E8ECF1; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
 
-<div style="display: flex; flex-direction: column; gap: 10px">
-<h1 style="margin: 0; font-size: 36px; letter-spacing: -0.02em; font-weight: 700">Auditing the contract</h1>
-<p style="margin: 0; font-size: 16px; color: #9BA5B3">Proposal_v3.pdf against TechSpecs_v7.pdf. Verdicts appear as soon as each promise is checked.</p>
-</div>
+            <div
+                style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 32px; border-bottom: 1px solid #2A323D">
+                <div style="display: flex; align-items: center; gap: 12px">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                        <rect x="2" y="5" width="14" height="14" rx="3" stroke="#7FA3FF" stroke-width="2" />
+                        <rect x="12" y="9" width="14" height="14" rx="3" stroke="#B7C0CC" stroke-width="2" />
+                    </svg>
+                    <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em">PromiseGap</span>
+                </div>
+                <span
+                    style="padding: 6px 12px; border: 1px solid #2A323D; border-radius: 999px; color: #B7C0CC; font-size: 13px">Demo
+                    deal · Cloud hosting contract</span>
+            </div>
 
-<div style="display: flex; flex-wrap: wrap; gap: 16px">
+            <div
+                style="flex: 1; width: 100%; max-width: 1100px; margin: 0 auto; box-sizing: border-box; padding: 48px 32px; display: flex; flex-direction: column; gap: 32px">
 
-<div style="flex: 1 1 280px; box-sizing: border-box; display: flex; gap: 14px; align-items: flex-start; padding: 18px; background: #151A21; border: 1px solid #2A323D; border-radius: 14px">
-<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ADE9A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>
-<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 600">Extract promises</span><span style="font-size: 14px; color: #9BA5B3">8 commitments found in the proposal</span></div>
-</div>
+                <div style="display: flex; flex-direction: column; gap: 10px">
+                    <h1 style="margin: 0; font-size: 36px; letter-spacing: -0.02em; font-weight: 700">Auditing the
+                        contract</h1>
+                    <p style="margin: 0; font-size: 16px; color: #9BA5B3">Proposal_v3.pdf against TechSpecs_v7.pdf.
+                        Verdicts appear as soon as each promise is checked.</p>
+                </div>
 
-<div style="flex: 1 1 280px; box-sizing: border-box; display: flex; gap: 14px; align-items: flex-start; padding: 18px; background: #151A21; border: 1px solid #2A323D; border-radius: 14px">
-<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ADE9A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>
-<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 600">Index the specs</span><span style="font-size: 14px; color: #9BA5B3">142 passages embedded in pgvector</span></div>
-</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 16px">
 
-<div style="flex: 1 1 280px; box-sizing: border-box; display: flex; gap: 14px; align-items: flex-start; padding: 18px; background: #1B222B; border: 1px solid #7FA3FF; border-radius: 14px">
-<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7FA3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.55"/><path d="M21 4v5h-5"/></svg>
-<div style="display: flex; flex-direction: column; gap: 4px; flex: 1"><span style="font-weight: 600">Confront with proof</span><span style="font-size: 14px; color: #9BA5B3">6 of 8 promises checked</span>
-<div style="height: 6px; margin-top: 8px; border-radius: 999px; background: #2A323D"><div style="width: 75%; height: 6px; border-radius: 999px; background: #7FA3FF"></div></div>
-</div>
-</div>
+                    <div
+                        style="flex: 1 1 280px; box-sizing: border-box; display: flex; gap: 14px; align-items: flex-start; padding: 18px; background: #151A21; border: 1px solid #2A323D; border-radius: 14px">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ADE9A" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M8 12.5l2.7 2.7L16 9.5" />
+                        </svg>
+                        <div style="display: flex; flex-direction: column; gap: 4px"><span
+                                style="font-weight: 600">Extract promises</span><span
+                                style="font-size: 14px; color: #9BA5B3">8 commitments found in the proposal</span></div>
+                    </div>
 
-</div>
+                    <div
+                        style="flex: 1 1 280px; box-sizing: border-box; display: flex; gap: 14px; align-items: flex-start; padding: 18px; background: #151A21; border: 1px solid #2A323D; border-radius: 14px">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ADE9A" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M8 12.5l2.7 2.7L16 9.5" />
+                        </svg>
+                        <div style="display: flex; flex-direction: column; gap: 4px"><span
+                                style="font-weight: 600">Index the specs</span><span
+                                style="font-size: 14px; color: #9BA5B3">142 passages embedded in pgvector</span></div>
+                    </div>
 
-<div style="background: #151A21; border: 1px solid #2A323D; border-radius: 14px; overflow-x: auto">
-<div style="min-width: 640px">
+                    <div
+                        style="flex: 1 1 280px; box-sizing: border-box; display: flex; gap: 14px; align-items: flex-start; padding: 18px; background: #1B222B; border: 1px solid #7FA3FF; border-radius: 14px">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7FA3FF" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 12a9 9 0 1 1-6.2-8.55" />
+                            <path d="M21 4v5h-5" />
+                        </svg>
+                        <div style="display: flex; flex-direction: column; gap: 4px; flex: 1"><span
+                                style="font-weight: 600">Confront with proof</span><span
+                                style="font-size: 14px; color: #9BA5B3">6 of 8 promises checked</span>
+                            <div style="height: 6px; margin-top: 8px; border-radius: 999px; background: #2A323D">
+                                <div style="width: 75%; height: 6px; border-radius: 999px; background: #7FA3FF"></div>
+                            </div>
+                        </div>
+                    </div>
 
-<div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; padding: 12px 20px; border-bottom: 1px solid #2A323D; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #9BA5B3">
-<span>ID</span><span>PROMISE</span><span>VERDICT</span>
-</div>
+                </div>
 
-<div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D">
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P6</span>
-<span style="font-size: 15px; font-weight: 500">ISO 27001 certified hosting</span>
-<span style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 12px 4px 8px; border-radius: 999px; background: rgba(74,222,154,0.14); color: #4ADE9A; font-size: 13px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>Supported</span>
-</div>
+                <div style="background: #151A21; border: 1px solid #2A323D; border-radius: 14px; overflow-x: auto">
+                    <div style="min-width: 640px">
 
-<div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D">
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P7</span>
-<span style="font-size: 15px; font-weight: 500">EU data residency (GDPR)</span>
-<span style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 12px 4px 8px; border-radius: 999px; background: rgba(74,222,154,0.14); color: #4ADE9A; font-size: 13px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>Supported</span>
-</div>
+                        <div
+                            style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; padding: 12px 20px; border-bottom: 1px solid #2A323D; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; color: #9BA5B3">
+                            <span>ID</span><span>PROMISE</span><span>VERDICT</span>
+                        </div>
 
-<div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D">
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P1</span>
-<span style="font-size: 15px; font-weight: 500">99.99% availability with penalties</span>
-<span style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 12px 4px 8px; border-radius: 999px; background: rgba(245,176,74,0.14); color: #F5B04A; font-size: 13px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l9 16H3z"/><path d="M12 10v4"/><path d="M12 17.5v.01"/></svg>Contradictory</span>
-</div>
+                        <div
+                            style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D">
+                            <span
+                                style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P6</span>
+                            <span style="font-size: 15px; font-weight: 500">ISO 27001 certified hosting</span>
+                            <span
+                                style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 12px 4px 8px; border-radius: 999px; background: #1C3532; color: #4ADE9A; font-size: 13px; font-weight: 600"><svg
+                                    width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9" />
+                                    <path d="M8 12.5l2.7 2.7L16 9.5" />
+                                </svg>Supported</span>
+                        </div>
 
-<div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D">
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P4</span>
-<span style="font-size: 15px; font-weight: 500">End-to-end encryption</span>
-<span style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 12px 4px 8px; border-radius: 999px; background: rgba(169,155,255,0.14); color: #A99BFF; font-size: 13px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9.5a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1.1.9-1.1 1.6"/><path d="M12 17v.01"/></svg>Ambiguous</span>
-</div>
+                        <div
+                            style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D">
+                            <span
+                                style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P7</span>
+                            <span style="font-size: 15px; font-weight: 500">EU data residency (GDPR)</span>
+                            <span
+                                style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 12px 4px 8px; border-radius: 999px; background: #1C3532; color: #4ADE9A; font-size: 13px; font-weight: 600"><svg
+                                    width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9" />
+                                    <path d="M8 12.5l2.7 2.7L16 9.5" />
+                                </svg>Supported</span>
+                        </div>
 
-<div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D">
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P3</span>
-<span style="font-size: 15px; font-weight: 500">Real-time backup of all data</span>
-<span style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 12px 4px 8px; border-radius: 999px; background: rgba(255,123,123,0.14); color: #FF7B7B; font-size: 13px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Unsupported</span>
-</div>
+                        <div
+                            style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D">
+                            <span
+                                style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P1</span>
+                            <span style="font-size: 15px; font-weight: 500">99.99% availability with penalties</span>
+                            <span
+                                style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 12px 4px 8px; border-radius: 999px; background: #342F27; color: #F5B04A; font-size: 13px; font-weight: 600"><svg
+                                    width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 4l9 16H3z" />
+                                    <path d="M12 10v4" />
+                                    <path d="M12 17.5v.01" />
+                                </svg>Contradictory</span>
+                        </div>
 
-<div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D; background: #1B222B">
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P2</span>
-<span style="font-size: 15px; font-weight: 500">Turnkey delivery in 3 months</span>
-<span style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 12px 4px 8px; border-radius: 999px; border: 1px dashed #7FA3FF; color: #7FA3FF; font-size: 13px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.55"/></svg>Checking</span>
-</div>
+                        <div
+                            style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D">
+                            <span
+                                style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P4</span>
+                            <span style="font-size: 15px; font-weight: 500">End-to-end encryption</span>
+                            <span
+                                style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 12px 4px 8px; border-radius: 999px; background: #2A2C40; color: #A99BFF; font-size: 13px; font-weight: 600"><svg
+                                    width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9" />
+                                    <path d="M9.7 9.5a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1.1.9-1.1 1.6" />
+                                    <path d="M12 17v.01" />
+                                </svg>Ambiguous</span>
+                        </div>
 
-<div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D">
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P5</span>
-<span style="font-size: 15px; font-weight: 500; color: #9BA5B3">24/7 support, 15-minute response</span>
-<span style="font-size: 13px; color: #9BA5B3">Queued</span>
-</div>
+                        <div
+                            style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D">
+                            <span
+                                style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P3</span>
+                            <span style="font-size: 15px; font-weight: 500">Real-time backup of all data</span>
+                            <span
+                                style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 12px 4px 8px; border-radius: 999px; background: #36282E; color: #FF7B7B; font-size: 13px; font-weight: 600"><svg
+                                    width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9" />
+                                    <path d="M9 9l6 6M15 9l-6 6" />
+                                </svg>Unsupported</span>
+                        </div>
 
-<div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px">
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P8</span>
-<span style="font-size: 15px; font-weight: 500; color: #9BA5B3">Unlimited scalability</span>
-<span style="font-size: 13px; color: #9BA5B3">Queued</span>
-</div>
+                        <div
+                            style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D; background: #1B222B">
+                            <span
+                                style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P2</span>
+                            <span style="font-size: 15px; font-weight: 500">Turnkey delivery in 3 months</span>
+                            <span
+                                style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 4px 12px 4px 8px; border-radius: 999px; border: 1px dashed #7FA3FF; color: #7FA3FF; font-size: 13px; font-weight: 600"><svg
+                                    width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M21 12a9 9 0 1 1-6.2-8.55" />
+                                </svg>Checking</span>
+                        </div>
 
-</div>
-</div>
+                        <div
+                            style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid #2A323D">
+                            <span
+                                style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P5</span>
+                            <span style="font-size: 15px; font-weight: 500; color: #9BA5B3">24/7 support, 15-minute
+                                response</span>
+                            <span style="font-size: 13px; color: #9BA5B3">Queued</span>
+                        </div>
 
-<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
-<span style="font-size: 14px; color: #9BA5B3">Muse Spark is arbitrating each promise against the closest spec passages.</span>
-<a href="Results.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 22px; background: #7FA3FF; color: #0B1020; border-radius: 10px; font-size: 15px; font-weight: 600; text-decoration: none">See results</a>
-</div>
+                        <div
+                            style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 180px; gap: 16px; align-items: center; padding: 14px 20px">
+                            <span
+                                style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA5B3">P8</span>
+                            <span style="font-size: 15px; font-weight: 500; color: #9BA5B3">Unlimited scalability</span>
+                            <span style="font-size: 13px; color: #9BA5B3">Queued</span>
+                        </div>
 
-</div>
-</div>
-</x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+                    </div>
+                </div>
+
+                <div
+                    style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+                    <span style="font-size: 14px; color: #9BA5B3">Muse Spark is arbitrating each promise against the
+                        closest spec passages.</span>
+                    <a href="Results.dc.html"
+                        style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 22px; background: #7FA3FF; color: #0B1020; border-radius: 10px; font-size: 15px; font-weight: 600; text-decoration: none">See
+                        results</a>
+                </div>
+
+            </div>
+        </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
 renderVals() {
 return {};
@@ -127,4 +232,5 @@ return {};
 }
 </script>
 </body>
+
 </html>

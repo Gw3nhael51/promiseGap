@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help up down restart logs ps install db-create db-migrate db-check cache lint test serve
+.PHONY: help up down restart logs ps install db-create db-migrate db-test db-check cache lint test serve worker test-ai eval
 
 help: ## Display available commands
 	@grep -E '(^[a-zA-Z_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-18s\033[0m %s\n", $$1, $$2}'
@@ -27,6 +27,10 @@ db-create: ## Create database if it does not exist
 db-migrate: ## Execute pending Doctrine migrations
 	php bin/console doctrine:migrations:migrate --no-interaction
 
+db-test: ## Setup test database and execute migrations
+	APP_ENV=test php bin/console doctrine:database:create --if-not-exists
+	APP_ENV=test php bin/console doctrine:migrations:migrate --no-interaction
+
 db-check: ## Verify database connection and pgvector extension
 	php bin/console dbal:run-sql "SELECT extname, extversion FROM pg_extension WHERE extname = 'vector';"
 
@@ -49,3 +53,12 @@ test: ## Run test suite via PHPUnit
 
 serve: ## Start Symfony local web server
 	symfony serve -d
+
+worker: ## Consume async messages (document text extraction)
+	php bin/console messenger:consume async -vv
+
+test-ai: ## Verify Meta Muse Spark AI connectivity and cache telemetry
+	php bin/console app:test-ai
+
+eval: ## Run the 24-scenario RAG benchmark suite (Precision & Recall)
+	php bin/console app:eval-benchmark

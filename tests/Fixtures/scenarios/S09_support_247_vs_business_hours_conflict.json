@@ -1,0 +1,10 @@
+{
+    "id": "S09_support_247_vs_business_hours_conflict",
+    "title": "24/7 Support Promise vs Business Hours Spec",
+    "category": "SUPPORT",
+    "commitment": "We provide 24/7 live engineering support for all severity levels.",
+    "proposal": "# Support Commitment\nWe provide 24/7 live engineering support for all severity levels.",
+    "technicalSpec": "# Support Hours Specification\n## 3.1 Coverage Window\nLive engineering support is available during standard business hours (Monday to Friday, 9am to 6pm CET).",
+    "expectedStatus": "CONTRADICTORY",
+    "expectedEvidenceSubstring": "business hours"
+}

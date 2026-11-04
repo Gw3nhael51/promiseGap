@@ -1,0 +1,10 @@
+{
+    "id": "S01_sla_uptime_match",
+    "title": "Cloud Platform Monthly Uptime Alignment",
+    "category": "SLA",
+    "commitment": "We guarantee 99.95% monthly platform availability across all production regions.",
+    "proposal": "# Commercial Proposal\nWe guarantee 99.95% monthly platform availability across all production regions.",
+    "technicalSpec": "# Architecture & SLA\n## 1.1 Availability\nProduction clusters are engineered to deliver 99.95% monthly platform availability across all production regions.\n\n## 1.2 Maintenance\nScheduled updates occur quarterly.",
+    "expectedStatus": "SUPPORTED",
+    "expectedEvidenceSubstring": "99.95% monthly platform availability"
+}

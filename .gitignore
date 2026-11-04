@@ -1,7 +1,8 @@
-# Fichiers IA / Agents / Suivi interne
+# Ignorer : Masquer les documents internes et de suivi
 AGENT*.md
 GEMINI*.md
 todo.md
+docs/SUBMISSION_GUIDE.md
 
 # PhpStorm / JetBrains
 .idea/

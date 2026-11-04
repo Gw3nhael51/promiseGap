@@ -1,0 +1,8 @@
+{#
+    Displays the EN / FR language toggle pill
+#}
+{% set currentLocale = app.request.locale == 'fr' ? 'fr' : 'en' %}
+<div class="inline-flex items-center p-0.5 rounded-full bg-[#151A21] border border-[#3A4553] font-mono text-xs">
+    <a href="{{ path('app_switch_locale', {'locale': 'en'}) }}" class="px-2.5 py-1 rounded-full no-underline transition-colors {{ currentLocale == 'en' ? 'bg-[#7FA3FF] text-[#0B1020] font-semibold' : 'text-[#9BA5B3] hover:text-[#E8ECF1]' }}">EN</a>
+    <a href="{{ path('app_switch_locale', {'locale': 'fr'}) }}" class="px-2.5 py-1 rounded-full no-underline transition-colors {{ currentLocale == 'fr' ? 'bg-[#7FA3FF] text-[#0B1020] font-semibold' : 'text-[#9BA5B3] hover:text-[#E8ECF1]' }}">FR</a>
+</div>

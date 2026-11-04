@@ -1,0 +1,10 @@
+{
+    "id": "S03_support_p1_15min_match",
+    "title": "Critical Incident P1 Response Time Alignment",
+    "category": "SUPPORT",
+    "commitment": "Our 24/7 support desk guarantees a 15 minutes response time for P1 critical incidents.",
+    "proposal": "# Enterprise Support\nOur 24/7 support desk guarantees a 15 minutes response time for P1 critical incidents.",
+    "technicalSpec": "# Support Operations\n## 3.1 Incident Response SLA\nThe 24/7 support operations center acknowledges P1 critical incidents within 15 minutes of ticket creation.",
+    "expectedStatus": "SUPPORTED",
+    "expectedEvidenceSubstring": "15 minutes"
+}

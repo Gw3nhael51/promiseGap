@@ -34,6 +34,7 @@
                     </div>
 
                     <form method="post" action="{{ path('app_reset_password') }}" style="display: flex; flex-direction: column; gap: 18px;">
+                <input type="hidden" name="_token" value="{{ csrf_token('reset_password') }}">
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             <label for="password" style="font-size: 14px; font-weight: 500;">New password</label>
                             <input id="password" name="password" type="password" autocomplete="new-password" placeholder="At least 12 characters" required style="box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 14px; background: #0E1116; border: 1px solid #3A4553; border-radius: 10px; color: #E8ECF1; font: inherit; font-size: 16px;">

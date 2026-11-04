@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app.request.locale|default('en') }}" data-theme="dark">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %}PromiseGap | Evidence-Backed Contract Audit{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 28 28%22 fill=%22none%22><rect x=%222%22 y=%225%22 width=%2214%22 height=%2214%22 rx=%223%22 stroke=%22%237FA3FF%22 stroke-width=%222%22/><rect x=%2212%22 y=%229%22 width=%2214%22 height=%2214%22 rx=%223%22 stroke=%22%23B7C0CC%22 stroke-width=%222%22/></svg>">
+
+        <!-- Tailwind CSS & DaisyUI (Node-free via CDN) -->
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" integrity="sha384-Qn1dWOhPHD8ZitIQRnpquZJZmyWs+sq1SKENTuBIc3+Yg16SG2u3RqsC8LVbkZre" crossorigin="anonymous" />
+        <script src="https://cdn.tailwindcss.com"></script>
 
         <!-- Google Fonts: IBM Plex Sans & IBM Plex Mono -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,13 +53,13 @@
                 font-family: 'IBM Plex Mono', monospace;
             }
 
-            a {
+            a:not([class]):not([style]) {
                 color: var(--accent-blue);
                 text-decoration: none;
                 transition: color 0.15s ease;
             }
 
-            a:hover {
+            a:not([class]):not([style]):hover {
                 color: var(--accent-blue-hover);
             }
 

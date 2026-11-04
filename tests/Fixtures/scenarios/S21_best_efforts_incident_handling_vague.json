@@ -1,0 +1,10 @@
+{
+    "id": "S21_best_efforts_incident_handling_vague",
+    "title": "Vague Reasonable Best-Efforts Support Clause",
+    "category": "SUPPORT",
+    "commitment": "Our engineers will use commercially reasonable best-efforts to address issues as soon as possible.",
+    "proposal": "# Support Terms\nOur engineers will use commercially reasonable best-efforts to address issues as soon as possible.",
+    "technicalSpec": "# Support Annex\n## 3.1 Triage\nIncoming support requests are triaged on a best effort basis without binding response targets.",
+    "expectedStatus": "AMBIGUOUS",
+    "expectedEvidenceSubstring": ""
+}

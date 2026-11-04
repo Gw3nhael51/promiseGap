@@ -65,14 +65,15 @@ class MockupRoutesTest extends WebTestCase
     public function testAnonymousDemoQuota(): void
     {
         // 1st demo trial succeeds
-        $this->client->request('GET', '/demo/open/cloud-hosting');
+        $demoPage = $this->client->request('GET', '/demo');
+        $this->client->submit($demoPage->filter('form[action$="/demo/open/cloud-hosting"]')->form());
         $this->assertResponseRedirects();
         $crawler = $this->client->followRedirect();
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Auditing the contract');
 
         // 2nd demo trial redirects to register
-        $this->client->request('GET', '/demo/open/fintech-api');
+        $this->client->submit($demoPage->filter('form[action$="/demo/open/fintech-api"]')->form());
         $this->assertResponseRedirects('/register');
         $this->client->followRedirect();
         $this->assertSelectorTextContains('body', 'You have used your 1 free demo trial');
@@ -119,6 +120,57 @@ class MockupRoutesTest extends WebTestCase
         ]);
 
         $this->assertResponseRedirects('/cockpit');
+    }
+
+    /**
+     * Verifies that authenticated users see their profile badge and Sign out instead of Sign in across public and audit pages
+     */
+    public function testAuthenticatedNavigationAcrossPages(): void
+    {
+        $this->client->request('GET', '/login');
+        $this->client->submitForm('Sign in', [
+            '_username' => 'auditor@promisegap.ai',
+            '_password' => 'password123',
+        ]);
+        $this->assertResponseRedirects('/cockpit');
+
+        $analysis = new Analysis();
+        $analysis->setTitle('Auth Header Audit');
+        $analysis->setStatus(AnalysisStatus::COMPLETED);
+        $analysis->setOwnerIdentifier('auditor@promisegap.ai');
+        $this->entityManager->persist($analysis);
+        $this->entityManager->flush();
+
+        foreach (['/', '/demo', '/audit/' . $analysis->getId() . '/progress', '/audit/' . $analysis->getId() . '/results'] as $url) {
+            $this->client->request('GET', $url);
+            $this->assertResponseIsSuccessful();
+            $this->assertSelectorTextContains('header', 'auditor@promisegap.ai', $url);
+            $this->assertSelectorTextContains('header', 'Sign out', $url);
+            $this->assertSelectorTextNotContains('header', 'Sign in', $url);
+        }
+    }
+
+    /**
+     * Verifies that the EN / FR locale toggle switches interface and results labels to French
+     */
+    public function testLocaleSwitcherTranslatesAuditResultsToFrench(): void
+    {
+        $analysis = new Analysis();
+        $analysis->setTitle('Audit Bilingue');
+        $analysis->setStatus(AnalysisStatus::COMPLETED);
+        $this->entityManager->persist($analysis);
+        $this->entityManager->flush();
+
+        $this->client->request('GET', '/locale/fr', [], [], [
+            'HTTP_REFERER' => 'http://localhost/audit/' . $analysis->getId() . '/results',
+        ]);
+        $this->assertResponseRedirects('/audit/' . $analysis->getId() . '/results');
+        $this->client->followRedirect();
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('body', 'RISQUE GLOBAL');
+        $this->assertSelectorTextContains('body', 'Promesses & Engagements');
+        $this->assertSelectorTextContains('body', 'Contradictoire');
     }
 
     /**
@@ -198,5 +250,45 @@ class MockupRoutesTest extends WebTestCase
         ]);
 
         $this->assertResponseRedirects('/cockpit');
+    }
+
+    /**
+     * Verifies cockpit past-audits pagination, boundary clamping, and reasoning mode selector
+     */
+    public function testCockpitPaginationAndReasoningModeSelector(): void
+    {
+        $this->client->request('GET', '/login');
+        $this->client->submitForm('Sign in', [
+            '_username' => 'auditor@promisegap.ai',
+            '_password' => 'password123',
+        ]);
+
+        for ($i = 1; $i <= 7; ++$i) {
+            $analysis = new Analysis();
+            $analysis->setTitle(sprintf('Cockpit Paginated Audit %02d', $i));
+            $analysis->setStatus(AnalysisStatus::COMPLETED);
+            $analysis->setOwnerIdentifier('auditor@promisegap.ai');
+            $this->entityManager->persist($analysis);
+        }
+        $this->entityManager->flush();
+
+        // Page 1 shows reasoning selector and pagination controls
+        $crawler = $this->client->request('GET', '/cockpit?page=1');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('#reasoning-selector');
+        $this->assertCount(4, $crawler->filter('input[name="reasoning_mode"]'));
+        $this->assertSelectorTextContains('#past-audits', 'Page 1 /');
+
+        // Page 2 and out-of-bounds clamping (page=0 and page=999)
+        $this->client->request('GET', '/cockpit?page=2');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('#past-audits', 'Page 2 /');
+
+        $this->client->request('GET', '/cockpit?page=0');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('#past-audits', 'Page 1 /');
+
+        $this->client->request('GET', '/cockpit?page=999');
+        $this->assertResponseIsSuccessful();
     }
 }

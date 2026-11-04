@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Enum\DocumentType;
+use App\Enum\ExtractionStatus;
 use App\Repository\DocumentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -36,6 +37,18 @@ class Document
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $extractedText = null;
+
+    #[ORM\Column(length: 20, enumType: ExtractionStatus::class)]
+    private ExtractionStatus $extractionStatus = ExtractionStatus::PENDING;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $extractionError = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $characterCount = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $estimatedTokens = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $createdAt = null;
@@ -242,6 +255,98 @@ class Document
     public function setAnalysis(?Analysis $analysis): static
     {
         $this->analysis = $analysis;
+
+        return $this;
+    }
+
+    /**
+     * Returns the text extraction status
+     *
+     * @return ExtractionStatus Extraction status
+     */
+    public function getExtractionStatus(): ExtractionStatus
+    {
+        return $this->extractionStatus;
+    }
+
+    /**
+     * Sets the text extraction status
+     *
+     * @param ExtractionStatus $extractionStatus New extraction status
+     * @return static Current instance
+     */
+    public function setExtractionStatus(ExtractionStatus $extractionStatus): static
+    {
+        $this->extractionStatus = $extractionStatus;
+
+        return $this;
+    }
+
+    /**
+     * Returns the reason why the extraction failed
+     *
+     * @return string|null Extraction error message
+     */
+    public function getExtractionError(): ?string
+    {
+        return $this->extractionError;
+    }
+
+    /**
+     * Sets the reason why the extraction failed
+     *
+     * @param string|null $extractionError Extraction error message
+     * @return static Current instance
+     */
+    public function setExtractionError(?string $extractionError): static
+    {
+        $this->extractionError = $extractionError;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of extracted characters
+     *
+     * @return int|null Character count
+     */
+    public function getCharacterCount(): ?int
+    {
+        return $this->characterCount;
+    }
+
+    /**
+     * Sets the number of extracted characters
+     *
+     * @param int|null $characterCount Character count
+     * @return static Current instance
+     */
+    public function setCharacterCount(?int $characterCount): static
+    {
+        $this->characterCount = $characterCount;
+
+        return $this;
+    }
+
+    /**
+     * Returns the estimated number of tokens of the extracted text
+     *
+     * @return int|null Estimated token count
+     */
+    public function getEstimatedTokens(): ?int
+    {
+        return $this->estimatedTokens;
+    }
+
+    /**
+     * Sets the estimated number of tokens of the extracted text
+     *
+     * @param int|null $estimatedTokens Estimated token count
+     * @return static Current instance
+     */
+    public function setEstimatedTokens(?int $estimatedTokens): static
+    {
+        $this->estimatedTokens = $estimatedTokens;
 
         return $this;
     }

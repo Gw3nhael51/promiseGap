@@ -1,0 +1,10 @@
+{
+    "id": "S08_delivery_3months_vs_7months_conflict",
+    "title": "3 Months Go-Live Promise vs 7 Months Spec Roadmap",
+    "category": "DELIVERY",
+    "commitment": "Full turnkey production deployment will be delivered within 3 months of contract signature.",
+    "proposal": "# Delivery Schedule\nFull turnkey production deployment will be delivered within 3 months of contract signature.",
+    "technicalSpec": "# Implementation Roadmap\n## 2.1 Rollout Timeline\nFull production deployment across Phases 1 to 3 requires 7 months including acceptance testing.",
+    "expectedStatus": "CONTRADICTORY",
+    "expectedEvidenceSubstring": "7 months"
+}

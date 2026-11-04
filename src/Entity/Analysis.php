@@ -28,6 +28,9 @@ class Analysis
     #[ORM\Column(length: 50, enumType: AnalysisStatus::class)]
     private AnalysisStatus $status = AnalysisStatus::PENDING;
 
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $ownerIdentifier = null;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -41,12 +44,19 @@ class Analysis
     private Collection $documents;
 
     /**
+     * @var Collection<int, Commitment>
+     */
+    #[ORM\OneToMany(targetEntity: Commitment::class, mappedBy: 'analysis', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $commitments;
+
+    /**
      * Initializes a new analysis instance with default values
      */
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->documents = new ArrayCollection();
+        $this->commitments = new ArrayCollection();
         $this->status = AnalysisStatus::PENDING;
     }
 
@@ -81,6 +91,39 @@ class Analysis
         $this->title = $title;
 
         return $this;
+    }
+
+    /**
+     * Returns identifier of the user owning the analysis (null for shared demo analyses)
+     *
+     * @return string|null Owner user identifier
+     */
+    public function getOwnerIdentifier(): ?string
+    {
+        return $this->ownerIdentifier;
+    }
+
+    /**
+     * Sets identifier of the user owning the analysis
+     *
+     * @param string|null $ownerIdentifier Owner user identifier
+     * @return static Current instance
+     */
+    public function setOwnerIdentifier(?string $ownerIdentifier): static
+    {
+        $this->ownerIdentifier = $ownerIdentifier;
+
+        return $this;
+    }
+
+    /**
+     * Indicates whether the analysis is a shared demo analysis without owner
+     *
+     * @return bool True when no owner is attached
+     */
+    public function isDemo(): bool
+    {
+        return $this->ownerIdentifier === null;
     }
 
     /**
@@ -154,6 +197,8 @@ class Analysis
 
     /**
      * Automatically updates the modification timestamp before update
+     *
+     * @return void
      */
     #[ORM\PreUpdate]
     public function updateTimestamp(): void
@@ -195,10 +240,49 @@ class Analysis
      */
     public function removeDocument(Document $document): static
     {
-        if ($this->documents->removeElement($document)) {
-            if ($document->getAnalysis() === $this) {
-                $document->setAnalysis(null);
-            }
+        if ($this->documents->removeElement($document) && $document->getAnalysis() === $this) {
+            $document->setAnalysis(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Returns all commercial commitments extracted for this analysis
+     *
+     * @return Collection<int, Commitment>
+     */
+    public function getCommitments(): Collection
+    {
+        return $this->commitments;
+    }
+
+    /**
+     * Attaches a commercial commitment to this analysis
+     *
+     * @param Commitment $commitment Commercial commitment entity to attach
+     * @return static Current instance
+     */
+    public function addCommitment(Commitment $commitment): static
+    {
+        if (!$this->commitments->contains($commitment)) {
+            $this->commitments->add($commitment);
+            $commitment->setAnalysis($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Detaches a commercial commitment from this analysis
+     *
+     * @param Commitment $commitment Commercial commitment entity to detach
+     * @return static Current instance
+     */
+    public function removeCommitment(Commitment $commitment): static
+    {
+        if ($this->commitments->removeElement($commitment) && $commitment->getAnalysis() === $this) {
+            $commitment->setAnalysis(null);
         }
 
         return $this;

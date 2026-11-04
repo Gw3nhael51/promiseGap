@@ -1,0 +1,10 @@
+{
+    "id": "S15_legacy_mainframe_migration_ghost_promise",
+    "title": "Free COBOL Mainframe Migration Ghost Promise",
+    "category": "DELIVERY",
+    "commitment": "We include automated zero-cost migration of all legacy IBM AS/400 COBOL mainframe routines.",
+    "proposal": "# Migration Package\nWe include automated zero-cost migration of all legacy IBM AS/400 COBOL mainframe routines.",
+    "technicalSpec": "# Authentication Spec\n## 2.1 Password Policy\nUser passwords must be at least 12 characters long and rotated every 180 days.",
+    "expectedStatus": "UNSUPPORTED",
+    "expectedEvidenceSubstring": ""
+}
