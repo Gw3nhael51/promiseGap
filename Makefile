@@ -1,8 +1,29 @@
 .DEFAULT_GOAL := help
-.PHONY: help up down restart logs ps install db-create db-migrate db-test db-check cache lint test serve worker test-ai eval
+.PHONY: help setup up down restart logs ps install db-create db-migrate db-test db-check cache lint test serve worker test-ai eval
 
 help: ## Display available commands
 	@grep -E '(^[a-zA-Z_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-18s\033[0m %s\n", $$1, $$2}'
+
+## --- 1-Command Setup ---
+setup: ## Complete 1-command setup for hackathon evaluation (Docker, DB, assets)
+	docker compose up -d
+	@echo "Waiting for PostgreSQL pgvector to be ready..."
+	@until docker compose exec -T database pg_isready -U app -d app > /dev/null 2>&1; do sleep 1; done
+	composer install
+	php bin/console assets:install public --symlink --relative
+	php bin/console importmap:install
+	php bin/console doctrine:database:create --if-not-exists
+	php bin/console doctrine:migrations:migrate --no-interaction
+	APP_ENV=test php bin/console doctrine:database:create --if-not-exists
+	APP_ENV=test php bin/console doctrine:migrations:migrate --no-interaction
+	php bin/console cache:clear
+	@echo ""
+	@echo "\033[32m==========================================================\033[0m"
+	@echo "\033[32m PromiseGap is ready for evaluation!\033[0m"
+	@echo " Start local server: make serve  (or symfony serve -d)"
+	@echo " Demo Login:        admin@promisegap.ai / admin123"
+	@echo " Instant No-Auth:   http://localhost:8000/demo"
+	@echo "\033[32m==========================================================\033[0m"
 
 ## --- Docker & Services ---
 up: ## Start Docker containers (PostgreSQL pgvector, Mailpit)

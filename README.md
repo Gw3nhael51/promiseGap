@@ -114,19 +114,13 @@ PromiseGap includes a curated ground-truth benchmark suite of **24 synthetic B2B
 ### 1-Command Setup via Docker & Make
 
 ```bash
-# 1. Start PostgreSQL 16 (with pgvector) and Mailpit containers
-docker compose up -d
+# 1. Complete setup in one command (starts Docker, installs dependencies, migrates DB)
+make setup
 
-# 2. Install dependencies, compile assets, create DB and run migrations
-make install
-make db-create
-make db-migrate
-make db-test
-
-# 3. Start the local web server (http://localhost:8000)
+# 2. Start the local web server (http://localhost:8000)
 make serve
 
-# 4. (Optional) Start the async Messenger worker for background PDF extraction
+# 3. (Optional) Start the async Messenger worker for background PDF extraction
 make worker
 ```
 
