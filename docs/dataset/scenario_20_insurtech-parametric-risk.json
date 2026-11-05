@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-20",
+  "slug": "insurtech-parametric-risk",
+  "domain": "Parametric Climate Insurance & Satellite Underwriting",
+  "title": "€50M Pan-African Parametric Drought and Flood Facility for 250,000 Smallholders",
+  "executive_summary": "AgriShield Parametric Ltd proposes a two-season automated drought and flood cover for 250,000 smallholder farms across Kenya, Nigeria and Ghana backed by Copernicus Sentinel-1 radar triggers. The €50M facility promises instant settlement via smart contracts, but technical constraints on latency, validation, and exposure caps create high financial and operational risk.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "AgriShield Parametric Ltd proposes automated drought and flood coverage for 250,000 smallholder farms across Kenya, Nigeria and Ghana for the 2026-2027 growing seasons, with unlimited payouts up to €50M per season and guaranteed payout within 72 hours of trigger event. The platform delivers 99.9% platform uptime with zero scheduled downtime, powered by real-time Copernicus radar feeds for instant trigger detection and settlement.\n\nIn addition, the offer includes free Copernicus radar recalibration and on-site agronomist verification within 24 hours of any disputed trigger, plus coverage for all flood and drought events across Sub-Saharan Africa with no exclusions for cloud cover or data gaps. All triggers are validated using Sentinel-1 SAR soil moisture and flood extent analytics with fully automated smart-contract disbursement via M-Pesa and bank rails."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "Technical Architecture Spec v4.2 implements trigger engine v3.1 using Copernicus Sentinel-1 SAR GRD products with 6 to 12-day revisit interval and 48 to 96-hour downlink and processing latency, requiring soil moisture anomaly below 15th percentile for 21 consecutive days or flood extent exceeding 30% of insured grid cell for drought and flood payouts respectively. Payout processing requires manual validation and reinsurance approval, resulting in settlement in 14 business days after validation, with maximum aggregate exposure capped at €5M per season across all portfolios.\n\nSystem availability is engineered for 99.5% uptime excluding scheduled maintenance windows every Sunday 02:00-06:00 UTC, during which trigger evaluation and disbursement services are paused and radar ingestion is queued. Cloud cover mitigation relies on SAR penetration but data gaps exceeding 14 days suspend trigger evaluation until recalibration, which is billed as a professional service and does not include field verification."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "Guaranteed parametric payout within 72 hours of trigger event",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "guaranteed payout within 72 hours of trigger event",
+      "spec_quote": "resulting in settlement in 14 business days after validation",
+      "explanation": "Proposal promises automatic settlement in 72 hours, while spec requires manual validation and reinsurance approval with 14 business days settlement, making the SLA impossible under the engineered workflow."
+    },
+    {
+      "id": "C2",
+      "claim": "Free recalibration and on-site agronomist verification within 24 hours of dispute",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "on-site agronomist verification within 24 hours of any disputed trigger",
+      "spec_quote": "",
+      "explanation": "Spec provides no agronomist dispatch or 24-hour SLA and explicitly states recalibration is billed as a professional service and does not include field verification."
+    },
+    {
+      "id": "C3",
+      "claim": "Universal coverage for all flood and drought events with no exclusions",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "coverage for all flood and drought events across Sub-Saharan Africa with no exclusions for cloud cover or data gaps",
+      "spec_quote": "data gaps exceeding 14 days suspend trigger evaluation until recalibration",
+      "explanation": "Spec suspends evaluation during data gaps without defining whether suspended periods are covered, deferred, or excluded, leaving scope, eligibility, and retroactive payout obligations uncertain."
+    },
+    {
+      "id": "C4",
+      "claim": "Triggers powered by Copernicus Sentinel-1 radar analytics",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "powered by real-time Copernicus radar feeds for instant trigger detection and settlement",
+      "spec_quote": "using Copernicus Sentinel-1 SAR GRD products with 6 to 12-day revisit interval and 48 to 96-hour downlink and processing latency",
+      "explanation": "Spec confirms the Copernicus Sentinel-1 SAR data source claimed in the proposal, though it clarifies it is not real-time but subject to 6 to 12-day revisit and 48 to 96-hour latency."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:54:32Z",
+    "total_tokens": 2871,
+    "reasoning_tokens": 1320
+  }
+}

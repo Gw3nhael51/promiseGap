@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-16",
+  "slug": "supplychain-customs-edi",
+  "domain": "Cross-Border Customs EDI & Maritime Cargo Tracking",
+  "title": "$4.8M MeridianPort Global Customs Automation Deal with Pacific Rim Logistics",
+  "executive_summary": "Pacific Rim Logistics plans to deploy MeridianPort's clearance platform across 40+ ports to automate EDI filing and bill of lading reconciliation for 50,000 TEU per day. The $4.8M three-year deal hinges on guaranteed uptime, global compliance coverage, and real-time cargo visibility commitments now under technical review.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "Our MeridianPort Clearance Platform guarantees 99.99% uptime for automated port clearance with real-time bill of lading reconciliation in under 30 seconds per container, processing up to 50,000 TEU declarations per day across 40+ global ports. We provide fully automated customs EDI filing for US CBP ACE, EU ICS2, and Singapore TradeNet with zero manual intervention and 100% first-pass acceptance rate.\n\nThe solution includes unlimited historical cargo tracking data retention with instant AIS satellite visibility updates every 60 seconds, plus dedicated 24/7 multilingual customs brokerage support. All EDI transmissions are encrypted and certified compliant with all global customs authorities worldwide, ensuring penalty-free clearance forever."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "The system architecture is deployed across two AWS regions with scheduled maintenance windows every Sunday 02:00-06:00 UTC during which EDI submission queues are paused, yielding a design target of 99.5% monthly availability excluding maintenance. The bill of lading reconciliation engine processes batches every 15 minutes with average latency of 4-6 minutes per container, with maximum sustained throughput of 12,000 TEU declarations per day; throughput above 15,000 TEU/day requires additional sharding license.\n\nAIS vessel position ingestion relies on third-party terrestrial feed updated every 15 minutes, with satellite AIS available only as premium add-on; cargo tracking data retention is limited to 13 months rolling, with archival retrieval requiring 48-hour request. EDI compliance is certified only for US CBP ACE (CATAIR v12.3) and EU ICS2 Release 3, with Singapore TradeNet integration listed as roadmap Q3 next year; customer remains responsible for penalties arising from data errors or authority rule changes."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "Platform guarantees 99.99% uptime for automated port clearance",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "guarantees 99.99% uptime for automated port clearance",
+      "spec_quote": "yielding a design target of 99.5% monthly availability excluding maintenance",
+      "explanation": "Proposal promises 99.99% uptime (~52 minutes downtime per year) while spec targets only 99.5% excluding maintenance and mandates a 4-hour weekly pause every Sunday 02:00-06:00 UTC where EDI queues are paused, making the sales uptime mathematically impossible."
+    },
+    {
+      "id": "C2",
+      "claim": "Dedicated 24/7 multilingual customs brokerage support included",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "plus dedicated 24/7 multilingual customs brokerage support",
+      "spec_quote": "",
+      "explanation": "Technical spec defines architecture, throughput, retention and certified authorities but contains no support SLA, staffing model, languages, coverage hours, or brokerage service scope to substantiate the 24/7 multilingual support claim."
+    },
+    {
+      "id": "C3",
+      "claim": "Certified compliant with all global customs authorities worldwide",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "certified compliant with all global customs authorities worldwide",
+      "spec_quote": "EDI compliance is certified only for US CBP ACE (CATAIR v12.3) and EU ICS2 Release 3, with Singapore TradeNet integration listed as roadmap Q3 next year",
+      "explanation": "Proposal uses unbounded phrase 'all global customs authorities worldwide' without enumerating authorities, versions, or port coverage, while spec lists only two certified regimes and defers Singapore TradeNet to roadmap, leaving uncertainty over which of the 40+ ports are actually compliant and who bears gap risk."
+    },
+    {
+      "id": "C4",
+      "claim": "Fully automated customs EDI filing for US CBP ACE and EU ICS2",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "We provide fully automated customs EDI filing for US CBP ACE, EU ICS2",
+      "spec_quote": "EDI compliance is certified only for US CBP ACE (CATAIR v12.3) and EU ICS2 Release 3",
+      "explanation": "Spec explicitly confirms certification for the two claimed regimes, US CBP ACE CATAIR v12.3 and EU ICS2 Release 3, directly corroborating the proposal's automated filing capability for those authorities."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:53:49Z",
+    "total_tokens": 3844,
+    "reasoning_tokens": 2235
+  }
+}

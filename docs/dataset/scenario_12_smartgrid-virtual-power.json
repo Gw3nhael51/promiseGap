@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-12",
+  "slug": "smartgrid-virtual-power",
+  "domain": "Smart Grid Virtual Power Plant & Energy Storage Arbitrage",
+  "title": "GridFlex 150MW Cross-Border VPP and FCR-D Arbitrage Deployment – ERCOT / Nord Pool",
+  "executive_summary": "GridFlex Energy proposes a €48M turnkey 150 MW / 300 MWh Virtual Power Plant across 42 sites to deliver FCR-D reserves and daily energy arbitrage in ERCOT and Nord Pool. Technical review reveals critical gaps in dispatch latency, throughput degradation, and compliance scope that expose the buyer to regulatory penalties and revenue shortfall.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "GridFlex Energy proposes a turnkey 150 MW / 300 MWh Virtual Power Plant aggregation across 42 distributed battery sites to deliver Firm Frequency Containment Reserve (FCR-D) capacity with guaranteed sub-200ms dispatch response from telemetry trigger to inverter output. The platform will provide 99.99% availability for arbitrage and ancillary services across ERCOT and Nord Pool markets, with real-time 50ms telemetry streaming to TSO control rooms 24/7. We commit to zero-degradation throughput of 500 MWh daily arbitrage cycling for 10 years and guarantee €2.4M annual arbitrage uplift net of trading fees. The solution ensures full compliance with EU Network Code Requirements for Generators (RfG) Type D without additional hardware and includes seamless islanding transition in under 100ms during grid faults."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "The VPP architecture aggregates 150 MW / 300 MWh across 42 sites using LTE-M and fiber backhaul with centralized dispatch controller v4.2. Measured dispatch latency from telemetry trigger to inverter output is 800ms to 1200ms under nominal load, with 50ms telemetry sampling buffered and transmitted in 2-second batches to TSO SCADA. FCR-D prequalification testing achieved 150 MW nominal capacity subject to site SoC above 30% and ambient temperature below 40°C. System availability is rated at 99.5% excluding scheduled maintenance windows of 6 hours weekly on Sundays 02:00-08:00 UTC and excluding cellular backhaul outages beyond our control. Battery throughput is rated for 300 MWh daily arbitrage cycling with 2.5% annual capacity degradation and mandatory augmentation at Year 5. Islanding transition is rated at 800ms to 1.2 seconds, and RfG Type D compliance requires optional Grid Code Module (€180k) plus external protection relays at each site."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "Guaranteed sub-200ms FCR-D dispatch response from telemetry trigger to inverter output",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "guaranteed sub-200ms dispatch response from telemetry trigger to inverter output",
+      "spec_quote": "Measured dispatch latency from telemetry trigger to inverter output is 800ms to 1200ms under nominal load",
+      "explanation": "Proposal guarantees <200ms end-to-end dispatch, while spec measures 800-1200ms under nominal load, 4-6x slower, which fails sub-second FCR-D activation criteria and risks TSO disqualification and penalties."
+    },
+    {
+      "id": "C2",
+      "claim": "Guaranteed €2.4M annual arbitrage uplift net of trading fees",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "guarantee €2.4M annual arbitrage uplift net of trading fees",
+      "spec_quote": "",
+      "explanation": "Spec contains no market price assumptions, trading strategy, efficiency losses, or revenue model to support the €2.4M uplift; no financial performance, degradation impact, or fee structure is defined in the technical architecture."
+    },
+    {
+      "id": "C3",
+      "claim": "Real-time 50ms telemetry streaming to TSO control rooms 24/7",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "real-time 50ms telemetry streaming to TSO control rooms 24/7",
+      "spec_quote": "50ms telemetry sampling buffered and transmitted in 2-second batches to TSO SCADA",
+      "explanation": "Spec confirms 50ms sampling but states data is buffered into 2-second batches, leaving it ambiguous whether batched delivery satisfies the proposal's real-time streaming promise and TSO continuous observability requirements for FCR audit."
+    },
+    {
+      "id": "C4",
+      "claim": "150 MW / 300 MWh VPP aggregation across 42 distributed battery sites",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "turnkey 150 MW / 300 MWh Virtual Power Plant aggregation across 42 distributed battery sites",
+      "spec_quote": "aggregates 150 MW / 300 MWh across 42 sites using LTE-M and fiber backhaul",
+      "explanation": "Spec explicitly confirms the same aggregated capacity, energy volume, and site count using the stated backhaul architecture, directly supporting the proposal's sizing claim."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:52:39Z",
+    "total_tokens": 3215,
+    "reasoning_tokens": 1605
+  }
+}

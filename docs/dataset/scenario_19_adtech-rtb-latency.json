@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-19",
+  "slug": "adtech-rtb-latency",
+  "domain": "Programmatic Real-Time Bidding (RTB) Ad Exchange",
+  "title": "$18M Global Programmatic Supply Agreement for PulseBid RTB Exchange with 10ms SLA",
+  "executive_summary": "MediaHold Group proposes a 3-year $18M exclusive integration with PulseBid Exchange for global programmatic supply across US, EU, and APAC. The deal hinges on ultra-low-latency bidding and seamless multi-region sync to support 12 billion daily auctions during peak Q4 scale.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "PulseBid Exchange proposes to deliver 12 billion daily bid requests with a guaranteed 8-millisecond p99 bid response time globally, including full multi-region audience sync across US-East, EU-West, and APAC-South. All DSP partners will receive 99.99% bid availability with zero throttling during peak Q4 traffic bursts up to 2.5M QPS. We further commit to real-time user ID sync with 100% cookie match rate across all regions within 5 milliseconds, plus dedicated low-latency fiber routes ensuring sub-10-millisecond hard timeout budget compliance on every auction. Our managed service includes 24/7 proactive fraud filtering blocking 99.8% of IVT with no added latency and no scheduled downtime."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "The exchange architecture processes up to 8 billion daily bid requests at 1.2M QPS sustained, with measured p99 bid response latency of 18-22 milliseconds intra-region and 45-60 milliseconds cross-region between US-East, EU-West, and APAC-South. Standard maintenance windows occur daily 02:00-02:30 UTC with bid availability SLA of 99.9% excluding maintenance, and adaptive throttling engages above 1.4M QPS to protect bidder stability. User ID sync operates via nightly batch reconciliation with hourly delta updates, achieving 62-68% cookie match rate with average sync latency of 250-400 milliseconds. All auctions enforce a 10-millisecond hard timeout budget after which late bids are discarded, and IVT fraud filtering runs asynchronously post-auction adding 30-50 milliseconds, with synchronous pre-bid filtering available only as a paid add-on adding 6-8 milliseconds per request."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "Guaranteed 8ms p99 global bid response time",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "guaranteed 8-millisecond p99 bid response time globally",
+      "spec_quote": "measured p99 bid response latency of 18-22 milliseconds intra-region and 45-60 milliseconds cross-region",
+      "explanation": "Proposal guarantees 8ms p99 globally, but spec measures 18-22ms intra-region and 45-60ms cross-region, exceeding the guarantee by 2x-7x and making global compliance physically impossible."
+    },
+    {
+      "id": "C2",
+      "claim": "Real-time user ID sync with 100% cookie match rate in 5ms",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "real-time user ID sync with 100% cookie match rate across all regions within 5 milliseconds",
+      "spec_quote": "",
+      "explanation": "Spec provides no support for real-time 5ms sync or 100% match; it only describes nightly batch reconciliation with hourly deltas, 62-68% match rate, and 250-400ms latency, with no real-time capability mentioned."
+    },
+    {
+      "id": "C3",
+      "claim": "Dedicated fiber routes ensuring sub-10ms timeout compliance on every auction",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "dedicated low-latency fiber routes ensuring sub-10-millisecond hard timeout budget compliance on every auction",
+      "spec_quote": "All auctions enforce a 10-millisecond hard timeout budget after which late bids are discarded",
+      "explanation": "Spec confirms a 10ms timeout exists but frames it as a discard cutoff, not a compliance guarantee; proposal vaguely implies fiber ensures compliance without defining routes, measurement point, or liability for discarded late bids."
+    },
+    {
+      "id": "C4",
+      "claim": "Multi-region coverage across US-East, EU-West, and APAC-South",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "full multi-region audience sync across US-East, EU-West, and APAC-South",
+      "spec_quote": "cross-region between US-East, EU-West, and APAC-South",
+      "explanation": "Spec explicitly confirms operational infrastructure and cross-region connectivity across the exact three regions named in the proposal."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:54:13Z",
+    "total_tokens": 2656,
+    "reasoning_tokens": 1100
+  }
+}

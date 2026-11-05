@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-26",
+  "slug": "payroll-sox-compliance",
+  "domain": "Global Multi-Country Payroll & Tax Withholding Engine",
+  "title": "Acme Global Services $4.2M PayCore Global Rollout Across 42 Countries",
+  "executive_summary": "Acme Global Services proposes a $4.2M annual deployment of PayCore Global to cover 18,500 employees across 42 countries with guaranteed compliance and uptime. Technical review reveals material gaps in scalability, audit immediacy, maintenance downtime, and liability coverage that create HIGH SOX and statutory filing risk.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "Acme Global Services proposes deployment of PayCore Global across 42 countries covering 18,500 employees for $4.2M annually, guaranteeing 100% on-time payroll processing with zero penalties, real-time SOX 404-compliant immutable audit trails for every transaction, and automatic statutory updates within 24 hours of any legislative change. We commit to 99.99% platform uptime with no scheduled downtime during payroll cycles, unlimited retroactive recalculations for 7 years at no extra cost, and dedicated in-country tax filing support with full liability assumption for all withholding errors and late filings across all jurisdictions."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "PayCore Global v4.2 processes payroll for up to 40 countries and 15,000 active employees per tenant, utilizing WORM-compliant audit logging with 15-minute batch replication to the compliance vault and statutory rule updates deployed on a quarterly release cycle within 30 days of verified legislative publication. The platform targets 99.9% uptime excluding a 4-hour monthly maintenance window on the first Sunday 02:00-06:00 UTC during which payroll processing is paused, retains detailed payslip data for 3 years with archived summaries thereafter, and provides regional tax advisory portal with standard filing templates and optional in-country support packages subject to separate SOW."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "99.99% platform uptime with no scheduled downtime during payroll cycles",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "We commit to 99.99% platform uptime with no scheduled downtime during payroll cycles",
+      "spec_quote": "targets 99.9% uptime excluding a 4-hour monthly maintenance window on the first Sunday 02:00-06:00 UTC during which payroll processing is paused",
+      "explanation": "Proposal promises higher 99.99% uptime with zero downtime, while spec allows lower 99.9% uptime and mandates a 4-hour monthly pause that directly contradicts no-downtime payroll processing."
+    },
+    {
+      "id": "C2",
+      "claim": "Unlimited retroactive recalculations for 7 years at no extra cost",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "unlimited retroactive recalculations for 7 years at no extra cost",
+      "spec_quote": "",
+      "explanation": "Spec only retains detailed payslip data for 3 years with archived summaries thereafter and contains no provision for unlimited 7-year recalculations, leaving compute limits, storage, and fees entirely unsupported."
+    },
+    {
+      "id": "C3",
+      "claim": "Dedicated in-country tax filing support with full liability assumption",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "dedicated in-country tax filing support with full liability assumption for all withholding errors and late filings across all jurisdictions",
+      "spec_quote": "provides regional tax advisory portal with standard filing templates and optional in-country support packages subject to separate SOW",
+      "explanation": "Spec describes only a portal with templates and optional packages under separate SOW, leaving it vague whether dedicated in-country support, filing execution, and liability assumption are included or require additional scope and cost."
+    },
+    {
+      "id": "C4",
+      "claim": "SOX 404-compliant immutable audit trails for every transaction",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "real-time SOX 404-compliant immutable audit trails for every transaction",
+      "spec_quote": "utilizing WORM-compliant audit logging with 15-minute batch replication to the compliance vault",
+      "explanation": "Spec confirms immutable WORM-compliant audit logging for transactions with vault replication, directly supporting the core SOX 404 immutable audit trail commitment despite timing differences."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:55:40Z",
+    "total_tokens": 3554,
+    "reasoning_tokens": 2076
+  }
+}

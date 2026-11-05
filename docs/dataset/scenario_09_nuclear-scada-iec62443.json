@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-09",
+  "slug": "nuclear-scada-iec62443",
+  "domain": "Nuclear Power Station SCADA & Industrial Control (ICS)",
+  "title": "$18.5M Unit 2/3 SCADA Modernization and IEC 62443 Compliance Program",
+  "executive_summary": "Meridian Controls proposes a fixed-price $18.5M turnkey modernization of Unit 2 and Unit 3 SCADA to deliver deterministic telemetry and IEC 62443 compliance within 90 days. Technical review reveals critical conflicts around air-gapping, safety validation, and patching that create licensing and nuclear safety risk.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "Meridian Controls proposes a turnkey SCADA modernization for Unit 2 and Unit 3 delivering deterministic telemetry at 50ms scan cycles across 12,000 I/O points with 99.999% historian availability, fully air-gapped with unidirectional data diodes and certified IEC 62443 SL-T3 compliant out-of-the-box. The system guarantees zero-downtime cutover with live migration and 24/7 remote vendor support via secure VPN for predictive maintenance.\n\nThe solution provides real-time automated safety interlock validation every 100ms, unlimited historian retention for 10 years at full resolution, and guaranteed 15-minute emergency patch deployment for all controllers without requiring outage or NRC re-validation. All commissioning will be completed within 90 days with fixed-price $18.5M inclusive of licensing, hardware, and 5-year support."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "The architecture implements redundant ControlLogix-based controllers on an isolated Level 3.5 DMZ with unidirectional data diodes, providing deterministic telemetry at 50ms scan cycles across 12,000 I/O points with 99.999% historian availability measured per historian cluster. Per IEC 62443-3-3 SR 5.4 and site security plan SSP-09, the safety OT network shall remain physically air-gapped with all remote access and VPN ports disabled by default, requiring on-site access via monitored KVM and escorted maintenance windows.\n\nSafety interlock proof-testing requires manual validation during scheduled refueling outages with a 36-month proof-test interval and 12-hour maintenance window per train, with automated diagnostics limited to non-safety heartbeat monitoring at 500ms intervals. Emergency controller patches require an 8-hour outage window per unit plus NRC 10 CFR 50.59 evaluation and re-validation averaging 14 days, with phased commissioning over 180 days across Unit 2 and Unit 3 during planned outages only."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "Fully air-gapped system with 24/7 remote vendor VPN support",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "24/7 remote vendor support via secure VPN for predictive maintenance",
+      "spec_quote": "shall remain physically air-gapped with all remote access and VPN ports disabled by default",
+      "explanation": "Proposal promises persistent remote VPN access while spec mandates physical air-gap with VPN disabled by default and only on-site KVM access, which cannot be satisfied simultaneously under IEC 62443 and site security plan."
+    },
+    {
+      "id": "C2",
+      "claim": "Unlimited 10-year historian retention at full resolution",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "unlimited historian retention for 10 years at full resolution",
+      "spec_quote": "",
+      "explanation": "Spec defines only historian availability per cluster and scan performance, with no retention duration, resolution, storage sizing, or data compression policy to support a 10-year unlimited full-resolution commitment."
+    },
+    {
+      "id": "C3",
+      "claim": "Real-time automated safety interlock validation every 100ms",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "real-time automated safety interlock validation every 100ms",
+      "spec_quote": "automated diagnostics limited to non-safety heartbeat monitoring at 500ms intervals",
+      "explanation": "Proposal is vague on whether automation applies to safety-rated interlocks versus non-safety diagnostics; spec limits automation to non-safety heartbeat at 500ms and requires manual proof-testing for safety interlocks, leaving scope and safety-credit uncertainty."
+    },
+    {
+      "id": "C4",
+      "claim": "Deterministic 50ms scan telemetry across 12,000 I/O points",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "deterministic telemetry at 50ms scan cycles across 12,000 I/O points",
+      "spec_quote": "providing deterministic telemetry at 50ms scan cycles across 12,000 I/O points with 99.999% historian availability measured per historian cluster",
+      "explanation": "Spec explicitly confirms the same scan rate, I/O count, and availability metric claimed in the proposal for the redundant controller architecture."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:52:11Z",
+    "total_tokens": 3150,
+    "reasoning_tokens": 1571
+  }
+}

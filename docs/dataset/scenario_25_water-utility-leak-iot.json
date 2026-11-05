@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-25",
+  "slug": "water-utility-leak-iot",
+  "domain": "Municipal Smart Water Grid & Acoustic Leak Detection",
+  "title": "$3.8M Metro Water District Smart Leak Detection Deployment - 4,500 Acoustic Sensors",
+  "executive_summary": "AquaSense Networks proposes a $3.8M turnkey deployment of 4,500 battery-operated acoustic sensors to reduce non-revenue water across the Metro Water District over 10 years. Technical review reveals critical gaps between sales guarantees on battery life, accuracy, and service levels versus engineered capabilities and maintenance limits.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "AquaSense Networks proposes deployment of 4,500 battery-operated acoustic leak sensors across the Metro Water District for $3.8M, guaranteeing 10-year field lifespan with zero battery replacements and 99.5% leak detection accuracy within 2-meter location precision. All sensors will transmit hourly acoustic signatures via NB-IoT with real-time alerts delivered to the utility SCADA within 60 seconds of anomaly detection. We include lifetime cellular connectivity and cloud analytics at no additional cost, with full integration to existing GIS and billing systems within 45 days and guaranteed 99.99% platform uptime. Our team will provide 24/7 on-site maintenance response within 4 hours anywhere in the service area for the entire 10-year term."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "The AS-300 acoustic node uses a 19 Ah Li-SOCl2 primary cell rated for 10 years only at default profile of 2 acoustic samples per day with daily NB-IoT transmission; hourly transmission reduces calculated lifespan to 3.2 years requiring field battery replacement. Detection performance validated at 92.3% true-positive rate with 5-meter mean location error under controlled 4-bar pressure, with SCADA alert latency of 15 minutes via MQTT batch uplink. Gateway cluster supports up to 5,000 AS-300 nodes per district deployment. Cloud platform SLA is 99.5% monthly uptime excluding scheduled maintenance windows Sundays 02:00-06:00 UTC, with GIS integration limited to Esri ArcGIS Online via REST API requiring customer-provided licenses and 90-day onboarding. Maintenance is remote diagnostics only Monday-Friday 08:00-18:00, with on-site dispatch billed separately at $850 per visit with 5-business-day response target."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "Sensors deliver 10-year zero-replacement battery life with hourly reporting at 99.5% accuracy and 2-meter precision",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "guaranteeing 10-year field lifespan with zero battery replacements and 99.5% leak detection accuracy within 2-meter location precision",
+      "spec_quote": "hourly transmission reduces calculated lifespan to 3.2 years requiring field battery replacement",
+      "explanation": "Proposal guarantees 10 years with hourly reporting and 99.5% accuracy at 2m, while spec states 10 years is only possible at 2 samples per day with daily transmission and hourly mode drops life to 3.2 years; validated accuracy is only 92.3% at 5-meter error, directly contradicting both lifespan and performance claims."
+    },
+    {
+      "id": "C2",
+      "claim": "Lifetime cellular connectivity and cloud analytics included at no additional cost",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "We include lifetime cellular connectivity and cloud analytics at no additional cost",
+      "spec_quote": "",
+      "explanation": "Technical spec defines NB-IoT transmission profiles, MQTT uplink, and 99.5% SLA but contains no mention of carrier contracts, data-plan ownership, lifetime cost absorption, or cloud analytics entitlement, leaving connectivity cost and duration entirely unsupported."
+    },
+    {
+      "id": "C3",
+      "claim": "Full integration to existing GIS and billing systems within 45 days",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "with full integration to existing GIS and billing systems within 45 days",
+      "spec_quote": "with GIS integration limited to Esri ArcGIS Online via REST API requiring customer-provided licenses and 90-day onboarding",
+      "explanation": "Proposal promises vague full integration to all GIS and billing systems in 45 days, while spec narrows scope to only Esri ArcGIS Online via REST, requires customer licenses, needs 90 days, and is silent on billing systems, leaving scope, dependencies, and timeline uncertain."
+    },
+    {
+      "id": "C4",
+      "claim": "District-wide deployment of 4,500 acoustic sensors in a single project",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "proposes deployment of 4,500 battery-operated acoustic leak sensors across the Metro Water District for $3.8M",
+      "spec_quote": "Gateway cluster supports up to 5,000 AS-300 nodes per district deployment",
+      "explanation": "Spec confirms gateway and architecture capacity for up to 5,000 nodes per district deployment, which fully covers and supports the proposed 4,500-sensor scale."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:55:24Z",
+    "total_tokens": 3395,
+    "reasoning_tokens": 1763
+  }
+}
