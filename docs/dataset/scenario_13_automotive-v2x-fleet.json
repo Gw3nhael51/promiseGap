@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-13",
+  "slug": "automotive-v2x-fleet",
+  "domain": "Autonomous Fleet Telematics & Vehicle-to-Everything (V2X)",
+  "title": "$48.5M Autonomous Delivery Fleet V2X Telematics Deployment for TransGlobal Logistics",
+  "executive_summary": "NovaDrive Systems proposes a $48.5M 3-year deal to equip and manage 12,000 Level-4 autonomous delivery vans for TransGlobal Logistics with encrypted telematics, OTA updates, and V2X safety services. Technical review reveals critical gaps between sales guarantees on uptime, updates, and data retention versus engineered capabilities and operational limits.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "NovaDrive Systems proposes to equip and manage 12,000 Level-4 autonomous delivery vans for TransGlobal Logistics at $48.5M over 3 years, guaranteeing 99.99% telematics platform uptime with sub-50ms V2X latency for intersection collision avoidance and continuous AES-256-GCM CAN-bus encryption across all ECUs. We commit to zero-downtime OTA delta patches under 150MB deployed fleet-wide within 4 hours with automatic rollback, ensuring no vehicle is ever taken offline for updates.\n\nThe platform includes a tamper-proof crash recorder retaining 60 seconds of pre-crash 4K video plus full CAN telemetry with unlimited cloud storage for 7 years, and lifetime unlimited 5G V2X data roaming across North America and EU at no extra cost. Our AI-powered predictive crash prevention system will proactively eliminate 95% of intersection incidents, backed by 24/7 SOC monitoring and full compliance with ISO 26262 ASIL-D and UNECE R155/R156."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "The Telematics Control Unit (TCU Gen-4) implements AES-256-GCM CAN-bus encryption on powertrain and chassis domains only, with infotainment CAN left unencrypted for diagnostics, achieving 85ms average V2X (C-V2X PC5) latency under nominal network load and 99.5% platform uptime SLA excluding scheduled maintenance. OTA delta patching supports packages up to 150MB via A/B partitioning, requiring a 45-minute parked ignition-off installation window per vehicle and staged fleet-wide rollout over 72 hours with manual rollback approval.\n\nThe crash recorder (EDR-Plus) captures 30 seconds of pre-crash 720p video plus 15 seconds post-crash and CAN telemetry on a 64GB loop buffer, uploaded to regional cloud with 1TB per-fleet pooled storage and 13-month retention, after which overage is billed at $0.28/GB/month. Predictive driver-assistance alerts are provided on a best-effort basis using historical telematics models without guaranteed incident reduction rates, and cellular connectivity is limited to 5GB per vehicle per month on contracted North America carriers only, with SOC monitoring 08:00-20:00 ET weekdays."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "Zero-downtime fleet-wide OTA delta updates within 4 hours",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "zero-downtime OTA delta patches under 150MB deployed fleet-wide within 4 hours with automatic rollback",
+      "spec_quote": "requiring a 45-minute parked ignition-off installation window per vehicle and staged fleet-wide rollout over 72 hours with manual rollback approval",
+      "explanation": "Proposal promises no downtime and 4-hour fleet completion with automatic rollback, while spec mandates 45-minute parked ignition-off downtime per vehicle, 72-hour staged rollout, and manual rollback approval."
+    },
+    {
+      "id": "C2",
+      "claim": "Lifetime unlimited 5G V2X data roaming across North America and EU at no extra cost",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "lifetime unlimited 5G V2X data roaming across North America and EU at no extra cost",
+      "spec_quote": "",
+      "explanation": "Spec provides no unlimited lifetime or EU roaming provision and instead limits connectivity to 5GB per vehicle per month on North America carriers only, with no mention of free or unlimited data."
+    },
+    {
+      "id": "C3",
+      "claim": "AI-powered predictive crash prevention eliminating 95% of intersection incidents",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "AI-powered predictive crash prevention system will proactively eliminate 95% of intersection incidents",
+      "spec_quote": "Predictive driver-assistance alerts are provided on a best-effort basis using historical telematics models without guaranteed incident reduction rates",
+      "explanation": "Proposal states a specific 95% elimination guarantee without defining measurement scope, vehicle conditions, or liability, while spec describes only best-effort alerts with no guaranteed reduction, leaving enforceability and performance scope uncertain."
+    },
+    {
+      "id": "C4",
+      "claim": "OTA delta patching supports 150MB packages",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "OTA delta patches under 150MB",
+      "spec_quote": "OTA delta patching supports packages up to 150MB via A/B partitioning",
+      "explanation": "Spec explicitly confirms the 150MB delta package size limit and A/B partitioning mechanism claimed in the proposal."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:53:05Z",
+    "total_tokens": 3594,
+    "reasoning_tokens": 1918
+  }
+}

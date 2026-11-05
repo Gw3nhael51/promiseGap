@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-05",
+  "slug": "telecom-5g-slice",
+  "domain": "Telecom 5G Private Network & URLLC Edge Slice",
+  "title": "VoltAuto 12-Factory 5G Private Network with URLLC Edge Slice - $18.5M Deal",
+  "executive_summary": "TelCore Solutions proposes a $18.5M turnkey 5G private network with URLLC edge slice for VoltAuto's 12 smart factories supporting 10,000 AGVs. Technical review reveals critical gaps between 99.999% sales guarantees and engineered 99.9% design with maintenance exclusions.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "TelCore Solutions proposes a turnkey 5G Private Network for VoltAuto's 12 smart factories, guaranteeing 99.999% URLLC slice availability with <5ms end-to-end latency for 10,000 concurrent AGVs. The solution includes dedicated 100 MHz in n78 spectrum, on-prem edge UPFs at each site, and 24/7 operation with zero planned downtime.\nThe commercial offer also includes unlimited edge compute bursting up to 500 vCPUs per site for AI workloads, real-time AI defect detection across all production lines, and automatic 15-minute SLA penalty credits of 25% monthly fees for any latency or availability breach."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "The URLLC Edge Slice architecture deploys 3.7-3.8 GHz (100 MHz n78) with on-prem UPF and MEC nodes (128 vCPUs per site, burstable to 200 vCPUs with admission control), engineered for <5ms RAN-to-UPF latency for up to 8,000 concurrent devices under lab conditions. Scheduled maintenance windows are required Sundays 02:00-06:00 CET, during which slice availability is excluded from SLA calculation, targeting 99.9% availability per 3GPP TS 28.554.\nEdge compute resources are capped and shared; AI defect detection is provided as best-effort MEC application requiring customer-trained models and camera integration, without guaranteed coverage or inference latency. SLA credits require manual claim within 30 days and apply only after 4 hours cumulative monthly downtime, capped at 10% of monthly fees."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "99.999% URLLC availability with zero planned downtime",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "24/7 operation with zero planned downtime",
+      "spec_quote": "Scheduled maintenance windows are required Sundays 02:00-06:00 CET, during which slice availability is excluded from SLA calculation, targeting 99.9% availability per 3GPP TS 28.554.",
+      "explanation": "Proposal promises 99.999% with zero downtime while spec mandates 4-hour weekly maintenance excluded from SLA and targets only 99.9%, making 99.999% mathematically impossible."
+    },
+    {
+      "id": "C2",
+      "claim": "Unlimited edge compute bursting up to 500 vCPUs per site",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "unlimited edge compute bursting up to 500 vCPUs per site for AI workloads",
+      "spec_quote": "",
+      "explanation": "Spec caps MEC nodes at 128 vCPUs per site burstable to 200 vCPUs with admission control and never mentions 500 vCPUs or unlimited bursting, leaving the sales claim with no engineering basis."
+    },
+    {
+      "id": "C3",
+      "claim": "Real-time AI defect detection across all production lines",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "real-time AI defect detection across all production lines",
+      "spec_quote": "AI defect detection is provided as best-effort MEC application requiring customer-trained models and camera integration, without guaranteed coverage or inference latency.",
+      "explanation": "Proposal implies turnkey real-time coverage on all lines, but spec defines it as best-effort requiring customer models and integration with no guaranteed coverage, latency, or definition of real-time and all lines."
+    },
+    {
+      "id": "C4",
+      "claim": "Dedicated 100 MHz n78 spectrum with on-prem edge UPFs",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "The solution includes dedicated 100 MHz in n78 spectrum, on-prem edge UPFs at each site",
+      "spec_quote": "deploys 3.7-3.8 GHz (100 MHz n78) with on-prem UPF and MEC nodes",
+      "explanation": "Spec explicitly confirms the dedicated 100 MHz n78 allocation and on-prem UPF/MEC deployment as proposed, fully supporting this infrastructure claim."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:51:25Z",
+    "total_tokens": 3373,
+    "reasoning_tokens": 1813
+  }
+}

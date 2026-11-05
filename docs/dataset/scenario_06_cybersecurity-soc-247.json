@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-06",
+  "slug": "cybersecurity-soc-247",
+  "domain": "Managed Extended Detection & Response (MDR / SOC 24/7)",
+  "title": "$2.4M Global MDR Coverage for 5,000 Endpoints – 24/7 SOC with 15-Minute P1 Triage",
+  "executive_summary": "A Fortune 1000 logistics firm is evaluating a 3-year $2.4M MDR contract for 5,000 endpoints requiring 24/7 SOC coverage with 15-minute critical triage. Sales promises aggressive SLAs and unlimited ingestion while engineering specs impose stricter limits on response times, capacity, and staffing.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "Our 24/7 SOC delivers 15-minute critical incident triage for all P1 alerts with automated threat containment within 30 minutes, backed by 99.99% platform uptime SLA and unlimited EDR telemetry ingestion across 5,000 endpoints. We include dedicated threat hunting 40 hours per month and guarantee zero additional fees for incident response retainer activation. Deployment completes in 14 days with full SIEM integration for Splunk, Sentinel and QRadar, plus 12-month log retention with instant search. All analysts are GIAC-certified US-based Tier 3 experts providing proactive remediation without client approval for critical threats."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "SOC operates 24/7 with P1 triage target of 60 minutes during business hours (08:00-18:00 ET) and 120 minutes off-hours, with automated containment limited to pre-approved low-impact assets only requiring client approval otherwise. Platform uptime target is 99.9% excluding scheduled maintenance windows every Sunday 02:00-06:00 ET, and EDR ingestion capped at 500 GB/day for up to 2,000 endpoints with overage billed at $180/GB. Standard onboarding is 45 days for single SIEM integration (Splunk only; Sentinel and QRadar require custom SOW), with 90-day hot log retention and 12-month cold archive with 4-hour retrieval SLA. Threat hunting limited to 8 hours per quarter, staffing blends Tier 1 offshore analysts for initial triage with Tier 3 escalation within 4 hours, and proactive remediation requires explicit written approval per incident."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "15-minute P1 triage with 30-minute automated containment for all critical alerts",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "15-minute critical incident triage for all P1 alerts with automated threat containment within 30 minutes",
+      "spec_quote": "P1 triage target of 60 minutes during business hours (08:00-18:00 ET) and 120 minutes off-hours, with automated containment limited to pre-approved low-impact assets only",
+      "explanation": "Proposal guarantees 15-minute triage and 30-minute universal auto-containment, while spec allows 60-120 minutes and restricts auto-containment to pre-approved low-impact assets, directly contradicting both time and scope."
+    },
+    {
+      "id": "C2",
+      "claim": "No extra fees for incident response retainer activation",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "guarantee zero additional fees for incident response retainer activation",
+      "spec_quote": "",
+      "explanation": "Spec contains no mention of IR retainer inclusion, pricing, or activation terms, and instead defines overage billing and custom SOWs, leaving the zero-fee promise entirely unsupported."
+    },
+    {
+      "id": "C3",
+      "claim": "12-month log retention with instant search for all telemetry",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "12-month log retention with instant search",
+      "spec_quote": "90-day hot log retention and 12-month cold archive with 4-hour retrieval SLA",
+      "explanation": "Proposal implies 12 months of instantly searchable logs, while spec splits retention into 90-day hot and 12-month cold archive with 4-hour retrieval, leaving it unclear whether the 12-month promise means instant access or delayed archive retrieval."
+    },
+    {
+      "id": "C4",
+      "claim": "SIEM integration for Splunk is included in standard deployment",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "full SIEM integration for Splunk, Sentinel and QRadar",
+      "spec_quote": "single SIEM integration (Splunk only; Sentinel and QRadar require custom SOW)",
+      "explanation": "Spec confirms Splunk integration is included in standard onboarding, supporting the Splunk portion of the proposal claim even though Sentinel and QRadar are excluded without extra SOW."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:51:28Z",
+    "total_tokens": 2765,
+    "reasoning_tokens": 1218
+  }
+}
