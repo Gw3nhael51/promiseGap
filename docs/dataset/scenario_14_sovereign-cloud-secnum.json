@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-14",
+  "slug": "sovereign-cloud-secnum",
+  "domain": "Sovereign Cloud (SecNumCloud & NIS2 Directive)",
+  "title": "€45M French Ministry Sovereign Cloud Hosting - SecNumCloud Qualified Region Paris-Lille",
+  "executive_summary": "Proposed 5-year €45M deal to migrate 12 ministries and 3 OIV operators to a SecNumCloud-qualified sovereign cloud region in Paris-Lille. The proposal promises strict French jurisdiction with NIS2 compliance, while the technical spec reveals pending qualification, cross-border operations, and lower resilience thresholds.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "Our SecNumCloud-qualified Sovereign Cloud Region Paris-Lille delivers 99.99% monthly availability with zero scheduled downtime, fully operated and supported exclusively within France by French nationals with no remote access from outside the EU. All customer data and encryption keys are stored and processed solely in France under French law, with absolute immunity from extraterritorial laws such as the US CLOUD Act, guaranteed by our 100% French-owned capital structure. We provide real-time NIS2 incident notification within 6 hours with automated ANSSI reporting integration, plus instant elastic scaling to 5000 vCPUs within 90 seconds at no extra cost. Backups are immutable, air-gapped, and restorable in under 15 minutes for any 50TB dataset, with 24/7 SecNumCloud-certified support responding in under 10 minutes. All encryption uses AES-256 with keys managed in Thales Luna HSMs in Paris."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "Architecture: Dual AZ deployment Paris (PRA) and Lille (PRA) with SecNumCloud qualification pending renewal Q2 2027 (current visa 2023-045 expiring March 2027). Operations follow-the-sun model with Tier-2 support from EU centers in France and Romania, plus Tier-3 engineering escalation to US parent entity in Virginia for hypervisor issues via privileged remote diagnostic access. Monthly maintenance window of 4 hours (02:00-06:00 CET first Sunday) is excluded from SLA calculation, with base SLA 99.9% monthly per AZ pair. Data residency: Primary data at rest in France (AES-256, keys managed in Thales Luna HSMs in Paris); encrypted backups replicated to Frankfurt, Germany for disaster recovery under EU jurisdiction. Incident management aligns to NIS2 with initial notification within 24 hours and intermediate report within 72 hours via manual customer portal ticket. Autoscaling supports up to 2000 vCPUs per tenant with 8-minute warm-up, burstable to 5000 vCPUs only under Enterprise Plus quota; standard restore SLA is 4 hours for 50TB from immutable S3 Object Lock vaults (non air-gapped), support P1 response 30 minutes."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "99.99% availability with zero scheduled downtime",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "delivers 99.99% monthly availability with zero scheduled downtime",
+      "spec_quote": "Monthly maintenance window of 4 hours (02:00-06:00 CET first Sunday) is excluded from SLA calculation, with base SLA 99.9% monthly per AZ pair",
+      "explanation": "Proposal promises 99.99% with no downtime, while spec explicitly allows a 4-hour monthly maintenance exclusion and only commits to 99.9% SLA, making the sales SLA mathematically impossible."
+    },
+    {
+      "id": "C2",
+      "claim": "Instant elastic scaling to 5000 vCPUs within 90 seconds at no extra cost",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "instant elastic scaling to 5000 vCPUs within 90 seconds at no extra cost",
+      "spec_quote": "",
+      "explanation": "Spec limits standard tenants to 2000 vCPUs with 8-minute warm-up and reserves 5000 vCPUs only for Enterprise Plus quota, with no mention of 90-second scaling or zero-cost bursting."
+    },
+    {
+      "id": "C3",
+      "claim": "Absolute immunity from extraterritorial laws such as US CLOUD Act",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "with absolute immunity from extraterritorial laws such as the US CLOUD Act, guaranteed by our 100% French-owned capital structure",
+      "spec_quote": "Tier-3 engineering escalation to US parent entity in Virginia for hypervisor issues via privileged remote diagnostic access",
+      "explanation": "Spec confirms privileged US remote access and Romanian support, which may create extraterritorial exposure despite French ownership claim, but neither document defines legal control vs operational access scope, leaving SecNumCloud/NIS2 sovereignty status uncertain."
+    },
+    {
+      "id": "C4",
+      "claim": "AES-256 encryption with Thales Luna HSM key management in Paris",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "All encryption uses AES-256 with keys managed in Thales Luna HSMs in Paris",
+      "spec_quote": "AES-256, keys managed in Thales Luna HSMs in Paris",
+      "explanation": "Spec directly confirms the proposed encryption standard and HSM location in Paris, fully supporting this security control claim."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:53:21Z",
+    "total_tokens": 3534,
+    "reasoning_tokens": 1871
+  }
+}

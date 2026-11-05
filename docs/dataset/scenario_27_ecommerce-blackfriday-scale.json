@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-27",
+  "slug": "ecommerce-blackfriday-scale",
+  "domain": "High-Concurrency B2B Marketplace (Flash Sales Engine)",
+  "title": "$12.4M Black Friday Flash Sales Engine Deal with Global Retail Consortium",
+  "executive_summary": "A $12.4M three-year agreement to power Black Friday flash sales for 400+ enterprise retailers with peak load guarantees. Technical review reveals critical scaling, availability, and support gaps between sales promises and engineering capacity.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "Our Flash Sales Engine guarantees zero-downtime scaling up to 250,000 checkout requests/sec during Black Friday peak events, with 99.99% uptime SLA and sub-100ms checkout latency globally. All platform upgrades and security patches are applied with zero customer impact via live blue-green deployments, ensuring continuous sales operation.\n\nWe include unlimited SKU catalog hosting with instant global inventory sync and proven handling of over 1.5 million SKUs per tenant, plus dedicated 24/7 white-glove support with 5-minute critical incident response. Transaction fees are capped at 0.5% with guaranteed PCI-DSS Level 1 compliance and real-time fraud screening on every order at no extra cost."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "The architecture is validated for sustained throughput of 85,000 checkout requests/sec per region with autoscaling to 120,000 requests/sec burst for 15 minutes, requiring read-replica lag under 2 seconds. Scheduled maintenance windows are required every Sunday 02:00-04:00 UTC for database sharding rebalancing and cache invalidation, during which checkout API returns 503 for up to 12 minutes.\n\nCatalog service supports up to 2 million SKUs per tenant with inventory sync propagation of 45-90 seconds across regions via eventual consistency. Standard support includes 99.9% platform availability excluding maintenance windows, with P1 incident response target of 60 minutes during business hours (08:00-20:00 EST) and PCI-DSS Level 1 compliance for card vault only, fraud screening available as paid add-on."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "Zero-downtime scaling to 250,000 checkout requests/sec with no customer impact",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "zero-downtime scaling up to 250,000 checkout requests/sec",
+      "spec_quote": "Scheduled maintenance windows are required every Sunday 02:00-04:00 UTC for database sharding rebalancing and cache invalidation, during which checkout API returns 503 for up to 12 minutes",
+      "explanation": "Proposal promises zero-downtime and 250k rps, while spec mandates weekly downtime with 503 errors and validates only 85k sustained / 120k burst, directly contradicting both availability and throughput."
+    },
+    {
+      "id": "C2",
+      "claim": "Transaction fees capped at 0.5%",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "Transaction fees are capped at 0.5%",
+      "spec_quote": "",
+      "explanation": "Technical spec contains no fee schedule, pricing cap, or billing logic, providing zero engineering or contractual basis for the 0.5% cap."
+    },
+    {
+      "id": "C3",
+      "claim": "Instant global inventory sync",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "instant global inventory sync",
+      "spec_quote": "inventory sync propagation of 45-90 seconds across regions via eventual consistency",
+      "explanation": "'Instant' is undefined and leaves uncertainty whether 45-90 second eventual consistency meets the sales promise, creating oversell risk during flash-sale inventory races."
+    },
+    {
+      "id": "C4",
+      "claim": "Catalog handling of over 1.5 million SKUs per tenant",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "proven handling of over 1.5 million SKUs per tenant",
+      "spec_quote": "Catalog service supports up to 2 million SKUs per tenant",
+      "explanation": "Spec capacity of 2 million SKUs per tenant fully covers and confirms the proposal claim of over 1.5 million SKUs."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:55:46Z",
+    "total_tokens": 3168,
+    "reasoning_tokens": 1722
+  }
+}

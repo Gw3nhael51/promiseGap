@@ -1,0 +1,57 @@
+{
+  "id": "PG-SCN-18",
+  "slug": "rail-transit-sil4",
+  "domain": "High-Speed Rail Transit Signaling (CBTC & SIL-4)",
+  "title": "$485M TransContinental High-Speed Corridor CBTC Resignaling – 450km, 32 Stations, 120 Trainsets",
+  "executive_summary": "Meridian Rail Systems proposes a turnkey CBTC resignaling and ATP replacement for a 450km high-speed corridor serving 32 stations and 120 trainsets for $485M with 9-month go-live. Independent technical review flags critical safety headway and migration conflicts that expose the operator to regulatory and operational liability.",
+  "proposal_document": {
+    "title": "Commercial Proposal v1.0",
+    "text": "Meridian Rail Systems is pleased to offer a fixed-price $485M turnkey delivery of our Horizon CBTC platform covering the full 450km corridor, 32 stations, and 120 high-speed trainsets, with revenue service in 9 months and 99.999% ATP system availability guaranteed. The solution guarantees 90-second headways at operational speeds up to 350 km/h to enable 28 trains per hour per direction, and features a SIL-4 certified Automatic Train Protection core with dual-redundant 2oo3 voting architecture validated for 350 km/h operation with no scheduled maintenance downtime required. Our offer includes full backward compatibility with existing ETCS Level 1 interlockings at no additional cost, including all wayside object controllers, balises, and relay interfaces, plus AI-driven predictive maintenance that eliminates 100% of routine trackside inspections. We further commit to seamless brownfield migration with zero passenger service disruption across all 32 live stations, absorbing all possession penalties and guaranteeing regulatory approval from the National Rail Safety Authority within 60 days of commissioning."
+  },
+  "technical_specification": {
+    "title": "Technical Architecture Spec v4.2",
+    "text": "The Horizon CBTC architecture implements a radio-based moving-block with IEEE 1474.1 performance modeling; the ATP core is SIL-4 certified per CENELEC EN 50129 using dual-redundant 2oo3 voting architecture limited to vital processing functions, while wayside object controllers remain SIL-2 and require quarterly calibration. Validated braking curves and radio latency (≤800ms end-to-end, 99th percentile) dictate that minimum safe headway is 120 seconds at speeds up to 300 km/h, with 180 seconds required above 300 km/h, yielding a maximum throughput of 20 trains per hour per direction and 99.95% ATP availability excluding planned maintenance. Brownfield deployment on live high-speed infrastructure follows a phased cutover methodology where brownfield cutover requires nightly 4-hour possession windows between 00:30 and 04:30 over 18 months, with full line closures on 12 weekends for interlocking replacement and radio commissioning. Preventive maintenance mandates a weekly 6-hour trackside inspection window and bi-annual 48-hour system recertification shutdowns; ETCS interoperability is limited to ETCS Level 2 Baseline 3.6.0 via STM gateway (sold separately), and National Rail Safety Authority approval historically averages 9-14 months post safety case submission."
+  },
+  "commitments": [
+    {
+      "id": "C1",
+      "claim": "90-second headways at 350 km/h operation",
+      "verdict": "CONTRADICTORY",
+      "proposal_quote": "guarantees 90-second headways at operational speeds up to 350 km/h",
+      "spec_quote": "minimum safe headway is 120 seconds at speeds up to 300 km/h, with 180 seconds required above 300 km/h",
+      "explanation": "Proposal promises 90-second headways at 350 km/h, but spec mandates 180 seconds above 300 km/h due to braking curves and radio latency, cutting promised throughput from 28 to under 20 trains per hour and violating SIL-4 safe separation."
+    },
+    {
+      "id": "C2",
+      "claim": "Free full backward compatibility with ETCS Level 1 interlockings",
+      "verdict": "UNSUPPORTED",
+      "proposal_quote": "includes full backward compatibility with existing ETCS Level 1 interlockings at no additional cost",
+      "spec_quote": "",
+      "explanation": "Spec contains no mention of ETCS Level 1 support and explicitly limits interoperability to ETCS Level 2 Baseline 3.6.0 via separately sold STM gateway, leaving cost, scope, and safety certification for legacy interfaces entirely unsupported."
+    },
+    {
+      "id": "C3",
+      "claim": "Zero-disruption brownfield migration on live line",
+      "verdict": "AMBIGUOUS",
+      "proposal_quote": "seamless brownfield migration with zero passenger service disruption",
+      "spec_quote": "brownfield cutover requires nightly 4-hour possession windows between 00:30 and 04:30 over 18 months",
+      "explanation": "Proposal's zero disruption is undefined and ambiguous versus spec's mandatory 4-hour nightly possessions for 18 months plus 12 weekend closures; it is unclear whether zero means no daytime cancellations, no penalties, or no possessions, leaving possession costs and schedule risk unresolved."
+    },
+    {
+      "id": "C4",
+      "claim": "SIL-4 certified ATP core with dual-redundant 2oo3 voting",
+      "verdict": "SUPPORTED",
+      "proposal_quote": "SIL-4 certified Automatic Train Protection core with dual-redundant 2oo3 voting architecture",
+      "spec_quote": "ATP core is SIL-4 certified per CENELEC EN 50129 using dual-redundant 2oo3 voting architecture",
+      "explanation": "Spec directly confirms the sales claim with identical architecture and cites CENELEC EN 50129 SIL-4 certification for the ATP vital core, though scope is limited to core processing and excludes wayside controllers."
+    }
+  ],
+  "deal_risk_score": 78,
+  "risk_rating": "HIGH_RISK",
+  "telemetry": {
+    "model": "muse-spark-1.3",
+    "generated_at": "2026-11-04T23:54:11Z",
+    "total_tokens": 2743,
+    "reasoning_tokens": 980
+  }
+}

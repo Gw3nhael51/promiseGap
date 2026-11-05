@@ -165,6 +165,10 @@ Deux PDF multi-pages prêts à l'emploi sont fournis dans [`docs/samples/`](docs
 - `docs/samples/commercial_proposal.pdf` — Proposition commerciale Cloud contenant 8 engagements
 - `docs/samples/technical_specifications.pdf` — Spécifications techniques & SLA de référence v4.2
 
+### 📦 Dataset B2B Étendu (Généré par Meta Muse Spark)
+Un jeu de données de 30 scénarios d'audit contractuel d'entreprise générés avec `muse-spark-1.3` (~100 000 tokens consommés dont 50 000+ tokens de raisonnement) couvrant 30 secteurs stratégiques (Cloud GPU H100, FinTech SEPA, Santé HDS, Télécom 5G, SCADA Nucléaire, Défense) :
+- Consultez [`docs/dataset/`](docs/dataset/) pour le catalogue complet et les fichiers JSON détaillés.
+
 ---
 
 ## 🧪 Commandes CLI, Tests & CI/CD

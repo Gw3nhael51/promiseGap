@@ -165,6 +165,10 @@ Ready-to-upload sample documents are included in [`docs/samples/`](docs/samples/
 - `docs/samples/commercial_proposal.pdf` — Cloud hosting commercial proposal containing 8 commitments
 - `docs/samples/technical_specifications.pdf` — Technical architecture & SLA specification v4.2
 
+### 📦 Extended B2B Evaluation Dataset (Meta Muse Spark)
+A curated dataset of 30 enterprise cross-examination scenarios generated with `muse-spark-1.3` (~100,000 tokens, 50,000+ reasoning tokens) covering 30 critical industries (GPU Cloud H100, FinTech SEPA, Healthcare HDS, Telecom 5G, Nuclear SCADA, Defense):
+- See [`docs/dataset/`](docs/dataset/) for the complete catalog and individual scenario JSON files.
+
 ---
 
 ## 🧪 CLI Commands, Testing & CI/CD
