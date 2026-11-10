@@ -1,11 +1,33 @@
 .DEFAULT_GOAL := help
-.PHONY: help setup up down restart logs ps install db-create db-migrate db-test db-check cache lint test serve worker test-ai eval
+.PHONY: help setup up down restart logs ps install install-symfony db-create db-migrate db-test db-check cache lint test serve worker test-ai eval
 
 help: ## Display available commands
 	@grep -E '(^[a-zA-Z_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-18s\033[0m %s\n", $$1, $$2}'
 
 ## --- 1-Command Setup ---
-setup: ## Complete 1-command setup for hackathon evaluation (Docker, DB, assets)
+# Installer : Configurer la CLI Symfony si absente
+install-symfony: ## Install Symfony CLI if not already installed
+	@if command -v symfony > /dev/null 2>&1; then \
+		echo "Symfony CLI is already installed ($$(which symfony))."; \
+	elif [ -x "$$HOME/.symfony5/bin/symfony" ]; then \
+		echo "Symfony CLI is already installed in $$HOME/.symfony5/bin/symfony."; \
+	else \
+		echo "Symfony CLI not found. Installing..."; \
+		if command -v curl > /dev/null 2>&1; then \
+			curl -sS https://get.symfony.com/cli/installer | bash; \
+		elif command -v wget > /dev/null 2>&1; then \
+			wget -qO- https://get.symfony.com/cli/installer | bash; \
+		else \
+			echo "Error: curl or wget is required to install Symfony CLI." >&2; \
+			exit 1; \
+		fi; \
+		if [ -d "$$HOME/.local/bin" ] && [ -w "$$HOME/.local/bin" ]; then \
+			ln -sf "$$HOME/.symfony5/bin/symfony" "$$HOME/.local/bin/symfony"; \
+		fi; \
+		echo "Symfony CLI installed successfully."; \
+	fi
+
+setup: install-symfony ## Complete 1-command setup for hackathon evaluation (Docker, DB, assets)
 	docker compose up -d
 	@echo "Waiting for PostgreSQL pgvector to be ready..."
 	@until docker compose exec -T database pg_isready -U app -d app > /dev/null 2>&1; do sleep 1; done
@@ -75,6 +97,10 @@ test: ## Run test suite via PHPUnit
 serve: ## Start local web server (Symfony CLI with fallback to built-in PHP server)
 	@if command -v symfony > /dev/null 2>&1; then \
 		symfony serve -d; \
+	elif [ -x "$$HOME/.symfony5/bin/symfony" ]; then \
+		$$HOME/.symfony5/bin/symfony serve -d; \
+	elif [ -x "$$HOME/.local/bin/symfony" ]; then \
+		$$HOME/.local/bin/symfony serve -d; \
 	else \
 		echo "Starting PHP built-in server at http://127.0.0.1:8000..."; \
 		php -S 127.0.0.1:8000 -t public; \
