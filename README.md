@@ -110,8 +110,31 @@ PromiseGap includes a curated ground-truth benchmark suite of **24 synthetic B2B
 ### Prerequisites
 - **PHP 8.4+** with `pdo_pgsql`, `intl`, `mbstring`
 - **Composer 2+**
+- **Symfony CLI** (automatically installed via `make setup` or manually: see below)
 - **Docker & Docker Compose** (for PostgreSQL 16 + `pgvector` and Mailpit)
 - **`poppler-utils`** (`pdftotext` for fast page-by-page PDF extraction)
+
+#### Installing Symfony CLI
+
+The `make setup` (or `make install-symfony`) command automatically checks and installs Symfony CLI if missing.
+
+To install it manually:
+
+**Linux & macOS:**
+```bash
+curl -sS https://get.symfony.com/cli/installer | bash
+```
+To make `symfony` available globally:
+```bash
+sudo mv ~/.symfony5/bin/symfony /usr/local/bin/symfony
+```
+*(or without sudo, add to your `PATH`: `export PATH="$HOME/.symfony5/bin:$PATH"`)*
+
+**Windows:**
+Download the installer from [symfony.com/download](https://symfony.com/download) or via Scoop:
+```powershell
+scoop install symfony-cli
+```
 
 ### 1-Command Setup via Docker & Make
 

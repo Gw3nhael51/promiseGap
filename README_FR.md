@@ -110,8 +110,31 @@ PromiseGap intègre une suite d'évaluation de **24 scénarios synthétiques de 
 ### Prérequis
 - **PHP 8.4+** avec `pdo_pgsql`, `intl`, `mbstring`
 - **Composer 2+**
+- **Symfony CLI** (installé automatiquement via `make setup` ou manuellement : voir ci-dessous)
 - **Docker & Docker Compose** (PostgreSQL 16 + `pgvector` et Mailpit)
 - **`poppler-utils`** (`pdftotext` pour l'extraction PDF page par page)
+
+#### Installation de la CLI Symfony
+
+La commande `make setup` (ou `make install-symfony`) détecte et installe automatiquement la CLI Symfony si elle n'est pas présente.
+
+Pour l'installer manuellement :
+
+**Linux & macOS :**
+```bash
+curl -sS https://get.symfony.com/cli/installer | bash
+```
+Puis pour rendre la commande accessible globalement :
+```bash
+sudo mv ~/.symfony5/bin/symfony /usr/local/bin/symfony
+```
+*(ou sans sudo, ajoutez-la à votre `PATH` : `export PATH="$HOME/.symfony5/bin:$PATH"`)*
+
+**Windows :**
+Téléchargez l'installateur sur [symfony.com/download](https://symfony.com/download) ou via Scoop :
+```powershell
+scoop install symfony-cli
+```
 
 ### Démarrage en 1 Commande avec Docker & Make
 
